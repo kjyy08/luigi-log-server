@@ -122,3 +122,48 @@ Event Publication → Kafka → Event Handlers → Data Synchronization
 - **Observability**: Comprehensive monitoring with LGTM stack
 - **Deployment**: GitOps with ArgoCD
 - **Environment**: Cloud-native with cost-efficient K3s clusters
+
+## Documentation Structure
+
+The project documentation is organized into categorized folders for better maintainability:
+
+### Planning Documents (`docs/planning/`)
+- **프로젝트-구현-기획서.md**: Overall project vision, goals, and core feature definitions
+- **구현-로드맵.md**: Detailed development timeline and milestones
+- **리스크-관리.md**: Risk identification and mitigation strategies
+
+### Architecture Documents (`docs/architecture/`)
+- **아키텍처-설계.md**: System architecture principles and structure
+- **성능-지표.md**: Performance targets and measurement methods
+
+### AI System Documents (`docs/ai/`)
+- **AI-챗봇-상세-기획.md**: Detailed AI chatbot specifications and RAG implementation
+
+### Requirements Documents (`docs/requirements/`)
+- **기능적-요구사항.csv**: 25 functional user stories organized by epics
+- **비기능적-요구사항.csv**: 30 non-functional requirements with metrics
+- **기술적-요구사항.csv**: 35 technical requirements with implementation details
+- **깃허브-이슈-템플릿.csv**: GitHub issue templates for project management
+
+### Analysis Documents (`docs/analysis/`)
+- **저장소-분석-보고서.md**: Analysis of the target repository that this project is cloning/inspired by
+
+## Requirements Management
+
+### GitHub Issue Creation
+Use the CSV files in `docs/requirements/` to systematically create GitHub issues:
+- Epic-level features with clear acceptance criteria
+- User stories with story points and dependencies
+- Technical tasks with implementation specifications
+- Bug report and feature request templates
+
+### Priority Classification
+- **필수 (Must Have)**: Core functionality and critical quality requirements
+- **권장 (Should Have)**: Important but not Phase 1 requirements
+- **선택 (Could Have)**: Nice-to-have features that add value
+
+When working with requirements:
+1. Review the CSV files to understand the full scope
+2. Use the Korean descriptions for better comprehension
+3. Follow the dependency relationships when planning implementation
+4. Reference the GitHub issue templates for consistent issue creation

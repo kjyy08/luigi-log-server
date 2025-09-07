@@ -91,12 +91,41 @@
 
 자세한 설계 문서와 구현 계획은 [docs](./docs/) 폴더를 참조하세요:
 
-- [프로젝트 구현 기획서](./docs/blog-project-implementation-plan.md)
-- [아키텍처 설계](./docs/architecture-design.md)
-- [AI 챗봇 상세 기획](./docs/ai-chatbot-specification.md)
-- [성능 지표 및 측정](./docs/performance-metrics.md)
-- [리스크 관리](./docs/risk-management.md)
-- [상세 개발 계획](./docs/implementation-roadmap.md)
+### 📋 기획 문서 ([docs/planning](./docs/planning/))
+- [프로젝트 구현 기획서](./docs/planning/프로젝트-구현-기획서.md)
+- [구현 로드맵](./docs/planning/구현-로드맵.md)
+- [리스크 관리](./docs/planning/리스크-관리.md)
+
+### 🏗️ 아키텍처 문서 ([docs/architecture](./docs/architecture/))
+- [아키텍처 설계](./docs/architecture/아키텍처-설계.md)
+- [성능 지표](./docs/architecture/성능-지표.md)
+
+### 🤖 AI 시스템 문서 ([docs/ai](./docs/ai/))
+- [AI 챗봇 상세 기획](./docs/ai/AI-챗봇-상세-기획.md)
+
+### 📋 요구사항 문서 ([docs/requirements](./docs/requirements/))
+- [기능적 요구사항](./docs/requirements/기능적-요구사항.csv) (25개 사용자 스토리)
+- [비기능적 요구사항](./docs/requirements/비기능적-요구사항.csv) (30개 품질 요구사항)
+- [기술적 요구사항](./docs/requirements/기술적-요구사항.csv) (35개 기술 명세)
+- [GitHub 이슈 템플릿](./docs/requirements/깃허브-이슈-템플릿.csv)
+
+### 📊 분석 문서 ([docs/analysis](./docs/analysis/))
+- [저장소 분석 보고서](./docs/analysis/저장소-분석-보고서.md) (클론 대상 프로젝트 분석)
+
+## 📊 요구사항 관리
+
+### GitHub 이슈 생성
+CSV 파일 기반으로 체계적인 이슈 관리가 가능합니다:
+
+- **기능적 요구사항**: 25개 사용자 스토리 (5개 에픽으로 분류)
+- **비기능적 요구사항**: 30개 품질 속성 (측정 기준 포함)
+- **기술적 요구사항**: 35개 기술 명세 (구현 방법 포함)
+- **이슈 템플릿**: 6가지 유형의 표준화된 템플릿
+
+### 우선순위 분류
+- **필수 (Must Have)**: 핵심 기능 및 품질 요구사항
+- **권장 (Should Have)**: 중요하지만 1차에서 구현하지 않아도 되는 기능
+- **선택 (Could Have)**: 추가 가치를 제공하는 기능
 
 ## 🎯 핵심 특징
 
