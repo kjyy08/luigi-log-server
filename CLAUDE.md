@@ -143,7 +143,6 @@ The project documentation is organized into categorized folders for better maint
 - **기능적-요구사항.csv**: 25 functional user stories organized by epics
 - **비기능적-요구사항.csv**: 30 non-functional requirements with metrics
 - **기술적-요구사항.csv**: 35 technical requirements with implementation details
-- **깃허브-이슈-템플릿.csv**: GitHub issue templates for project management
 
 ### Analysis Documents (`docs/analysis/`)
 - **저장소-분석-보고서.md**: Analysis of the target repository that this project is cloning/inspired by

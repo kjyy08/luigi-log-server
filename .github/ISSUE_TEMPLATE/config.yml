@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📚 프로젝트 문서
+    url: https://github.com/kjyy08/luigi-log-server/tree/main/docs
+    about: 프로젝트 관련 문서를 확인하세요
+  - name: 💬 디스커션
+    url: https://github.com/kjyy08/luigi-log-server/discussions
+    about: 질문이나 아이디어가 있다면 디스커션을 이용하세요
+  - name: 🚀 릴리스 노트
+    url: https://github.com/kjyy08/luigi-log-server/releases
+    about: 최신 릴리스 정보를 확인하세요

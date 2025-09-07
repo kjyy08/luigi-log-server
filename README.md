@@ -107,7 +107,6 @@
 - [기능적 요구사항](./docs/requirements/기능적-요구사항.csv) (25개 사용자 스토리)
 - [비기능적 요구사항](./docs/requirements/비기능적-요구사항.csv) (30개 품질 요구사항)
 - [기술적 요구사항](./docs/requirements/기술적-요구사항.csv) (35개 기술 명세)
-- [GitHub 이슈 템플릿](./docs/requirements/깃허브-이슈-템플릿.csv)
 
 ### 📊 분석 문서 ([docs/analysis](./docs/analysis/))
 - [저장소 분석 보고서](./docs/analysis/저장소-분석-보고서.md) (클론 대상 프로젝트 분석)
