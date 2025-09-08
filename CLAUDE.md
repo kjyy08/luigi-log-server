@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Luigi Log Server is a personal tech blog platform built with Spring Boot 3.5.5 + Kotlin 1.9.25, designed to evolve from a modular monolith to microservices architecture. The platform features AI-powered chatbot functionality with RAG (Retrieval Augmented Generation) for enhanced user interaction.
+Luigi Log Server is a personal tech blog platform being built with Spring Boot 3.5.5 + Kotlin 1.9.25, designed to evolve from a modular monolith to microservices architecture. The platform will feature AI-powered chatbot functionality with RAG (Retrieval Augmented Generation) for enhanced user interaction.
+
+**Current Status**: Package structure implementation complete - hexagonal architecture with modular monolith structure fully created and ready for domain implementation.
 
 ## Build and Development Commands
 
@@ -16,30 +18,33 @@ Luigi Log Server is a personal tech blog platform built with Spring Boot 3.5.5 +
 # Run the application
 ./gradlew bootRun
 
-# Run tests with coverage
-./gradlew test jacocoTestReport
-
-# Static analysis
-./gradlew detekt
+# Run tests
+./gradlew test
 
 # Build Docker image
 ./gradlew bootBuildImage
 
-# Database migrations
-./gradlew flywayMigrate
+# Assemble the project
+./gradlew assemble
 
-# Generate API documentation
-./gradlew generateOpenApiDocs
+# Run all checks
+./gradlew check
 ```
 
 ### Development Environment
 ```bash
-# Start local development stack (PostgreSQL, Redis, Elasticsearch, Kafka)
-docker-compose up -d
+# Run main application (from monolith-main module)
+./gradlew :mains:monolith-main:bootRun
 
-# Dependency vulnerability check
-./gradlew dependencyCheckAnalyze
+# Build specific modules
+./gradlew :libs:common-domain:build
+./gradlew :service:user:core:build
+
+# Build all modules
+./gradlew build -x test
 ```
+
+*Note: Docker, database, and advanced tooling configurations are not yet implemented.*
 
 ## Architecture Overview
 
@@ -49,369 +54,119 @@ docker-compose up -d
 - **Event-Driven Architecture**: Domain and integration events via Apache Kafka
 - **CQRS Pattern**: PostgreSQL for writes, Elasticsearch for read-optimized queries
 
-### Complete Package Structure
+### Implemented Project Structure
 ```
 luigi-log-server/
 ├── mains/
-│   └── monolith-main/
-│       ├── src/main/kotlin/
-│       │   └── cloud/luigi99/blog/
-│       │       ├── BlogApplication.kt
-│       │       ├── config/
-│       │       │   ├── SecurityConfig.kt
-│       │       │   ├── JpaConfig.kt
-│       │       │   ├── WebConfig.kt
-│       │       │   ├── KafkaConfig.kt
-│       │       │   └── ElasticsearchConfig.kt
-│       │       └── presentation/
-│       │           └── GlobalExceptionHandler.kt
+│   └── monolith-main/           # Spring Boot main application
+│       ├── src/main/kotlin/cloud/luigi99/blog/
+│       │   ├── BlogApplication.kt
+│       │   ├── config/
+│       │   │   ├── SecurityConfig.kt
+│       │   │   ├── JpaConfig.kt
+│       │   │   └── WebConfig.kt
+│       │   └── presentation/
+│       │       └── GlobalExceptionHandler.kt
+│       ├── src/main/resources/application.yml
 │       └── build.gradle.kts
-├── libs/
-│   ├── common-domain/
-│   │   ├── src/main/kotlin/
-│   │   │   └── cloud/luigi99/blog/common/
-│   │   │       ├── domain/
-│   │   │       │   ├── BaseEntity.kt
-│   │   │       │   ├── DomainEvent.kt
-│   │   │       │   ├── AggregateRoot.kt
-│   │   │       │   └── ValueObject.kt
-│   │   │       ├── exception/
-│   │   │       │   ├── BusinessException.kt
-│   │   │       │   └── DomainException.kt
-│   │   │       └── util/
-│   │   │           ├── DateUtils.kt
-│   │   │           └── StringUtils.kt
-│   │   └── build.gradle.kts
-│   ├── common-infrastructure/
-│   │   ├── src/main/kotlin/
-│   │   │   └── cloud/luigi99/blog/common/
-│   │   │       ├── persistence/
-│   │   │       │   ├── JpaBaseRepository.kt
-│   │   │       │   ├── EventStore.kt
-│   │   │       │   └── BaseJpaEntity.kt
-│   │   │       ├── messaging/
-│   │   │       │   ├── EventPublisher.kt
-│   │   │       │   └── DomainEventPublisher.kt
-│   │   │       └── security/
-│   │   │           ├── PasswordEncoder.kt
-│   │   │           └── SecurityUtils.kt
-│   │   └── build.gradle.kts
-│   └── common-web/
-│       ├── src/main/kotlin/
-│       │   └── cloud/luigi99/blog/common/
-│       │       ├── web/
-│       │       │   ├── ApiResponse.kt
-│       │       │   ├── PageResponse.kt
-│       │       │   ├── ErrorResponse.kt
-│       │       │   └── ValidationUtils.kt
-│       │       └── security/
-│       │           ├── JwtTokenProvider.kt
-│       │           └── SecurityContext.kt
-│       └── build.gradle.kts
-├── service/
-│   ├── user/
+├── libs/                        # Common libraries (implemented)
+│   ├── common-domain/           # Domain layer abstractions
+│   │   └── src/main/kotlin/cloud/luigi99/blog/common/
+│   │       ├── domain/          # BaseEntity, DomainEvent, AggregateRoot
+│   │       ├── exception/       # BusinessException, DomainException  
+│   │       └── util/            # DateUtils, StringUtils
+│   ├── common-infrastructure/   # Infrastructure layer commons
+│   │   └── src/main/kotlin/cloud/luigi99/blog/common/
+│   │       ├── persistence/     # JpaBaseRepository, BaseJpaEntity
+│   │       ├── messaging/       # EventPublisher, DomainEventPublisher
+│   │       └── security/        # PasswordEncoder, SecurityUtils
+│   └── common-web/             # Web layer commons
+│       └── src/main/kotlin/cloud/luigi99/blog/common/
+│           ├── web/            # ApiResponse, PageResponse, ErrorResponse
+│           └── security/       # JwtTokenProvider, SecurityContext
+├── service/                    # Domain services (structure implemented)
+│   ├── user/                  # User management domain
+│   │   ├── core/              # Domain logic, ports, use cases
+│   │   ├── adapter-in/        # REST controllers, event handlers  
+│   │   └── adapter-out/       # JPA entities, repositories
+│   ├── content/               # Content management domain
 │   │   ├── core/
-│   │   │   ├── src/main/kotlin/
-│   │   │   │   └── cloud/luigi99/blog/user/
-│   │   │   │       ├── domain/
-│   │   │   │       │   ├── model/
-│   │   │   │       │   │   ├── User.kt
-│   │   │   │       │   │   ├── Profile.kt
-│   │   │   │       │   │   ├── UserSession.kt
-│   │   │   │       │   │   └── Email.kt
-│   │   │   │       │   ├── service/
-│   │   │   │       │   │   ├── UserService.kt
-│   │   │   │       │   │   └── AuthenticationService.kt
-│   │   │   │       │   └── repository/
-│   │   │   │       │       └── UserRepository.kt
-│   │   │   │       ├── application/
-│   │   │   │       │   ├── usecase/
-│   │   │   │       │   │   ├── UserManagementUseCase.kt
-│   │   │   │       │   │   └── AuthenticationUseCase.kt
-│   │   │   │       │   ├── command/
-│   │   │   │       │   │   ├── CreateUserCommand.kt
-│   │   │   │       │   │   ├── UpdateUserCommand.kt
-│   │   │   │       │   │   └── LoginCommand.kt
-│   │   │   │       │   └── query/
-│   │   │   │       │       └── UserQuery.kt
-│   │   │   │       ├── port/
-│   │   │   │       │   ├── incoming/
-│   │   │   │       │   │   ├── UserManagementPort.kt
-│   │   │   │       │   │   └── AuthenticationPort.kt
-│   │   │   │       │   └── outgoing/
-│   │   │   │       │       ├── LoadUserPort.kt
-│   │   │   │       │       ├── SaveUserPort.kt
-│   │   │   │       │       └── PasswordEncoderPort.kt
-│   │   │   │       └── event/
-│   │   │   │           ├── UserCreatedEvent.kt
-│   │   │   │           ├── UserLoggedInEvent.kt
-│   │   │   │           └── UserUpdatedEvent.kt
-│   │   │   └── build.gradle.kts
 │   │   ├── adapter-in/
-│   │   │   ├── src/main/kotlin/
-│   │   │   │   └── cloud/luigi99/blog/user/
-│   │   │   │       ├── web/
-│   │   │   │       │   ├── UserController.kt
-│   │   │   │       │   ├── AuthController.kt
-│   │   │   │       │   ├── request/
-│   │   │   │       │   │   ├── CreateUserRequest.kt
-│   │   │   │       │   │   ├── UpdateUserRequest.kt
-│   │   │   │       │   │   └── LoginRequest.kt
-│   │   │   │       │   └── response/
-│   │   │   │       │       ├── UserResponse.kt
-│   │   │   │       │       └── AuthResponse.kt
-│   │   │   │       └── event/
-│   │   │   │           └── UserEventHandler.kt
-│   │   │   └── build.gradle.kts
 │   │   └── adapter-out/
-│   │       ├── src/main/kotlin/
-│   │       │   └── cloud/luigi99/blog/user/
-│   │       │       ├── persistence/
-│   │       │       │   ├── entity/
-│   │       │       │   │   ├── UserJpaEntity.kt
-│   │       │       │   │   └── ProfileJpaEntity.kt
-│   │       │       │   ├── repository/
-│   │       │       │   │   └── UserJpaRepository.kt
-│   │       │       │   └── adapter/
-│   │       │       │       └── UserPersistenceAdapter.kt
-│   │       │       ├── messaging/
-│   │       │       │   └── UserEventPublisher.kt
-│   │       │       └── security/
-│   │       │           └── BCryptPasswordEncoderAdapter.kt
-│   │       └── build.gradle.kts
-│   ├── content/
+│   ├── search/                # Search functionality
 │   │   ├── core/
-│   │   │   ├── src/main/kotlin/
-│   │   │   │   └── cloud/luigi99/blog/content/
-│   │   │   │       ├── domain/
-│   │   │   │       │   ├── model/
-│   │   │   │       │   │   ├── Post.kt
-│   │   │   │       │   │   ├── Category.kt
-│   │   │   │       │   │   ├── Tag.kt
-│   │   │   │       │   │   ├── Media.kt
-│   │   │   │       │   │   └── PostContent.kt
-│   │   │   │       │   ├── service/
-│   │   │   │       │   │   ├── PostService.kt
-│   │   │   │       │   │   ├── CategoryService.kt
-│   │   │   │       │   │   ├── TagService.kt
-│   │   │   │       │   │   └── MediaService.kt
-│   │   │   │       │   └── repository/
-│   │   │   │       │       ├── PostRepository.kt
-│   │   │   │       │       ├── CategoryRepository.kt
-│   │   │   │       │       └── TagRepository.kt
-│   │   │   │       ├── application/
-│   │   │   │       │   ├── usecase/
-│   │   │   │       │   │   ├── ContentManagementUseCase.kt
-│   │   │   │       │   │   ├── CategoryManagementUseCase.kt
-│   │   │   │       │   │   └── MediaUploadUseCase.kt
-│   │   │   │       │   ├── command/
-│   │   │   │       │   │   ├── CreatePostCommand.kt
-│   │   │   │       │   │   ├── PublishPostCommand.kt
-│   │   │   │       │   │   └── CreateCategoryCommand.kt
-│   │   │   │       │   └── query/
-│   │   │   │       │       ├── PostQuery.kt
-│   │   │   │       │       └── CategoryQuery.kt
-│   │   │   │       ├── port/
-│   │   │   │       │   ├── incoming/
-│   │   │   │       │   │   ├── ContentManagementPort.kt
-│   │   │   │       │   │   ├── CategoryManagementPort.kt
-│   │   │   │       │   │   └── MediaUploadPort.kt
-│   │   │   │       │   └── outgoing/
-│   │   │   │       │       ├── LoadContentPort.kt
-│   │   │   │       │       ├── SaveContentPort.kt
-│   │   │   │       │       └── MediaStoragePort.kt
-│   │   │   │       └── event/
-│   │   │   │           ├── PostPublishedEvent.kt
-│   │   │   │           ├── PostCreatedEvent.kt
-│   │   │   │           ├── CategoryCreatedEvent.kt
-│   │   │   │           └── PostUpdatedEvent.kt
-│   │   │   └── build.gradle.kts
 │   │   ├── adapter-in/
-│   │   │   ├── src/main/kotlin/
-│   │   │   │   └── cloud/luigi99/blog/content/
-│   │   │   │       ├── web/
-│   │   │   │       │   ├── PostController.kt
-│   │   │   │       │   ├── CategoryController.kt
-│   │   │   │       │   ├── TagController.kt
-│   │   │   │       │   ├── MediaController.kt
-│   │   │   │       │   ├── request/
-│   │   │   │       │   │   ├── CreatePostRequest.kt
-│   │   │   │       │   │   ├── PublishPostRequest.kt
-│   │   │   │       │   │   └── CreateCategoryRequest.kt
-│   │   │   │       │   └── response/
-│   │   │   │       │       ├── PostResponse.kt
-│   │   │   │       │       ├── CategoryResponse.kt
-│   │   │   │       │       └── MediaResponse.kt
-│   │   │   │       └── event/
-│   │   │   │           └── ContentEventHandler.kt
-│   │   │   └── build.gradle.kts
 │   │   └── adapter-out/
-│   │       ├── src/main/kotlin/
-│   │       │   └── cloud/luigi99/blog/content/
-│   │       │       ├── persistence/
-│   │       │       │   ├── entity/
-│   │       │       │   │   ├── PostJpaEntity.kt
-│   │       │       │   │   ├── CategoryJpaEntity.kt
-│   │       │       │   │   ├── TagJpaEntity.kt
-│   │       │       │   │   └── MediaJpaEntity.kt
-│   │       │       │   ├── repository/
-│   │       │       │   │   ├── PostJpaRepository.kt
-│   │       │       │   │   ├── CategoryJpaRepository.kt
-│   │       │       │   │   └── TagJpaRepository.kt
-│   │       │       │   └── adapter/
-│   │       │       │       └── ContentPersistenceAdapter.kt
-│   │       │       ├── search/
-│   │       │       │   └── ElasticsearchContentAdapter.kt
-│   │       │       ├── storage/
-│   │       │       │   └── FileStorageAdapter.kt
-│   │       │       └── messaging/
-│   │       │           └── ContentEventPublisher.kt
-│   │       └── build.gradle.kts
-│   ├── search/
+│   ├── analytics/             # Analytics and metrics
 │   │   ├── core/
-│   │   │   ├── src/main/kotlin/
-│   │   │   │   └── cloud/luigi99/blog/search/
-│   │   │   │       ├── domain/
-│   │   │   │       │   ├── model/
-│   │   │   │       │   │   ├── SearchResult.kt
-│   │   │   │       │   │   ├── SearchCriteria.kt
-│   │   │   │       │   │   └── SearchIndex.kt
-│   │   │   │       │   ├── service/
-│   │   │   │       │   │   └── SearchService.kt
-│   │   │   │       │   └── repository/
-│   │   │   │       │       └── SearchRepository.kt
-│   │   │   │       ├── application/
-│   │   │   │       │   ├── usecase/
-│   │   │   │       │   │   ├── SearchUseCase.kt
-│   │   │   │       │   │   └── IndexingUseCase.kt
-│   │   │   │       │   ├── command/
-│   │   │   │       │   │   └── IndexContentCommand.kt
-│   │   │   │       │   └── query/
-│   │   │   │       │       └── SearchQuery.kt
-│   │   │   │       └── port/
-│   │   │   │           ├── incoming/
-│   │   │   │           │   ├── SearchPort.kt
-│   │   │   │           │   └── IndexingPort.kt
-│   │   │   │           └── outgoing/
-│   │   │   │               ├── SearchRepositoryPort.kt
-│   │   │   │               └── IndexingEnginePort.kt
-│   │   │   └── build.gradle.kts
 │   │   ├── adapter-in/
-│   │   │   ├── src/main/kotlin/
-│   │   │   │   └── cloud/luigi99/blog/search/
-│   │   │   │       ├── web/
-│   │   │   │       │   ├── SearchController.kt
-│   │   │   │       │   ├── request/
-│   │   │   │       │   │   └── SearchRequest.kt
-│   │   │   │       │   └── response/
-│   │   │   │       │       └── SearchResponse.kt
-│   │   │   │       └── event/
-│   │   │   │           └── SearchEventHandler.kt
-│   │   │   └── build.gradle.kts
 │   │   └── adapter-out/
-│   │       ├── src/main/kotlin/
-│   │       │   └── cloud/luigi99/blog/search/
-│   │       │       └── elasticsearch/
-│   │       │           ├── ElasticsearchSearchAdapter.kt
-│   │       │           ├── ElasticsearchIndexAdapter.kt
-│   │       │           └── document/
-│   │       │               └── SearchDocument.kt
-│   │       └── build.gradle.kts
-│   ├── analytics/
-│   │   ├── core/
-│   │   │   ├── src/main/kotlin/
-│   │   │   │   └── cloud/luigi99/blog/analytics/
-│   │   │   │       ├── domain/
-│   │   │   │       │   ├── model/
-│   │   │   │       │   │   ├── PageView.kt
-│   │   │   │       │   │   ├── UserActivity.kt
-│   │   │   │       │   │   └── BlogStatistics.kt
-│   │   │   │       │   ├── service/
-│   │   │   │       │   │   └── AnalyticsService.kt
-│   │   │   │       │   └── repository/
-│   │   │   │       │       └── AnalyticsRepository.kt
-│   │   │   │       ├── application/
-│   │   │   │       │   ├── usecase/
-│   │   │   │       │   │   └── AnalyticsUseCase.kt
-│   │   │   │       │   ├── command/
-│   │   │   │       │   │   └── RecordPageViewCommand.kt
-│   │   │   │       │   └── query/
-│   │   │   │       │       └── StatisticsQuery.kt
-│   │   │   │       └── port/
-│   │   │   │           ├── incoming/
-│   │   │   │           │   └── AnalyticsPort.kt
-│   │   │   │           └── outgoing/
-│   │   │   │               └── AnalyticsRepositoryPort.kt
-│   │   │   └── build.gradle.kts
-│   │   ├── adapter-in/
-│   │   │   ├── src/main/kotlin/
-│   │   │   │   └── cloud/luigi99/blog/analytics/
-│   │   │   │       ├── web/
-│   │   │   │       │   └── AnalyticsController.kt
-│   │   │   │       └── event/
-│   │   │   │           └── AnalyticsEventHandler.kt
-│   │   │   └── build.gradle.kts
-│   │   └── adapter-out/
-│   │       ├── src/main/kotlin/
-│   │       │   └── cloud/luigi99/blog/analytics/
-│   │       │       └── persistence/
-│   │       │           ├── entity/
-│   │       │           │   └── PageViewJpaEntity.kt
-│   │       │           ├── repository/
-│   │       │           │   └── AnalyticsJpaRepository.kt
-│   │       │           └── adapter/
-│   │       │               └── AnalyticsPersistenceAdapter.kt
-│   │       └── build.gradle.kts
-│   └── ai/                            # Phase 2에서 구현
+│   └── ai/                    # AI services (Phase 2)
 │       ├── core/
-│       │   └── build.gradle.kts
 │       ├── adapter-in/
-│       │   └── build.gradle.kts
 │       └── adapter-out/
-│           └── build.gradle.kts
-├── config/
-│   ├── detekt/
-│   │   └── detekt.yml
-│   ├── sonar/
-│   │   └── sonar-project.properties
-│   └── checkstyle/
-│       └── checkstyle.xml
-├── docker/
-│   ├── Dockerfile
-│   ├── docker-compose.yml
-│   └── docker-compose.dev.yml
-├── .github/
-│   └── workflows/
-├── build.gradle.kts                    # 루트 빌드 스크립트
-├── settings.gradle.kts                 # 멀티 모듈 설정
-└── gradle.properties
+├── docs/                      # Comprehensive planning documentation
+├── build.gradle.kts          # Root build configuration (multi-module)
+├── settings.gradle.kts       # All modules registered
+└── README.md                 # Project overview in Korean
 ```
 
-### 블로그 구현 대화 요약
+### Hexagonal Architecture Implementation
+- **Core (Domain)**: Pure business logic, domain models, ports, and use cases
+- **Adapter-In**: REST controllers, event handlers, and external interfaces
+- **Adapter-Out**: JPA repositories, messaging, and external system integrations
+- **Common Libraries**: Shared domain abstractions, infrastructure utilities, and web concerns
 
-#### 패키지 구조 설계 과정
-1. **초기 상황**: 기본 Spring Boot + Kotlin 설정만 있는 상태
-2. **개발 순서 결정**: 패키지 구조 → DB 스키마 → 헥사고날 아키텍처 코어 구현 → 어댑터는 나중
-3. **참고 자료**: `docs/analysis/저장소-분석-보고서.md`의 모듈형 모놀리스 구조
-4. **최종 구조**: 도메인명을 최상위로 하고 그 안에 core, adapter-in, adapter-out 구성
+Each service follows the dependency inversion principle: `adapter-in` → `core` ← `adapter-out`
 
-#### 핵심 설계 원칙
-- **헥사고날 아키텍처**: Core ← Port → Adapter 패턴
-- **모듈형 모놀리스**: 도메인별 독립 모듈, 향후 마이크로서비스 분리 준비
-- **의존성 방향**: adapter-in → core ← adapter-out
-- **모듈별 독립 빌드**: 각 도메인의 core, adapter-in, adapter-out마다 build.gradle.kts
-- **K8s 제외**: 인프라는 별도 리포지토리로 관리
+## Implementation Status
 
-#### 구현 우선순위 (Phase 1)
-1. 사용자 인증 시스템 (USER-001, USER-004)
-2. 기본 콘텐츠 CRUD (CONTENT-001, CONTENT-003, CONTENT-004)  
-3. 관리자 대시보드 (ADMIN-001)
-4. 기본 검색 기능 (SEARCH-001, SEARCH-005)
+### ✅ Completed Components
 
-#### 다음 단계
-1. 서비스별 모듈 디렉토리 구조 생성 (진행 중)
-2. 코어 도메인 엔티티 및 비즈니스 로직 구현
-3. 데이터베이스 스키마 설계 및 마이그레이션
+#### Architecture Foundation
+- Multi-module Gradle setup with all 19 modules configured
+- Hexagonal architecture package structure implemented
+- Dependency management and module relationships established
+
+#### Common Libraries (`libs/`)
+- **common-domain**: BaseEntity, DomainEvent, AggregateRoot, ValueObject, business exceptions, utilities
+- **common-infrastructure**: JPA base repository, domain event publisher, security utilities
+- **common-web**: API response models, JWT token provider, validation utilities, security context
+
+#### Main Application (`mains/monolith-main`)  
+- Spring Boot 3.5.5 application setup
+- Security configuration with JWT support
+- JPA configuration with auditing
+- CORS configuration for API access
+- Global exception handling
+- Application properties with H2 database for development
+
+#### Service Module Structure (`service/`)
+- **user**: User management with authentication (structure ready)
+- **content**: Blog post and content management (structure ready)  
+- **search**: Search functionality (structure ready)
+- **analytics**: Usage analytics and metrics (structure ready)
+- **ai**: AI chatbot services (basic structure for Phase 2)
+
+### 🔄 Ready for Implementation
+
+#### Domain Models
+- User aggregate with profile and session management
+- Content aggregates (Post, Category, Tag, Media)
+- Search indexing and query models
+- Analytics and metrics aggregates
+
+#### Use Cases and Ports
+- User registration and authentication flows
+- Content CRUD operations with publishing workflow
+- Search indexing and query operations
+- Analytics data collection and reporting
+
+#### Adapters
+- REST API controllers for each domain
+- JPA entities and repositories
+- Event handlers for domain events
+- External service integrations
 
 ### Technology Integration Points
 - **PostgreSQL**: ACID transactions and complex relational queries
@@ -424,7 +179,8 @@ luigi-log-server/
 ## Development Evolution Plan
 
 ### Phase 1: Foundation (Current)
-Focus on modular monolith with clear service boundaries, JWT authentication, basic blog CRUD operations, and simple search functionality.
+✅ **Completed**: Hexagonal architecture package structure with modular monolith design
+🔄 **In Progress**: Domain model implementation, JWT authentication, basic blog CRUD operations, and simple search functionality
 
 ### Phase 2: AI Integration
 Implement hexagonal architecture, basic AI chatbot with RAG, and event-driven communication patterns.
