@@ -4,7 +4,7 @@ import io.jsonwebtoken.*
 import io.jsonwebtoken.security.Keys
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
-import java.security.Key
+import javax.crypto.SecretKey
 import java.util.*
 
 @Component
@@ -19,7 +19,7 @@ class JwtTokenProvider {
     @Value("\${jwt.refresh-token-validity:2592000000}") // 30 days  
     private var refreshTokenValidityMillis: Long = 2592000000
     
-    private val key: Key by lazy {
+    private val key: SecretKey by lazy {
         Keys.hmacShaKeyFor(secret.toByteArray())
     }
     
@@ -36,20 +36,20 @@ class JwtTokenProvider {
         val validity = Date(now.time + validityMillis)
         
         return Jwts.builder()
-            .setSubject(username)
-            .setIssuedAt(now)
-            .setExpiration(validity)
-            .signWith(key, SignatureAlgorithm.HS256)
+            .subject(username)
+            .issuedAt(now)
+            .expiration(validity)
+            .signWith(key)
             .compact()
     }
     
     fun getUsernameFromToken(token: String): String? {
         return try {
             val claims = Jwts.parser()
-                .setSigningKey(key)
+                .verifyWith(key)
                 .build()
-                .parseClaimsJws(token)
-                .body
+                .parseSignedClaims(token)
+                .payload
             claims.subject
         } catch (e: JwtException) {
             null
@@ -59,9 +59,9 @@ class JwtTokenProvider {
     fun isTokenValid(token: String): Boolean {
         return try {
             Jwts.parser()
-                .setSigningKey(key)
+                .verifyWith(key)
                 .build()
-                .parseClaimsJws(token)
+                .parseSignedClaims(token)
             true
         } catch (e: JwtException) {
             false
