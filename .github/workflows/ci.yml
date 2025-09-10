@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: CI Pipeline
 
 on:
   push:
@@ -15,7 +15,7 @@ permissions:
   contents: read
   checks: write
   pull-requests: write
-  packages: write  # GHCR Docker 이미지 푸시에 필요
+  packages: write
 
 jobs:
   test:
@@ -46,10 +46,10 @@ jobs:
           cache: 'gradle'
 
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v3
+        uses: gradle/actions/setup-gradle@v3
         with:
-          gradle-home-cache-cleanup: true
-          gradle-home-cache-strict-match: true
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          gradle-version: 8.14.3
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -188,7 +188,7 @@ jobs:
 
       - name: Upload code quality reports
         uses: actions/upload-artifact@v4
-        if: success() || failure()
+        if: always()
         with:
           name: code-quality-reports
           path: |
@@ -254,10 +254,10 @@ jobs:
           cache: 'gradle'
 
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v3
+        uses: gradle/actions/setup-gradle@v3
         with:
-          gradle-home-cache-cleanup: true
-          gradle-home-cache-strict-match: true
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          gradle-version: 8.14.3
 
       - name: Build Spring Boot JAR
         run: |
