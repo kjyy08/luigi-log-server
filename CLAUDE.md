@@ -133,7 +133,7 @@ Each service follows the dependency inversion principle: `adapter-in` → `core`
 - **common-infrastructure**: JPA base repository, domain event publisher, security utilities
 - **common-web**: API response models, JWT token provider, validation utilities, security context
 
-#### Main Application (`mains/monolith-main`)  
+#### Main Application (`mains/monolith-main`)
 - Spring Boot 3.5.5 application setup
 - Security configuration with JWT support
 - JPA configuration with auditing
@@ -143,7 +143,7 @@ Each service follows the dependency inversion principle: `adapter-in` → `core`
 
 #### Service Module Structure (`service/`)
 - **user**: User management with authentication (structure ready)
-- **content**: Blog post and content management (structure ready)  
+- **content**: Blog post and content management (structure ready)
 - **search**: Search functionality (structure ready)
 - **analytics**: Usage analytics and metrics (structure ready)
 - **ai**: AI chatbot services (basic structure for Phase 2)
@@ -179,7 +179,7 @@ Each service follows the dependency inversion principle: `adapter-in` → `core`
 ## Development Evolution Plan
 
 ### Phase 1: Foundation (Current)
-✅ **Completed**: Hexagonal architecture package structure with modular monolith design
+✅ **Completed**: Hexagonal architecture package structure with modular monolith design  
 🔄 **In Progress**: Domain model implementation, JWT authentication, basic blog CRUD operations, and simple search functionality
 
 ### Phase 2: AI Integration
@@ -229,6 +229,120 @@ Event Publication → Kafka → Event Handlers → Data Synchronization
 - **Observability**: Comprehensive monitoring with LGTM stack
 - **Deployment**: GitOps with ArgoCD
 - **Environment**: Cloud-native with cost-efficient K3s clusters
+
+## Development Guidelines
+
+### Development Workflow
+
+Follow this standardized workflow for all feature implementations:
+
+1. **Issue Analysis**
+    - Review GitHub issue requirements and acceptance criteria
+    - Understand the technical scope and dependencies
+
+2. **Branch Management**
+    - Create feature branches from `main` following naming convention: `feature/[issue-description]`
+    - Use descriptive branch names that reflect the feature being implemented
+
+3. **Development Process**
+    - Start development by updating GitHub project status to "In Progress":
+      ```bash
+      # Get project and field information first
+      gh project field-list [PROJECT_NUMBER] --owner "@me" --format json
+      
+      # Update item status to In Progress
+      gh project item-edit --id [ITEM_ID] --field-id [STATUS_FIELD_ID] --project-id [PROJECT_ID] --single-select-option-id [IN_PROGRESS_OPTION_ID]
+      ```
+    - Use appropriate specialized agents for implementation:
+        - **backend-core-engineer**: Domain logic and business rules implementation
+        - **api-developer**: REST API endpoint design and implementation
+        - **database-schema-engineer**: Data model and repository layer
+        - **frontend-engineer**: UI components and client-side logic (if applicable)
+        - **testing-engineer**: Test coverage and quality assurance
+
+4. **Developer Review (Pre-Commit)**
+    - **MANDATORY**: Present completed work to the developer for review before any commits
+    - Provide comprehensive summary of changes made:
+        - Files modified and new files created
+        - Key implementation decisions and rationale
+        - Test coverage and validation performed
+        - Architecture compliance verification
+    - Wait for developer approval before proceeding to commit stage
+    - Address any feedback or concerns raised during review
+
+5. **Commit Standards** (After Developer Approval)
+    - Follow conventional commit format: `type: description`
+    - Commit types: `feat`, `fix`, `refactor`, `test`, `docs`, `style`, `chore`
+    - Include issue reference: `feat: implement user authentication #123`
+    - Keep commits atomic and focused on single concerns
+    - Only proceed after receiving developer approval from step 4
+
+6. **Code Push**
+    - Push feature branches to remote repository
+    - Ensure all tests pass before pushing: `./gradlew test`
+    - Run code quality checks: `./gradlew check`
+
+7. **Pull Request Creation**
+    - Create PR with descriptive title matching commit convention
+    - Use team PR template: Follow the standardized PR template for consistent documentation
+    - Update GitHub project status to "In Review":
+      ```bash
+      gh project item-edit --id [ITEM_ID] --field-id [STATUS_FIELD_ID] --project-id [PROJECT_ID] --single-select-option-id [IN_REVIEW_OPTION_ID]
+      ```
+
+### Code Quality Standards
+
+- **Test Coverage**: Minimum 80% required for all new code
+- **Architecture Compliance**: Follow hexagonal architecture principles
+- **Documentation**: Update relevant documentation for significant changes
+- **Security**: Apply security best practices, never commit secrets
+
+### GitHub Project Management
+
+Effective project status tracking ensures transparency and accountability throughout the development lifecycle:
+
+#### Setting Up Project Fields
+Before using status management commands, identify the required field and option IDs:
+```bash
+# List all fields in your project
+gh project field-list [PROJECT_NUMBER] --owner "@me" --format json
+
+# Example output shows Status field with options like:
+# - "Todo" (default)
+# - "In Progress" 
+# - "In Review"
+# - "Done"
+```
+
+#### Status Transition Commands
+```bash
+# Move to In Progress (when starting development)
+gh project item-edit --id [ITEM_ID] --field-id [STATUS_FIELD_ID] --project-id [PROJECT_ID] --single-select-option-id [IN_PROGRESS_OPTION_ID]
+
+# Move to In Review (after PR creation)
+gh project item-edit --id [ITEM_ID] --field-id [STATUS_FIELD_ID] --project-id [PROJECT_ID] --single-select-option-id [IN_REVIEW_OPTION_ID]
+
+# Move to Done (after PR merge)
+gh project item-edit --id [ITEM_ID] --field-id [STATUS_FIELD_ID] --project-id [PROJECT_ID] --single-select-option-id [DONE_OPTION_ID]
+```
+
+#### Finding Item and Project IDs
+```bash
+# List project items to find the specific item ID
+gh project item-list [PROJECT_NUMBER] --owner "@me" --format json
+
+# List all projects to find project ID
+gh project list --owner "@me" --format json
+```
+
+### Agent Utilization Guidelines
+
+Choose the appropriate agent based on the development task:
+- **Domain Implementation**: Use `backend-core-engineer` for business logic
+- **API Development**: Use `api-developer` for REST endpoints
+- **Data Layer**: Use `database-schema-engineer` for entities and repositories
+- **Testing**: Use `testing-engineer` for comprehensive test coverage
+- **Project Management**: Use `github-project-manager` for workflow coordination
 
 ## Documentation Structure
 
