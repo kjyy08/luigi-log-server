@@ -36,7 +36,7 @@ LABEL maintainer="luigi99" \
       description="Luigi Log Server - 개인 기술 블로그 서버" \
       org.opencontainers.image.title="Luigi Log Server" \
       org.opencontainers.image.description="Spring Boot 기반 개인 기술 블로그 서버" \
-      org.opencontainers.image.vendor="Luigi99" \
+      org.opencontainers.image.vendor="Luigi99"
 
 # 애플리케이션 사용자 생성 (보안 강화)
 RUN groupadd -r appuser && useradd -r -g appuser appuser
