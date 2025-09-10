@@ -28,8 +28,8 @@ RUN ./gradlew dependencies --no-daemon --quiet
 # 애플리케이션 빌드
 RUN ./gradlew :mains:monolith-main:bootJar --no-daemon --parallel
 
-# Stage 2: 런타임 스테이지 (JRE만 필요)
-FROM eclipse-temurin:17-jre-alpine
+# Stage 2: 런타임 스테이지
+FROM eclipse-temurin:17-jre-jammy
 
 # 메타데이터 라벨 추가
 LABEL maintainer="luigi99" \
