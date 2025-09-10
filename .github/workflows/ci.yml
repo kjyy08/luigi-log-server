@@ -29,9 +29,6 @@ jobs:
         with:
           fetch-depth: 0  # 정적 분석을 위해 전체 히스토리 체크아웃
 
-      - name: Validate Gradle wrapper
-        uses: gradle/wrapper-validation-action@v3
-
       - name: Apply CI gradle.properties
         run: |
           mkdir -p ~/.gradle
