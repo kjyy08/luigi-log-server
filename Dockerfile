@@ -33,12 +33,10 @@ FROM openjdk:17-jre-slim
 
 # 메타데이터 라벨 추가
 LABEL maintainer="luigi99" \
-      version="1.0.0" \
-      description="Luigi Log Server - 개인 기술 블로그 플랫폼" \
+      description="Luigi Log Server - 개인 기술 블로그 서버" \
       org.opencontainers.image.title="Luigi Log Server" \
-      org.opencontainers.image.description="Spring Boot 기반 개인 기술 블로그 플랫폼" \
+      org.opencontainers.image.description="Spring Boot 기반 개인 기술 블로그 서버" \
       org.opencontainers.image.vendor="Luigi99" \
-      org.opencontainers.image.version="1.0.0"
 
 # 애플리케이션 사용자 생성 (보안 강화)
 RUN groupadd -r appuser && useradd -r -g appuser appuser
@@ -53,10 +51,6 @@ RUN apt-get update && \
     tzdata && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# 타임존 설정
-ENV TZ=Asia/Seoul
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-
 # JAR 파일 복사 (빌드 스테이지에서)
 COPY --from=builder /app/mains/monolith-main/build/libs/*-boot.jar app.jar
 
@@ -66,18 +60,5 @@ RUN chown -R appuser:appuser /app
 # 비특권 사용자로 실행
 USER appuser
 
-# 애플리케이션 포트 노출
-EXPOSE 8080
-
-# 헬스체크 추가
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-  CMD curl -f http://localhost:8080/actuator/health || exit 1
-
-# JVM 최적화 환경변수
-ENV JAVA_OPTS="-XX:+UseG1GC -XX:+UseStringDeduplication -XX:MaxRAMPercentage=75.0 -Djava.security.egd=file:/dev/./urandom"
-
-# Spring Boot 프로파일 설정
-ENV SPRING_PROFILES_ACTIVE=docker
-
 # 애플리케이션 실행
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
