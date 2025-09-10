@@ -284,7 +284,7 @@ Follow this standardized workflow for all feature implementations:
 
 7. **Pull Request Creation**
     - Create PR with descriptive title matching commit convention
-    - Use team PR template: Follow the standardized PR template for consistent documentation
+    - Use team PR template(`.github/pull_request_template.md`): Follow the standardized PR template for consistent documentation
     - Update GitHub project status to "In Review":
       ```bash
       gh project item-edit --id [ITEM_ID] --field-id [STATUS_FIELD_ID] --project-id [PROJECT_ID] --single-select-option-id [IN_REVIEW_OPTION_ID]
