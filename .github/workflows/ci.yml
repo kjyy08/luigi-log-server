@@ -82,7 +82,7 @@ jobs:
           GRADLE_OPTS: "-Dorg.gradle.daemon=true -Dorg.gradle.parallel=true -Dorg.gradle.caching=true -Xmx2g -XX:+HeapDumpOnOutOfMemoryError"
 
       - name: Generate test report
-        if: success() || failure()  # 항상 테스트 리포트 생성
+        if: always()  # 항상 테스트 리포트 생성
         run: |
           ./gradlew testReport --continue || true
 
@@ -313,8 +313,6 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            JAR_FILE=mains/monolith-main/build/libs/*-boot.jar
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
