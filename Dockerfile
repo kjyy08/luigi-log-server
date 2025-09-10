@@ -2,7 +2,7 @@
 # 멀티스테이지 빌드로 최적화된 경량 이미지 생성
 
 # Stage 1: 빌드 스테이지 (JDK 필요)
-FROM openjdk:17-jdk-slim AS builder
+FROM gradle:8.14.3-jdk17-alpine AS builder
 
 # 작업 디렉토리 설정
 WORKDIR /app
@@ -29,7 +29,7 @@ RUN ./gradlew dependencies --no-daemon --quiet
 RUN ./gradlew :mains:monolith-main:bootJar --no-daemon --parallel
 
 # Stage 2: 런타임 스테이지 (JRE만 필요)
-FROM openjdk:17-jre-slim
+FROM eclipse-temurin:17-jre-alpine
 
 # 메타데이터 라벨 추가
 LABEL maintainer="luigi99" \
