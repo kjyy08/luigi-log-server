@@ -1,0 +1,78 @@
+# Luigi Log Server - Docker 빌드 최적화를 위한 제외 파일 목록
+
+# Git 관련 파일
+.git
+.gitignore
+.gitattributes
+
+# GitHub Actions 워크플로우
+.github
+
+# IDE 관련 파일
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# OS 관련 파일
+.DS_Store
+Thumbs.db
+*.tmp
+*.temp
+
+# 빌드 결과물 (Gradle)
+**/build/
+.gradle/
+gradle-app.setting
+
+# 로그 파일
+**/*.log
+logs/
+
+# 테스트 결과물
+**/test-results/
+**/reports/
+
+# 임시 파일
+**/*.tmp
+**/*.bak
+**/*.swp
+**/*.swo
+
+# 문서 파일 (런타임에 불필요)
+README.md
+docs/
+CLAUDE.md
+LICENSE
+
+# Docker 관련 파일
+Dockerfile*
+.dockerignore
+docker-compose*.yml
+
+# 개발 환경 설정
+application-local.yml
+application-dev.yml
+application-test.yml
+
+# Node.js (있을 경우)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 백업 파일
+**/*~
+**/*.orig
+
+# 캐시 디렉토리
+.cache/
+**/.cache/
+
+# 환경변수 파일
+.env
+.env.local
+.env.development
+.env.test
+.env.production
