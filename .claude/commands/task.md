@@ -1,7 +1,7 @@
 Follow this standardized workflow for all feature implementations:
 
 - Issue Number: #$1
-- Language: Korean
+- Working and Response Language: Korean
 - Additional Instructions: $2
 - Development Workflow
   1. **Issue Analysis**
