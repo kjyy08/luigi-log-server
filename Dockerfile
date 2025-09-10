@@ -2,7 +2,7 @@
 # 멀티스테이지 빌드로 최적화된 경량 이미지 생성
 
 # Stage 1: 빌드 스테이지 (JDK 필요)
-FROM gradle:8.5.0-jdk17-alpine AS builder
+FROM gradle:8.14.3-jdk17-alpine AS builder
 
 # 작업 디렉토리 설정
 WORKDIR /app
