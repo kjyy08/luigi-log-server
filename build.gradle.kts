@@ -41,17 +41,17 @@ kover {
 				onCheck = true
 			}
 			
-			// HTML 리포트 (개발자 친화적)
+			// HTML 리포트 (개발자 친화적) - 빌드 시간 최적화를 위해 수동 생성으로 변경
 			html {
 				title = "Luigi Log Server Coverage Report"
 				htmlDir = layout.buildDirectory.dir("reports/kover/html").get().asFile
-				onCheck = true
+				onCheck = false
 				charset = "UTF-8"
 			}
 			
-			// 로그 리포트 (CI 로그용)
+			// 로그 리포트 (CI 로그용) - 빌드 시간 최적화를 위해 수동 생성으로 변경
 			log {
-				onCheck = true
+				onCheck = false
 				header = "Luigi Log Server Coverage Summary"
 				groupBy = kotlinx.kover.gradle.plugin.dsl.GroupingEntityType.APPLICATION
 				aggregationForGroup = kotlinx.kover.gradle.plugin.dsl.AggregationType.COVERED_PERCENTAGE
@@ -59,12 +59,13 @@ kover {
 				coverageUnits = kotlinx.kover.gradle.plugin.dsl.CoverageUnit.LINE
 			}
 			
-			// 커버리지 검증 규칙 (현재 구조만 있는 상태에서는 검증 비활성화)
+			// 커버리지 검증 규칙 - main 브랜치에서 점진적 적용
 			verify {
-				// 향후 실제 코드 구현 시 활성화 예정
-				// rule {
-				//     minBound(40) // 점진적으로 80%까지 향상 목표
-				// }
+				if (System.getenv("GITHUB_REF") == "refs/heads/main") {
+					rule {
+						minBound(40) // 점진적으로 80%까지 향상 목표
+					}
+				}
 			}
 			
 			// 제외 설정
@@ -82,8 +83,10 @@ kover {
 					classes("*.*Request")
 					classes("*.*Response") 
 					
-					// Test fixture 및 테스트 관련 클래스
-					classes("*.*Test*")
+					// Test fixture 및 테스트 관련 클래스 - 패턴 정밀화
+					classes("*.*Test")
+					classes("*.*Tests")
+					classes("*.*IT")
 					classes("*.*Fixture*")
 				}
 			}

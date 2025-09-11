@@ -15,7 +15,6 @@ permissions:
   contents: read
   checks: write
   pull-requests: write
-  packages: write
 
 jobs:
   test:
@@ -52,7 +51,7 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          ./gradlew test koverXmlReport koverHtmlReport koverVerify \
+          ./gradlew test koverXmlReport \
             --parallel \
             --build-cache \
             --continue \
@@ -81,77 +80,16 @@ jobs:
           fail-on-error: false
           fail-on-empty: false
 
-      - name: Generate coverage summary
+      - name: Add coverage report to PR
+        uses: mi-kas/kover-report@v1.9
         if: github.event_name == 'pull_request' && !cancelled()
-        run: |
-          if [ -f "build/reports/kover/coverage.xml" ]; then
-            echo "COVERAGE_ENABLED=true" >> $GITHUB_ENV
-            
-            # Kover XML에서 커버리지 정보 추출 (마지막 counter가 전체 요약)
-            LINE_MISSED=$(grep '<counter type="LINE"' build/reports/kover/coverage.xml | tail -1 | sed 's/.*missed="\([0-9]*\)".*/\1/' || echo "0")
-            LINE_COVERED=$(grep '<counter type="LINE"' build/reports/kover/coverage.xml | tail -1 | sed 's/.*covered="\([0-9]*\)".*/\1/' || echo "0")
-            BRANCH_MISSED=$(grep '<counter type="BRANCH"' build/reports/kover/coverage.xml | tail -1 | sed 's/.*missed="\([0-9]*\)".*/\1/' || echo "0")
-            BRANCH_COVERED=$(grep '<counter type="BRANCH"' build/reports/kover/coverage.xml | tail -1 | sed 's/.*covered="\([0-9]*\)".*/\1/' || echo "0")
-            
-            # 커버리지 비율 계산 (bash 산술 연산 사용)
-            LINE_TOTAL=$((LINE_MISSED + LINE_COVERED))
-            BRANCH_TOTAL=$((BRANCH_MISSED + BRANCH_COVERED))
-            
-            if [ "$LINE_TOTAL" -gt 0 ]; then
-              LINE_PCT=$((LINE_COVERED * 100 / LINE_TOTAL))
-            else
-              LINE_PCT=0
-            fi
-            
-            if [ "$BRANCH_TOTAL" -gt 0 ]; then
-              BRANCH_PCT=$((BRANCH_COVERED * 100 / BRANCH_TOTAL))
-            else
-              BRANCH_PCT=0
-            fi
-            
-            echo "LINE_COVERAGE=$LINE_PCT" >> $GITHUB_ENV
-            echo "BRANCH_COVERAGE=$BRANCH_PCT" >> $GITHUB_ENV
-            
-            echo "📊 커버리지 정보 추출 완료:"
-            echo "- Line Coverage: $LINE_PCT% ($LINE_COVERED/$LINE_TOTAL)"
-            echo "- Branch Coverage: $BRANCH_PCT% ($BRANCH_COVERED/$BRANCH_TOTAL)"
-          else
-            echo "COVERAGE_ENABLED=false" >> $GITHUB_ENV
-            echo "⚠️ 커버리지 리포트를 찾을 수 없습니다."
-          fi
-
-      - name: Comment PR with coverage
-        uses: actions/github-script@v7
-        if: github.event_name == 'pull_request' && !cancelled() && env.COVERAGE_ENABLED == 'true'
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const lineCoverage = process.env.LINE_COVERAGE;
-            const branchCoverage = process.env.BRANCH_COVERAGE;
-            
-            const comment = `## 📊 테스트 커버리지 리포트
-
-            ### 커버리지 결과
-            - **라인 커버리지**: ${lineCoverage}%
-            - **브랜치 커버리지**: ${branchCoverage}%
-
-            ### 커버리지 분석
-            ${lineCoverage >= 40 ? '✅' : '❌'} 라인 커버리지 임계값 (40% 이상)
-            ${branchCoverage >= 35 ? '✅' : '❌'} 브랜치 커버리지 임계값 (35% 이상)
-
-            ### 📁 상세 리포트
-            - HTML 리포트는 CI Artifacts에서 다운로드 가능합니다.
-            - XML 리포트는 SonarQube 분석에서 활용됩니다.
-
-            ---
-            🤖 *Luigi Log Server - Kover 테스트 커버리지 리포트*`;
-
-            await github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: comment
-            });
+          path: ${{ github.workspace }}/build/reports/kover/coverage.xml
+          title: "📊 Luigi Log Server - Kover 테스트 커버리지 리포트"
+          update-comment: true
+          min-coverage-overall: 40
+          min-coverage-changed-files: 60
+          coverage-counter-type: LINE
 
   sonar:
     name: SonarQube Analysis
@@ -200,12 +138,12 @@ jobs:
           restore-keys: ${{ runner.os }}-sonar-
 
       - name: SonarQube Scan
-        uses: sonarsource/sonarqube-scan-action@master
+        uses: sonarsource/sonarqube-scan-action@v2
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: SonarQube Quality Gate
-        uses: sonarsource/sonarqube-quality-gate-action@master
+        uses: sonarsource/sonarqube-quality-gate-action@v1
         timeout-minutes: 5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -242,6 +180,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      packages: write
     
     steps:
       - name: Checkout repository
