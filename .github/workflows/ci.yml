@@ -15,7 +15,6 @@ permissions:
   contents: read
   checks: write
   pull-requests: write
-  packages: write
 
 jobs:
   test:
@@ -50,9 +49,9 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Run tests
+      - name: Run tests with coverage
         run: |
-          ./gradlew test \
+          ./gradlew test koverXmlReport \
             --parallel \
             --build-cache \
             --continue \
@@ -60,14 +59,15 @@ jobs:
         env:
           GRADLE_OPTS: "-Dorg.gradle.daemon=true -Dorg.gradle.parallel=true -Dorg.gradle.caching=true -Xmx2g"
 
-      - name: Upload test results
+      - name: Upload test results and coverage reports
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: test-results
+          name: test-and-coverage-results
           path: |
             **/build/reports/tests/
             **/build/test-results/
+            build/reports/kover/
           retention-days: 7
 
       - name: Comment PR with test results
@@ -79,6 +79,17 @@ jobs:
           reporter: java-junit
           fail-on-error: false
           fail-on-empty: false
+
+      - name: Add coverage report to PR
+        uses: mi-kas/kover-report@v1.9
+        if: github.event_name == 'pull_request' && !cancelled()
+        with:
+          path: ${{ github.workspace }}/build/reports/kover/coverage.xml
+          title: "📊 Luigi Log Server - Kover 테스트 커버리지 리포트"
+          update-comment: true
+          min-coverage-overall: 40
+          min-coverage-changed-files: 60
+          coverage-counter-type: LINE
 
   sonar:
     name: SonarQube Analysis
@@ -92,6 +103,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Download coverage reports
+        uses: actions/download-artifact@v4
+        with:
+          name: test-and-coverage-results
+          path: .
+
       - name: Cache SonarQube packages
         uses: actions/cache@v4
         with:
@@ -100,12 +117,12 @@ jobs:
           restore-keys: ${{ runner.os }}-sonar-
 
       - name: SonarQube Scan
-        uses: sonarsource/sonarqube-scan-action@master
+        uses: sonarsource/sonarqube-scan-action@v2
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: SonarQube Quality Gate
-        uses: sonarsource/sonarqube-quality-gate-action@master
+        uses: sonarsource/sonarqube-quality-gate-action@v1
         timeout-minutes: 5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -142,6 +159,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      packages: write
     
     steps:
       - name: Checkout repository
