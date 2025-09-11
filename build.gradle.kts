@@ -18,10 +18,6 @@ allprojects {
 
 sonar {
 	properties {
-        property("sonar.organization", "luigi-log-server")
-		property("sonar.projectKey", "kjyy08_luigi-log-server")
-		property("sonar.projectName", "Luigi Log Server")
-		property("sonar.qualitygate.wait", "true")
 		property("sonar.scanner.javaOpts", "-Xmx2g -XX:MaxMetaspaceSize=1g")
 	}
 }
