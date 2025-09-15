@@ -237,44 +237,6 @@ Event Publication → Kafka → Event Handlers → Data Synchronization
 - **Documentation**: Update relevant documentation for significant changes
 - **Security**: Apply security best practices, never commit secrets
 
-### GitHub Project Management
-
-Effective project status tracking ensures transparency and accountability throughout the development lifecycle:
-
-#### Setting Up Project Fields
-Before using status management commands, identify the required field and option IDs:
-```bash
-# List all fields in your project
-gh project field-list [PROJECT_NUMBER] --owner "@me" --format json
-
-# Example output shows Status field with options like:
-# - "Todo" (default)
-# - "In Progress" 
-# - "In Review"
-# - "Done"
-```
-
-#### Status Transition Commands
-```bash
-# Move to In Progress (when starting development)
-gh project item-edit --id [ITEM_ID] --field-id [STATUS_FIELD_ID] --project-id [PROJECT_ID] --single-select-option-id [IN_PROGRESS_OPTION_ID]
-
-# Move to In Review (after PR creation)
-gh project item-edit --id [ITEM_ID] --field-id [STATUS_FIELD_ID] --project-id [PROJECT_ID] --single-select-option-id [IN_REVIEW_OPTION_ID]
-
-# Move to Done (after PR merge)
-gh project item-edit --id [ITEM_ID] --field-id [STATUS_FIELD_ID] --project-id [PROJECT_ID] --single-select-option-id [DONE_OPTION_ID]
-```
-
-#### Finding Item and Project IDs
-```bash
-# List project items to find the specific item ID
-gh project item-list [PROJECT_NUMBER] --owner "@me" --format json
-
-# List all projects to find project ID
-gh project list --owner "@me" --format json
-```
-
 ### Agent Utilization Guidelines
 
 Choose the appropriate agent based on the development task:
