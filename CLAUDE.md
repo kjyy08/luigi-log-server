@@ -73,8 +73,7 @@ luigi-log-server/
 │   ├── common-domain/           # Domain layer abstractions
 │   │   └── src/main/kotlin/cloud/luigi99/blog/common/
 │   │       ├── domain/          # BaseEntity, DomainEvent, AggregateRoot
-│   │       ├── exception/       # BusinessException, DomainException  
-│   │       └── util/            # DateUtils, StringUtils
+│   │       └── exception/       # BusinessException, DomainException  
 │   ├── common-infrastructure/   # Infrastructure layer commons
 │   │   └── src/main/kotlin/cloud/luigi99/blog/common/
 │   │       ├── persistence/     # JpaBaseRepository, BaseJpaEntity
@@ -129,7 +128,7 @@ Each service follows the dependency inversion principle: `adapter-in` → `core`
 - Dependency management and module relationships established
 
 #### Common Libraries (`libs/`)
-- **common-domain**: BaseEntity, DomainEvent, AggregateRoot, ValueObject, business exceptions, utilities
+- **common-domain**: BaseEntity, DomainEvent, AggregateRoot, ValueObject, business exceptions
 - **common-infrastructure**: JPA base repository, domain event publisher, security utilities
 - **common-web**: API response models, JWT token provider, validation utilities, security context
 
