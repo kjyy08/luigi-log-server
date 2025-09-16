@@ -229,12 +229,91 @@ Event Publication → Kafka → Event Handlers → Data Synchronization
 - **Deployment**: GitOps with ArgoCD
 - **Environment**: Cloud-native with cost-efficient K3s clusters
 
-### Code Quality Standards
+## GitHub Guidelines
 
-- **Test Coverage**: Minimum 80% required for all new code
-- **Architecture Compliance**: Follow hexagonal architecture principles
-- **Documentation**: Update relevant documentation for significant changes
-- **Security**: Apply security best practices, never commit secrets
+This section defines the standardized GitHub practices for the Luigi Log Server project, ensuring consistent development processes and high-quality code delivery.
+
+### Issue Template
+
+Use this Issue Template: `.github/ISSUE_TEMPLATE/issue.yml`
+
+### Branch Naming Conventions
+
+Follow the structured branch naming pattern: `type/brief-description-in-kebab-case`
+
+#### Branch Types
+- **`feature/`**: New feature development
+  - `feature/user-authentication-jwt`
+  - `feature/blog-post-crud-operations`
+  - `feature/elasticsearch-integration`
+
+- **`bugfix/`**: Bug fixes for existing functionality
+  - `bugfix/jwt-token-validation-error`
+  - `bugfix/pagination-offset-calculation`
+
+- **`hotfix/`**: Critical production fixes requiring immediate deployment
+  - `hotfix/security-vulnerability-cors`
+  - `hotfix/database-connection-leak`
+
+- **`docs/`**: Documentation updates and improvements
+  - `docs/architecture-documentation-update`
+  - `docs/api-endpoint-specifications`
+
+- **`refactor/`**: Code refactoring without functional changes
+  - `refactor/hexagonal-architecture-cleanup`
+  - `refactor/service-layer-optimization`
+
+- **`chore/`**: Build system, dependency updates, and maintenance tasks
+  - `chore/gradle-dependency-updates`
+  - `chore/github-actions-workflow-setup`
+
+#### Branch Lifecycle
+- Create feature branches from `main`
+- Keep branches focused on single features or fixes
+- Delete branches after successful merge to maintain repository cleanliness
+- Use descriptive names that clearly indicate the work being done
+
+### Commit Message Conventions
+
+Follow Conventional Commits specification with Korean descriptions for better team communication:
+
+#### Format
+```
+<type>: <description> [- <additional details>] [#issue-number]
+```
+
+#### Commit Types
+- **`feat`**: New features or enhancements
+- **`fix`**: Bug fixes and error corrections
+- **`docs`**: Documentation changes
+- **`style`**: Code formatting and style changes (no functional impact)
+- **`refactor`**: Code refactoring and optimization
+- **`test`**: Adding or modifying tests
+- **`chore`**: Build system, dependencies, configuration changes
+- **`perf`**: Performance improvements
+- **`ci`**: Continuous integration changes
+- **`build`**: Build system or external dependency changes
+
+#### Examples
+```bash
+feat: JWT 기반 사용자 인증 시스템 구현 #12
+fix: Elasticsearch 연결 타임아웃 오류 수정 - 커넥션 풀 설정 개선 #24
+docs: 헥사고날 아키텍처 가이드 문서 추가 #18
+refactor: 사용자 도메인 서비스 레이어 리팩토링 - 의존성 역전 원칙 적용 #31
+test: 블로그 포스트 CRUD 유닛 테스트 추가 #22
+chore: Spring Boot 3.5.5로 업그레이드 #19
+```
+
+#### Commit Best Practices
+- Write commits in Korean for better team understanding
+- Use imperative mood in descriptions
+- Include issue numbers when applicable
+- Keep the first line under 80 characters
+- Provide additional context in the body when necessary
+
+### PR Template
+
+Use this PR Template: `.github/pull_request_template.md`
 
 ### Agent Utilization Guidelines
 
