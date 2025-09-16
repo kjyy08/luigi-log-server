@@ -7,12 +7,12 @@ Follow this development workflow for all feature implementations. All work and r
     - Understand the technical scope and dependencies
 
 2. **Branch Management**
-    - Create branches from `main` using github-project-manager agent
+    - Create branches from `main` using @github-manager agent
     - Use descriptive branch names that reflect the feature being implemented
 
 3. **Development Process**
     - Start development by updating GitHub project status to "In Progress"
-    - Proceed with development using agents that are appropriate for the given situation
+    - Proceed with development using @agents that are appropriate for the given situation
     - Use Context7 tools. If Context7 is not available, provide guidance to the developer before starting development
 
 4. **Developer Review (Pre-Commit)**
