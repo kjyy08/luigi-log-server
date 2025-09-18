@@ -2,6 +2,15 @@ plugins {
     id("spring-boot")
 }
 
+// 애플리케이션 모듈: bootJar 활성화, 일반 jar 비활성화
+tasks.named("bootJar") {
+    enabled = true
+}
+
+tasks.named("jar") {
+    enabled = false
+}
+
 dependencies {
     // Common modules
     implementation(project(":libs:common-domain"))
