@@ -13,11 +13,10 @@ dependencies {
 
     // JPA & Hibernate (모든 persistence 모듈에 자동 제공)
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    implementation("org.hibernate.orm:hibernate-core")
 
     // Database
     runtimeOnly("org.postgresql:postgresql")
-    runtimeOnly("com.h2database:h2")
+    testRuntimeOnly("com.h2database:h2")
 
     // 테스트 의존성 자동 제공
     testImplementation("org.springframework.boot:spring-boot-starter-test")
