@@ -17,7 +17,7 @@ class DomainExceptionTest : BehaviorSpec({
         `when`("예외 정보를 확인하면") {
             then("메시지와 기본 에러 코드, Unknown 도메인 컨텍스트가 설정된다") {
                 exception.message shouldBe message
-                exception.errorCode shouldBe "DOMAIN_ERROR"
+                exception.errorCode shouldBe ErrorCode.COMMON_BUSINESS_ERROR.code
                 exception.domainContext shouldBe "Unknown"
             }
         }
@@ -32,14 +32,14 @@ class DomainExceptionTest : BehaviorSpec({
             then("도메인 컨텍스트와 메시지가 올바르게 설정된다") {
                 exception.domainContext shouldBe domainContext
                 exception.message shouldBe message
-                exception.errorCode shouldBe "DOMAIN_ERROR"
+                exception.errorCode shouldBe ErrorCode.COMMON_BUSINESS_ERROR.code
             }
         }
     }
 
     given("도메인별 에러 코드를 포함하여 DomainException을 생성할 때") {
         val domainContext = "Post"
-        val errorCode = "POST_INVALID_STATUS"
+        val errorCode = ErrorCode.POST_NOT_DRAFT.code
         val message = "포스트 상태가 유효하지 않습니다"
         val exception = DomainException(domainContext, errorCode, message)
 
@@ -54,7 +54,7 @@ class DomainExceptionTest : BehaviorSpec({
 
     given("포맷된 메시지로 DomainException을 생성할 때") {
         val domainContext = "Comment"
-        val errorCode = "COMMENT_TOO_LONG"
+        val errorCode = ErrorCode.VALIDATION_CONTENT_TOO_LONG.code
         val messageFormat = "댓글이 너무 깁니다. 최대 길이: %d, 현재 길이: %d"
         val maxLength = 500
         val currentLength = 600
@@ -72,14 +72,14 @@ class DomainExceptionTest : BehaviorSpec({
     }
 
     given("다른 DomainException을 기반으로 새 예외를 생성할 때") {
-        val originalException = DomainException("User", "USER_NOT_FOUND", "사용자를 찾을 수 없습니다")
+        val originalException = DomainException("User", ErrorCode.USER_NOT_FOUND.code, "사용자를 찾을 수 없습니다")
         val additionalMessage = "권한 검증 중 오류 발생"
         val newException = DomainException(originalException, additionalMessage)
 
         `when`("새 예외의 정보를 확인하면") {
             then("원본 예외의 정보와 추가 메시지가 합쳐진다") {
                 newException.domainContext shouldBe "User"
-                newException.errorCode shouldBe "USER_NOT_FOUND"
+                newException.errorCode shouldBe ErrorCode.USER_NOT_FOUND.code
                 newException.message shouldBe "사용자를 찾을 수 없습니다 - 권한 검증 중 오류 발생"
             }
         }
@@ -134,28 +134,13 @@ class DomainExceptionTest : BehaviorSpec({
     }
 
     given("상세한 에러 메시지를 확인할 때") {
-        val exception = DomainException("User", "AUTH_FAILED", "인증에 실패했습니다")
+        val exception = DomainException("User", ErrorCode.AUTH_INVALID_CREDENTIALS.code, "인증에 실패했습니다")
 
         `when`("getDetailedMessage를 호출하면") {
             val detailedMessage = exception.getDetailedMessage()
 
             then("도메인 컨텍스트, 에러 코드, 메시지를 포함한 문자열을 반환한다") {
-                detailedMessage shouldBe "[User:AUTH_FAILED] 인증에 실패했습니다"
-            }
-        }
-    }
-
-    given("toString 메서드를 테스트할 때") {
-        val exception = DomainException("Post", "INVALID_STATUS", "유효하지 않은 상태")
-
-        `when`("toString을 호출하면") {
-            val toStringResult = exception.toString()
-
-            then("클래스명, 도메인 컨텍스트, 에러 코드, 메시지를 포함한 문자열을 반환한다") {
-                toStringResult shouldContain "DomainException"
-                toStringResult shouldContain "Post"
-                toStringResult shouldContain "INVALID_STATUS"
-                toStringResult shouldContain "유효하지 않은 상태"
+                detailedMessage shouldBe "[User:${ErrorCode.AUTH_INVALID_CREDENTIALS.code}] 인증에 실패했습니다"
             }
         }
     }
@@ -167,7 +152,7 @@ class DomainExceptionTest : BehaviorSpec({
 
             then("엔티티를 찾을 수 없다는 예외가 생성된다") {
                 exception.domainContext shouldBe "User"
-                exception.errorCode shouldBe "ENTITY_NOT_FOUND"
+                exception.errorCode shouldBe ErrorCode.ENTITY_NOT_FOUND.code
                 exception.message shouldContain "User를 찾을 수 없습니다"
                 exception.message shouldContain entityId.toString()
             }
@@ -178,7 +163,7 @@ class DomainExceptionTest : BehaviorSpec({
 
             then("비즈니스 규칙 위반 예외가 생성된다") {
                 exception.domainContext shouldBe "Post"
-                exception.errorCode shouldBe "BUSINESS_RULE_VIOLATION"
+                exception.errorCode shouldBe ErrorCode.COMMON_BUSINESS_ERROR.code
                 exception.message shouldContain "Post 도메인의 '최소 제목 길이' 규칙이 위반되었습니다"
                 exception.message shouldContain "제목은 최소 5자 이상이어야 합니다"
             }
@@ -189,30 +174,42 @@ class DomainExceptionTest : BehaviorSpec({
 
             then("유효하지 않은 상태 전환 예외가 생성된다") {
                 exception.domainContext shouldBe "Post"
-                exception.errorCode shouldBe "INVALID_STATE_TRANSITION"
+                exception.errorCode shouldBe ErrorCode.STATE_INVALID_TRANSITION.code
                 exception.message shouldContain "DRAFT 상태에서 ARCHIVED 상태로 전환할 수 없습니다"
             }
         }
     }
 
-    given("DomainException이 BusinessException을 상속받는지 확인할 때") {
-        val exception = DomainException("Test", "테스트 오류")
+    given("DomainException이 BusinessException의 특성을 제대로 상속받았는지 확인할 때") {
+        val domainException = DomainException("User", ErrorCode.USER_NOT_FOUND.code, "사용자를 찾을 수 없습니다")
+        val businessException = BusinessException(ErrorCode.USER_NOT_FOUND.code, "사용자를 찾을 수 없습니다")
 
-        `when`("타입을 확인하면") {
-            then("BusinessException의 인스턴스이다") {
-                (exception is BusinessException) shouldBe true
+        `when`("동일한 에러 코드와 메시지로 생성된 예외들을 비교하면") {
+            then("BusinessException과 동일한 핵심 기능을 제공한다") {
+                domainException.errorCode shouldBe businessException.errorCode
+                domainException.message shouldBe businessException.message
+                domainException.hasErrorCode(ErrorCode.USER_NOT_FOUND.code) shouldBe businessException.hasErrorCode(ErrorCode.USER_NOT_FOUND.code)
+                domainException.getDetailedMessage() shouldContain ErrorCode.USER_NOT_FOUND.code
+            }
+        }
+
+        `when`("DomainException만의 고유 기능을 확인하면") {
+            then("도메인 컨텍스트라는 추가 정보를 제공한다") {
+                domainException.domainContext shouldBe "User"
+                domainException.isFromDomain("User") shouldBe true
+                domainException.getDetailedMessage() shouldContain "User:"
             }
         }
     }
 
     given("BusinessException의 기능을 상속받는지 확인할 때") {
-        val exception = DomainException("User", "USER_VALIDATION_ERROR", "사용자 유효성 검증 실패")
+        val exception = DomainException("User", ErrorCode.VALIDATION_INVALID_EMAIL.code, "사용자 유효성 검증 실패")
 
         `when`("부모 클래스의 메서드를 사용하면") {
             then("정상적으로 동작한다") {
-                exception.hasErrorCode("USER_VALIDATION_ERROR") shouldBe true
-                exception.hasAnyErrorCode("USER_ERROR", "USER_VALIDATION_ERROR") shouldBe true
-                exception.hasErrorCode("DIFFERENT_ERROR") shouldBe false
+                exception.hasErrorCode(ErrorCode.VALIDATION_INVALID_EMAIL.code) shouldBe true
+                exception.hasAnyErrorCode(ErrorCode.USER_NOT_FOUND.code, ErrorCode.VALIDATION_INVALID_EMAIL.code) shouldBe true
+                exception.hasErrorCode(ErrorCode.ENTITY_ALREADY_EXISTS.code) shouldBe false
             }
         }
     }

@@ -28,7 +28,7 @@ class DomainException : BusinessException {
     constructor(
         message: String,
         cause: Throwable? = null
-    ) : super("DOMAIN_ERROR", message, cause) {
+    ) : super(ErrorCode.COMMON_BUSINESS_ERROR.code, message, cause) {
         this.domainContext = "Unknown"
     }
 
@@ -43,7 +43,7 @@ class DomainException : BusinessException {
         domainContext: String,
         message: String,
         cause: Throwable? = null
-    ) : super("DOMAIN_ERROR", message, cause) {
+    ) : super(ErrorCode.COMMON_BUSINESS_ERROR.code, message, cause) {
         this.domainContext = domainContext
     }
 
@@ -143,7 +143,7 @@ class DomainException : BusinessException {
         fun entityNotFound(domainContext: String, entityId: Any): DomainException {
             return DomainException(
                 domainContext,
-                "ENTITY_NOT_FOUND",
+                ErrorCode.ENTITY_NOT_FOUND.code,
                 "%s를 찾을 수 없습니다. ID: %s",
                 domainContext,
                 entityId
@@ -161,7 +161,7 @@ class DomainException : BusinessException {
         fun businessRuleViolation(domainContext: String, ruleName: String, reason: String): DomainException {
             return DomainException(
                 domainContext,
-                "BUSINESS_RULE_VIOLATION",
+                ErrorCode.COMMON_BUSINESS_ERROR.code,
                 "%s 도메인의 '%s' 규칙이 위반되었습니다: %s",
                 domainContext,
                 ruleName,
@@ -180,7 +180,7 @@ class DomainException : BusinessException {
         fun invalidStateTransition(domainContext: String, currentState: String, targetState: String): DomainException {
             return DomainException(
                 domainContext,
-                "INVALID_STATE_TRANSITION",
+                ErrorCode.STATE_INVALID_TRANSITION.code,
                 "%s 상태에서 %s 상태로 전환할 수 없습니다",
                 currentState,
                 targetState

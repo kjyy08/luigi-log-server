@@ -29,7 +29,7 @@ open class BusinessException : RuntimeException {
         message: String,
         cause: Throwable? = null
     ) : super(message, cause) {
-        this.errorCode = "BUSINESS_ERROR"
+        this.errorCode = ErrorCode.COMMON_BUSINESS_ERROR.code
     }
 
     /**
