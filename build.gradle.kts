@@ -58,14 +58,11 @@ kover {
 				format = "<entity> coverage: <value>%"
 				coverageUnits = kotlinx.kover.gradle.plugin.dsl.CoverageUnit.LINE
 			}
-			
-			// 커버리지 검증 규칙 - main 브랜치에서 점진적 적용
+
 			verify {
-				if (System.getenv("GITHUB_REF") == "refs/heads/main") {
-					rule {
-						minBound(40) // 점진적으로 80%까지 향상 목표
-					}
-				}
+                rule {
+                    minBound(80)
+                }
 			}
 			
 			// 제외 설정
