@@ -15,19 +15,6 @@ plugins {
     id("io.spring.dependency-management")
 }
 
-allOpen {
-    annotation("org.springframework.stereotype.Component")
-    annotation("org.springframework.stereotype.Service")
-    annotation("org.springframework.stereotype.Repository")
-    annotation("org.springframework.boot.context.properties.ConfigurationProperties")
-}
-
-noArg {
-    annotation("javax.persistence.Entity")
-    annotation("javax.persistence.MappedSuperclass")
-    annotation("javax.persistence.Embeddable")
-}
-
 dependencyManagement {
     imports {
         mavenBom("org.springframework.boot:spring-boot-dependencies:$springBootVersion")
