@@ -68,6 +68,7 @@ jobs:
             **/build/reports/tests/
             **/build/test-results/
             build/reports/kover/
+            **/build/reports/kover/
           retention-days: 7
 
       - name: Comment PR with test results
@@ -104,10 +105,18 @@ jobs:
           fetch-depth: 0
 
       - name: Download coverage reports
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: test-and-coverage-results
           path: .
+
+      - name: Verify coverage report paths
+        run: |
+          echo "🔍 커버리지 리포트 파일 확인"
+          find . -name "coverage.xml" -type f
+          ls -la build/reports/kover/ || echo "루트 kover 디렉토리 없음"
+          echo "📊 파일 크기 확인"
+          find . -name "coverage.xml" -exec ls -lh {} \;
 
       - name: Cache SonarQube packages
         uses: actions/cache@v4
@@ -117,7 +126,7 @@ jobs:
           restore-keys: ${{ runner.os }}-sonar-
 
       - name: SonarQube Scan
-        uses: sonarsource/sonarqube-scan-action@v2
+        uses: sonarsource/sonarqube-scan-action@v6
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 

@@ -1,5 +1,7 @@
 rootProject.name = "luigi-log-server"
 
+includeBuild("plugins")
+
 // Common Libraries
 include("libs:common-domain")
 include("libs:common-infrastructure")  
