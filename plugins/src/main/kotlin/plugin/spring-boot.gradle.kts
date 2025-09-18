@@ -4,7 +4,6 @@ val springSecurityVersion = "6.4.0"
 val springFrameworkVersion = "6.2.0"
 val jacksonVersion = "2.18.1"
 val jjwtVersion = "0.12.3"
-val postgresqlVersion = "42.7.2"
 
 plugins {
     id("kotlin-base")
@@ -32,19 +31,6 @@ noArg {
 dependencyManagement {
     imports {
         mavenBom("org.springframework.boot:spring-boot-dependencies:$springBootVersion")
-    }
-}
-
-// 모든 configuration에서 Spring Boot 버전 강제 적용
-configurations.all {
-    resolutionStrategy.eachDependency {
-        when {
-            requested.group == "org.springframework.boot" -> useVersion(springBootVersion)
-            requested.group == "org.springframework.security" -> useVersion(springSecurityVersion)
-            requested.group == "org.springframework" -> useVersion(springFrameworkVersion)
-            requested.group == "com.fasterxml.jackson.module" -> useVersion(jacksonVersion)
-            requested.group == "org.postgresql" -> useVersion(postgresqlVersion)
-        }
     }
 }
 
@@ -82,10 +68,6 @@ dependencies {
     implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:$jjwtVersion")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:$jjwtVersion")
-
-    // Database
-    runtimeOnly("org.postgresql:postgresql:$postgresqlVersion")
-    runtimeOnly("com.h2database:h2")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test:$springBootVersion")
     testImplementation("org.springframework.security:spring-security-test:$springSecurityVersion")
