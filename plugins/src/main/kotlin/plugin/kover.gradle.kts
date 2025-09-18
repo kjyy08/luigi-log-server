@@ -18,6 +18,7 @@ kover {
         total {
             xml {
                 title = "Luigi Log Server Coverage Report"
+                // SonarQube 호환을 위한 루트 프로젝트 XML 리포트 경로
                 xmlFile = layout.buildDirectory.file("reports/kover/coverage.xml").get().asFile
                 onCheck = true
             }
@@ -92,6 +93,11 @@ kover {
 sonar {
     properties {
         property("sonar.scanner.javaOpts", "-Xmx2g -XX:MaxMetaspaceSize=1g")
+        // Kover XML 리포트 경로를 SonarQube에 명시적으로 지정
         property("sonar.coverage.jacoco.xmlReportPaths", layout.buildDirectory.file("reports/kover/coverage.xml").get().asFile.absolutePath)
+        // 멀티모듈 프로젝트를 위한 추가 설정
+        property("sonar.coverage.exclusions", "**/build/**,**/*.gradle.kts,**/gradle/**")
+        // 루트 프로젝트에서 생성된 통합 커버리지 리포트 사용
+        property("sonar.kotlin.coverage.reportPaths", layout.buildDirectory.file("reports/kover/coverage.xml").get().asFile.absolutePath)
     }
 }
