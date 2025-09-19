@@ -7,20 +7,24 @@ FROM gradle:8.14.3-jdk17-alpine AS builder
 # 작업 디렉토리 설정
 WORKDIR /app
 
-# Gradle Wrapper 및 빌드 파일들 복사
+# Gradle Wrapper 및 빌드 파일들 복사 (변경 빈도 낮음)
 COPY gradle gradle
 COPY gradlew .
 COPY gradle.properties .
 COPY settings.gradle.kts .
 COPY build.gradle.kts .
 
-# 모든 모듈의 빌드 파일들 복사
+# 모든 모듈의 빌드 파일들 복사 (plugins 포함)
+COPY plugins/ plugins/
 COPY libs/ libs/
 COPY mains/ mains/
 COPY service/ service/
 
 # 실행 권한 부여
 RUN chmod +x gradlew
+
+# Convention Plugin 먼저 빌드 (다른 모듈들이 의존)
+RUN ./gradlew :plugins:publishToMavenLocal --no-daemon --quiet
 
 # 의존성 다운로드 (캐시 최적화)
 RUN ./gradlew dependencies --no-daemon --quiet
