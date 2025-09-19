@@ -15,6 +15,7 @@ COPY settings.gradle.kts .
 COPY build.gradle.kts .
 
 # 모든 모듈의 빌드 파일들 복사
+COPY plugins/ plugins/
 COPY libs/ libs/
 COPY mains/ mains/
 COPY service/ service/
