@@ -1,10 +1,8 @@
 package cloud.luigi99.blog.common.security
 
 import org.springframework.security.core.Authentication
-import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.userdetails.UserDetails
-import java.util.*
 
 /**
  * 보안 관련 공통 유틸리티 클래스
@@ -37,9 +35,11 @@ object SecurityUtils {
             authentication.principal is UserDetails -> {
                 (authentication.principal as UserDetails).username
             }
+
             authentication.principal is String -> {
                 authentication.principal as String
             }
+
             else -> authentication.name
         }
     }
