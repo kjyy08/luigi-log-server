@@ -179,7 +179,7 @@ class AggregateRootTest : BehaviorSpec({
 private class TestAggregateRoot(
     override val id: UUID,
     override val createdAt: LocalDateTime,
-    override val updatedAt: LocalDateTime?
+    override var updatedAt: LocalDateTime?
 ) : AggregateRoot() {
 
     fun addEvent(event: DomainEvent) {
