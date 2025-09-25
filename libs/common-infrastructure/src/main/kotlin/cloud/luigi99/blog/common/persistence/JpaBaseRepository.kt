@@ -43,8 +43,6 @@ interface JpaBaseRepository<T: BaseJpaEntity, ID : Any> : JpaRepository<T, ID> {
     @Query("SELECT e FROM #{#entityName} e WHERE e.updatedAt >= :updatedAt")
     fun findAllUpdatedAfter(updatedAt: LocalDateTime): List<T>
 
-
-
     // === 낙관적 락 관련 메서드 ===
 
     /**
@@ -70,19 +68,16 @@ interface JpaBaseRepository<T: BaseJpaEntity, ID : Any> : JpaRepository<T, ID> {
     // === Soft Delete 관련 메서드 ===
     // 주의: @SoftDelete 어노테이션으로 인해 JPA 기본 메서드들도 자동으로 deleted=false 조건 적용
 
-
     /**
      * 삭제된 엔티티를 복원합니다.
      *
      * @param id 복원할 엔티티 ID
      * @return 영향받은 엔티티 수
      */
-    @Modifying
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Transactional
     @Query("UPDATE #{#entityName} e SET e.deleted = false, e.deletedAt = null WHERE e.id = :id")
     fun restoreById(id: ID): Int
-
-    // === 삭제된 엔티티 조회 (필요시 사용) ===
 
     /**
      * 삭제된 엔티티들을 조회합니다.

@@ -74,21 +74,17 @@ abstract class BaseJpaEntity : BaseEntity() {
     var deletedAt: LocalDateTime? = null
         protected set
 
+
     /**
-     * 엔티티를 논리적으로 삭제합니다.
+     * JPA 삭제 이벤트 이전에 실행되는 콜백 메서드
+     * @PreRemove 어노테이션으로 JPA 컨테이너가 자동 호출합니다.
      */
-    fun markAsDeleted() {
+    @PreRemove
+    fun onSoftDelete() {
         this.deleted = true
         this.deletedAt = LocalDateTime.now()
     }
 
-    /**
-     * 삭제된 엔티티를 복원합니다.
-     */
-    fun restore() {
-        this.deleted = false
-        this.deletedAt = null
-    }
 
     /**
      * 엔티티가 삭제되었는지 확인합니다.

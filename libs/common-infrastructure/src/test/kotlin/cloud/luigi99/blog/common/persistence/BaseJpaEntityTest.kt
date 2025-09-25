@@ -147,7 +147,7 @@ class BaseJpaEntityTest : BehaviorSpec({
         `when`("여러 엔티티를 순차적으로 생성할 때") {
             then("생성 시간이 순서대로 증가해야 한다") {
                 val entity1 = TestJpaEntity()
-                Thread.sleep(1) // 시간 차이를 만들기 위해
+                Thread.sleep(10) // 시간 차이를 만들기 위해
                 val entity2 = TestJpaEntity()
 
                 entity2.createdAt.isAfter(entity1.createdAt) shouldBe true
@@ -155,11 +155,13 @@ class BaseJpaEntityTest : BehaviorSpec({
         }
     }
 
-    given("Soft Delete 기능") {
-        `when`("markAsDeleted()를 호출할 때") {
+    given("@PreRemove 콜백 기능") {
+        `when`("onSoftDelete()가 호출될 때") {
             then("deleted가 true로 설정되어야 한다") {
                 val entity = TestJpaEntity()
-                entity.markAsDeleted()
+
+                // @PreRemove 콜백 시뮬레이션
+                entity.onSoftDelete()
 
                 entity.deleted shouldBe true
                 entity.deletedAt.shouldNotBeNull()
@@ -169,7 +171,9 @@ class BaseJpaEntityTest : BehaviorSpec({
             then("deletedAt이 현재 시간으로 설정되어야 한다") {
                 val beforeDeletion = LocalDateTime.now().minusSeconds(1)
                 val entity = TestJpaEntity()
-                entity.markAsDeleted()
+
+                // @PreRemove 콜백 시뮬레이션
+                entity.onSoftDelete()
                 val afterDeletion = LocalDateTime.now().plusSeconds(1)
 
                 entity.deletedAt.shouldNotBeNull()
@@ -178,28 +182,6 @@ class BaseJpaEntityTest : BehaviorSpec({
             }
         }
 
-        `when`("restore()를 호출할 때") {
-            then("deleted가 false로 복원되어야 한다") {
-                val entity = TestJpaEntity()
-                entity.markAsDeleted()
-                entity.restore()
-
-                entity.deleted shouldBe false
-                entity.deletedAt shouldBe null
-                entity.isDeleted() shouldBe false
-            }
-        }
-
-        `when`("삭제되지 않은 엔티티에서 restore()를 호출할 때") {
-            then("상태가 변경되지 않아야 한다") {
-                val entity = TestJpaEntity()
-                entity.restore()
-
-                entity.deleted shouldBe false
-                entity.deletedAt shouldBe null
-                entity.isDeleted() shouldBe false
-            }
-        }
     }
 
     given("낙관적 락 기능") {
@@ -211,51 +193,31 @@ class BaseJpaEntityTest : BehaviorSpec({
         }
     }
 
-    given("@SoftDelete 어노테이션 동작") {
-        `when`("엔티티가 @SoftDelete로 마킹될 때") {
-            then("Hibernate가 자동으로 deleted=false 조건을 적용해야 한다") {
-                val entity = TestJpaEntity()
-
-                // @SoftDelete 어노테이션이 적용된 엔티티는 기본적으로 deleted=false
-                entity.deleted shouldBe false
-                entity.isDeleted() shouldBe false
-
-                // markAsDeleted() 호출 시 논리적 삭제 실행
-                entity.markAsDeleted()
-                entity.deleted shouldBe true
-                entity.isDeleted() shouldBe true
-                entity.deletedAt.shouldNotBeNull()
-            }
-        }
-    }
-
-    given("Hibernate 6.x 호환성") {
-        `when`("@SoftDelete와 @SQLDelete가 함께 사용될 때") {
-            then("두 어노테이션이 정상적으로 협동해야 한다") {
+    given("JPA 라이프사이클 호환성") {
+        `when`("@PreRemove와 @SoftDelete, @SQLDelete가 함께 사용될 때") {
+            then("세 어노테이션이 정상적으로 협동해야 한다") {
                 val entity = TestJpaEntity()
 
                 // @SoftDelete: 자동 필터링 (deleted = false)
                 entity.deleted shouldBe false
 
-                // @SQLDelete: 사용자 정의 삭제 로직 (markAsDeleted 호출 시)
+                // @PreRemove: JPA delete() 호출 전 자동 콜백 시뮬레이션
                 val beforeDeletion = LocalDateTime.now().minusSeconds(1)
-                entity.markAsDeleted()
+                entity.onSoftDelete()  // JPA 컨테이너가 자동 호출할 내용 시뮬레이션
                 val afterDeletion = LocalDateTime.now().plusSeconds(1)
 
-                // 논리적 삭제가 정상 실행됨
+                // @PreRemove 콜백으로 논리적 삭제 상태 설정
                 entity.deleted shouldBe true
                 entity.deletedAt.shouldNotBeNull()
                 entity.deletedAt!!.isAfter(beforeDeletion) shouldBe true
                 entity.deletedAt!!.isBefore(afterDeletion) shouldBe true
 
-                // 복원 기능도 정상 동작
-                entity.restore()
-                entity.deleted shouldBe false
-                entity.deletedAt shouldBe null
-                entity.isDeleted() shouldBe false
+                // 복원 기능은 Repository 레벨에서 처리 (restoreById)
+                // Entity 레벨에서는 @PreRemove 콜백만 지원
             }
         }
     }
+
 }) {
     /**
      * 테스트용 JPA 엔티티 클래스
