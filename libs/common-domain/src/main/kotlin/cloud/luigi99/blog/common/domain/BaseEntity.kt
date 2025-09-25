@@ -27,7 +27,7 @@ abstract class BaseEntity {
      * 엔티티가 마지막으로 수정된 시점을 기록합니다.
      * 생성 시에는 null이며, 수정이 발생할 때 값이 설정됩니다.
      */
-    abstract val updatedAt: LocalDateTime?
+    abstract var updatedAt: LocalDateTime?
 
     /**
      * ID를 기준으로 엔티티의 동등성을 판단합니다.

@@ -126,5 +126,5 @@ class BaseEntityTest : BehaviorSpec({
 private class TestEntity(
     override val id: UUID,
     override val createdAt: LocalDateTime,
-    override val updatedAt: LocalDateTime?
+    override var updatedAt: LocalDateTime?
 ) : BaseEntity()
