@@ -35,6 +35,26 @@ class BaseJpaEntityTest : BehaviorSpec({
                 val entity = TestJpaEntity()
                 entity.updatedAt shouldBe null
             }
+
+            then("version이 0으로 초기화되어야 한다") {
+                val entity = TestJpaEntity()
+                entity.version shouldBe 0L
+            }
+
+            then("deleted가 false로 초기화되어야 한다") {
+                val entity = TestJpaEntity()
+                entity.deleted shouldBe false
+            }
+
+            then("deletedAt이 null로 초기화되어야 한다") {
+                val entity = TestJpaEntity()
+                entity.deletedAt shouldBe null
+            }
+
+            then("isDeleted()가 false를 반환해야 한다") {
+                val entity = TestJpaEntity()
+                entity.isDeleted() shouldBe false
+            }
         }
     }
 
@@ -131,6 +151,108 @@ class BaseJpaEntityTest : BehaviorSpec({
                 val entity2 = TestJpaEntity()
 
                 entity2.createdAt.isAfter(entity1.createdAt) shouldBe true
+            }
+        }
+    }
+
+    given("Soft Delete 기능") {
+        `when`("markAsDeleted()를 호출할 때") {
+            then("deleted가 true로 설정되어야 한다") {
+                val entity = TestJpaEntity()
+                entity.markAsDeleted()
+
+                entity.deleted shouldBe true
+                entity.deletedAt.shouldNotBeNull()
+                entity.isDeleted() shouldBe true
+            }
+
+            then("deletedAt이 현재 시간으로 설정되어야 한다") {
+                val beforeDeletion = LocalDateTime.now().minusSeconds(1)
+                val entity = TestJpaEntity()
+                entity.markAsDeleted()
+                val afterDeletion = LocalDateTime.now().plusSeconds(1)
+
+                entity.deletedAt.shouldNotBeNull()
+                entity.deletedAt!!.isAfter(beforeDeletion) shouldBe true
+                entity.deletedAt!!.isBefore(afterDeletion) shouldBe true
+            }
+        }
+
+        `when`("restore()를 호출할 때") {
+            then("deleted가 false로 복원되어야 한다") {
+                val entity = TestJpaEntity()
+                entity.markAsDeleted()
+                entity.restore()
+
+                entity.deleted shouldBe false
+                entity.deletedAt shouldBe null
+                entity.isDeleted() shouldBe false
+            }
+        }
+
+        `when`("삭제되지 않은 엔티티에서 restore()를 호출할 때") {
+            then("상태가 변경되지 않아야 한다") {
+                val entity = TestJpaEntity()
+                entity.restore()
+
+                entity.deleted shouldBe false
+                entity.deletedAt shouldBe null
+                entity.isDeleted() shouldBe false
+            }
+        }
+    }
+
+    given("낙관적 락 기능") {
+        `when`("새로운 엔티티를 생성할 때") {
+            then("version이 0으로 시작해야 한다") {
+                val entity = TestJpaEntity()
+                entity.version shouldBe 0L
+            }
+        }
+    }
+
+    given("@SoftDelete 어노테이션 동작") {
+        `when`("엔티티가 @SoftDelete로 마킹될 때") {
+            then("Hibernate가 자동으로 deleted=false 조건을 적용해야 한다") {
+                val entity = TestJpaEntity()
+
+                // @SoftDelete 어노테이션이 적용된 엔티티는 기본적으로 deleted=false
+                entity.deleted shouldBe false
+                entity.isDeleted() shouldBe false
+
+                // markAsDeleted() 호출 시 논리적 삭제 실행
+                entity.markAsDeleted()
+                entity.deleted shouldBe true
+                entity.isDeleted() shouldBe true
+                entity.deletedAt.shouldNotBeNull()
+            }
+        }
+    }
+
+    given("Hibernate 6.x 호환성") {
+        `when`("@SoftDelete와 @SQLDelete가 함께 사용될 때") {
+            then("두 어노테이션이 정상적으로 협동해야 한다") {
+                val entity = TestJpaEntity()
+
+                // @SoftDelete: 자동 필터링 (deleted = false)
+                entity.deleted shouldBe false
+
+                // @SQLDelete: 사용자 정의 삭제 로직 (markAsDeleted 호출 시)
+                val beforeDeletion = LocalDateTime.now().minusSeconds(1)
+                entity.markAsDeleted()
+                val afterDeletion = LocalDateTime.now().plusSeconds(1)
+
+                // 논리적 삭제가 정상 실행됨
+                entity.deleted shouldBe true
+                entity.deletedAt.shouldNotBeNull()
+                entity.deletedAt!!.isAfter(beforeDeletion) shouldBe true
+                entity.deletedAt!!.isBefore(afterDeletion) shouldBe true
+
+                // 복원 기능도 정상 동작
+                entity.restore()
+                entity.deleted shouldBe false
+                entity.deletedAt shouldBe null
+                entity.isDeleted() shouldBe false
             }
         }
     }

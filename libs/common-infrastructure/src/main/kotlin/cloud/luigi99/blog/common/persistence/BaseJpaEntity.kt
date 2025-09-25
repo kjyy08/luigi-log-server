@@ -2,6 +2,8 @@ package cloud.luigi99.blog.common.persistence
 
 import cloud.luigi99.blog.common.domain.BaseEntity
 import jakarta.persistence.*
+import org.hibernate.annotations.SQLDelete
+import org.hibernate.annotations.SoftDelete
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
@@ -15,9 +17,12 @@ import java.util.*
  * - JPA Auditing을 통한 자동 생성/수정 시각 관리
  * - UUID 기반 기본키 매핑
  * - 도메인 엔티티와의 일관성 보장
+ * - Soft Delete 자동 적용 (Hibernate 어노테이션 사용)
  */
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener::class)
+@SoftDelete(columnName = "deleted")
+@SQLDelete(sql = "UPDATE #{#entityName} SET deleted = true, deleted_at = NOW() WHERE id = ?")
 abstract class BaseJpaEntity : BaseEntity() {
 
     /**
@@ -42,5 +47,51 @@ abstract class BaseJpaEntity : BaseEntity() {
      */
     @LastModifiedDate
     @Column(nullable = true)
-    override val updatedAt: LocalDateTime? = null
+    override var updatedAt: LocalDateTime? = null
+
+    /**
+     * 낙관적 락을 위한 버전 필드
+     * 엔티티가 수정될 때마다 자동으로 증가됩니다.
+     */
+    @Version
+    @Column(nullable = false)
+    var version: Long = 0L
+        protected set
+
+    /**
+     * Soft Delete를 위한 삭제 플래그
+     * 물리적 삭제 대신 논리적 삭제를 지원합니다.
+     */
+    @Column(nullable = false)
+    var deleted: Boolean = false
+        protected set
+
+    /**
+     * 삭제 시각
+     * Soft Delete 수행 시 설정됩니다.
+     */
+    @Column(nullable = true)
+    var deletedAt: LocalDateTime? = null
+        protected set
+
+    /**
+     * 엔티티를 논리적으로 삭제합니다.
+     */
+    fun markAsDeleted() {
+        this.deleted = true
+        this.deletedAt = LocalDateTime.now()
+    }
+
+    /**
+     * 삭제된 엔티티를 복원합니다.
+     */
+    fun restore() {
+        this.deleted = false
+        this.deletedAt = null
+    }
+
+    /**
+     * 엔티티가 삭제되었는지 확인합니다.
+     */
+    fun isDeleted(): Boolean = deleted
 }
