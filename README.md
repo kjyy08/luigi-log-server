@@ -1,5 +1,21 @@
 # Luigi Log Server - 개인 기술 블로그 플랫폼
 
+<div align="center">
+
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=kjyy08_luigi-log-server&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=kjyy08_luigi-log-server)
+&nbsp;
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=kjyy08_luigi-log-server&metric=coverage)](https://sonarcloud.io/summary/new_code?id=kjyy08_luigi-log-server)
+&nbsp;
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=kjyy08_luigi-log-server&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=kjyy08_luigi-log-server)
+<br/>
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=kjyy08_luigi-log-server&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=kjyy08_luigi-log-server)
+&nbsp;
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=kjyy08_luigi-log-server&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=kjyy08_luigi-log-server)
+&nbsp;
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=kjyy08_luigi-log-server&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=kjyy08_luigi-log-server)
+
+</div>
+
 현대적인 클라우드 네이티브 기술을 활용한 개인 블로그 플랫폼으로, AI 챗봇과 함께 확장 가능하고 안정적인 기술 블로그 경험을 제공합니다.
 
 ## 📋 프로젝트 개요
