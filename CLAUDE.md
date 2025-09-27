@@ -44,7 +44,61 @@ Luigi Log Server is a personal tech blog platform being built with Spring Boot 3
 ./gradlew build -x test
 ```
 
-*Note: Docker, database, and advanced tooling configurations are not yet implemented.*
+### Testing and Quality Commands
+```bash
+# Run tests with coverage report
+./gradlew test koverXmlReport
+
+# Generate HTML coverage report
+./gradlew koverHtmlReport
+
+# Verify coverage meets thresholds (when enabled)
+./gradlew koverVerify
+
+# Run tests for specific module
+./gradlew :service:user:core:test
+
+# Run tests with continuous build
+./gradlew test --continuous
+
+# Run all quality checks (tests + coverage)
+./gradlew check
+```
+
+### Coverage and Quality Analysis
+```bash
+# Generate coverage reports (XML for SonarQube, HTML for viewing)
+./gradlew koverXmlReport koverHtmlReport
+
+# Local SonarQube analysis (requires SONAR_TOKEN)
+./gradlew sonar -Dsonar.login=${SONAR_TOKEN}
+
+# Parallel build with caching (CI optimization)
+./gradlew test koverXmlReport --parallel --build-cache --continue
+```
+
+### Development Environment Requirements
+- **Java**: JDK 17 (Temurin distribution recommended)
+- **Gradle**: 8.14.3 (wrapper included, no manual installation needed)
+- **Database**: H2 in-memory database for development (PostgreSQL for production)
+- **IDE**: IntelliJ IDEA recommended with Kotlin plugin
+- **Git**: For version control and GitHub Actions integration
+
+### Local Development Setup
+```bash
+# Verify Java version
+java -version  # Should show JDK 17
+
+# Clone and build
+git clone <repository-url>
+cd luigi-log-server
+./gradlew build
+
+# Run application locally
+./gradlew :mains:monolith-main:bootRun
+```
+
+*Note: Docker, production database, and advanced tooling configurations are not yet implemented.*
 
 ## Architecture Overview
 
@@ -82,7 +136,7 @@ luigi-log-server/
 │   └── common-web/             # Web layer commons
 │       └── src/main/kotlin/cloud/luigi99/blog/common/
 │           ├── web/            # ApiResponse, PageResponse, ErrorResponse
-│           └── security/       # JwtTokenProvider, SecurityContext
+│           └── security/       # TokenProvider, SecurityContext
 ├── service/                    # Domain services (structure implemented)
 │   ├── user/                  # User management domain
 │   │   ├── core/              # Domain logic, ports, use cases
@@ -118,6 +172,33 @@ luigi-log-server/
 
 Each service follows the dependency inversion principle: `adapter-in` → `core` ← `adapter-out`
 
+### Build System Architecture
+The project uses a sophisticated multi-module Gradle setup with custom plugins:
+
+#### Module Structure (19 modules total)
+- **Root Project**: Coordination and Kover aggregation
+- **Plugin Module** (`plugins/`): Custom Gradle plugins for consistent configuration
+  - `domain.gradle.kts`: Domain module conventions
+  - `kotlin-base.gradle.kts`: Kotlin compilation settings
+  - `kover.gradle.kts`: Coverage configuration with SonarQube integration
+- **Common Libraries** (`libs/`): 3 shared modules
+- **Service Modules** (`service/`): 15 modules (5 domains × 3 layers each)
+- **Main Application** (`mains/`): 1 Spring Boot application module
+
+#### Custom Gradle Plugins
+```bash
+# Plugin development commands
+./gradlew :plugins:build              # Build custom plugins
+./gradlew :plugins:publishToMavenLocal # Publish plugins locally
+```
+
+#### Gradle Configuration Highlights
+- **Multi-module dependency management**: Centralized version catalog
+- **Parallel builds**: Enabled for faster compilation
+- **Build cache**: Shared across CI and local development
+- **Kover integration**: Aggregated coverage reports across all modules
+- **SonarQube plugin**: Automatic quality analysis configuration
+
 ## Implementation Status
 
 ### ✅ Completed Components
@@ -130,7 +211,7 @@ Each service follows the dependency inversion principle: `adapter-in` → `core`
 #### Common Libraries (`libs/`)
 - **common-domain**: BaseEntity, DomainEvent, AggregateRoot, ValueObject, business exceptions
 - **common-infrastructure**: JPA base repository, domain event publisher, security utilities
-- **common-web**: API response models, JWT token provider, validation utilities, security context
+- **common-web**: API response models, Token provider, validation utilities, security context
 
 #### Main Application (`mains/monolith-main`)
 - Spring Boot 3.5.5 application setup
@@ -175,6 +256,15 @@ Each service follows the dependency inversion principle: `adapter-in` → `core`
 - **Apache Kafka**: Asynchronous event streaming between services
 - **OpenAI API**: LLM integration with custom RAG implementation
 
+### Modern Development Tools
+- **Kotest**: Kotlin test framework, use behaviorSpec
+- **Kover**: Kotlin-native test coverage analysis replacing JaCoCo
+- **SonarCloud**: Continuous code quality analysis and security scanning
+- **GitHub Container Registry**: Docker image hosting (`ghcr.io`)
+- **GitHub Actions**: CI/CD with parallel execution and artifact caching
+- **Spring Boot 3.5.5**: Latest Spring framework with enhanced observability
+- **Kotlin 1.9.25**: Modern language features with coroutines support
+
 ## Development Evolution Plan
 
 ### Phase 1: Foundation (Current)
@@ -197,6 +287,34 @@ Advanced Elasticsearch features, sophisticated AI with MCP protocol, and full Gi
 - **Search Performance**: <100ms for Elasticsearch queries
 - **AI Response**: <3 seconds for chatbot interactions
 - **Test Coverage**: Minimum 80% required
+
+## Quality Assurance
+
+### Test Coverage Configuration (Kover)
+The project uses Kover for comprehensive test coverage analysis:
+
+- **Current Coverage Goals**: 80% line coverage (currently disabled during initial development)
+- **Domain Core Target**: 90% coverage for business logic modules
+- **Common Libraries Target**: 85% coverage for reusable components
+- **Branch Coverage**: 75% target for conditional logic
+
+```bash
+# Coverage reports location
+build/reports/kover/coverage.xml    # XML for SonarQube integration
+build/reports/kover/html/           # HTML reports for developers
+```
+
+### SonarQube Integration
+- **SonarCloud**: Automated quality analysis on every PR and main branch push
+- **Quality Gate**: Enforced via GitHub Actions workflow
+- **Metrics Tracked**: Code coverage, code smells, security hotspots, maintainability
+- **Local Analysis**: Use `./gradlew sonar` with SONAR_TOKEN environment variable
+
+### Code Quality Standards
+- **Kotlin Code Style**: Follow standard Kotlin conventions
+- **Exclusions**: Application main classes, DTOs, configuration classes excluded from coverage
+- **CI Integration**: Coverage reports automatically posted to PRs
+- **Minimum Coverage**: 40% overall, 60% for changed files (enforced in CI)
 
 ## AI Features Architecture
 
@@ -228,6 +346,43 @@ Event Publication → Kafka → Event Handlers → Data Synchronization
 - **Observability**: Comprehensive monitoring with LGTM stack
 - **Deployment**: GitOps with ArgoCD
 - **Environment**: Cloud-native with cost-efficient K3s clusters
+
+## CI/CD Pipeline
+
+### GitHub Actions Workflow
+The project uses automated CI/CD with comprehensive quality checks:
+
+#### Triggers
+- **Push**: `main` and `develop` branches
+- **Pull Request**: `main` and `develop` branches (opened, synchronize, reopened)
+
+#### Pipeline Stages
+1. **Test & Build**:
+   - Runs on Ubuntu with JDK 17 and Gradle 8.14.3
+   - Executes `./gradlew test koverXmlReport` with parallel execution
+   - Uploads test results and coverage reports as artifacts
+   - Posts test results and coverage reports to PRs
+
+2. **SonarQube Analysis**:
+   - Triggered on PRs and main branch pushes
+   - Downloads coverage reports from test stage
+   - Performs quality gate analysis
+   - Fails pipeline if quality gate not met
+
+3. **Docker Build & Push** (main branch only):
+   - Builds Docker image using `./gradlew bootBuildImage`
+   - Pushes to GitHub Container Registry (`ghcr.io`)
+   - Tags with latest, branch name, SHA, and timestamp
+
+#### Environment Requirements
+- **JDK**: 17 (Temurin distribution)
+- **Gradle**: 8.14.3 (automatically cached)
+- **Timeout**: 15 minutes for test stage
+- **Parallelization**: Enabled with build cache and parallel execution
+
+#### Secrets Required
+- `SONAR_TOKEN`: For SonarCloud analysis
+- `GITHUB_TOKEN`: For Docker registry (automatically provided)
 
 ## GitHub Guidelines
 
