@@ -3,6 +3,7 @@ package cloud.luigi99.blog.common.security
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.userdetails.UserDetails
+import org.springframework.security.authentication.AnonymousAuthenticationToken
 
 object SecurityContext {
 
@@ -31,7 +32,24 @@ object SecurityContext {
     }
 
     fun isAuthenticated(): Boolean {
-        return getAuthentication()?.isAuthenticated == true
+        return getAuthentication()?.let { auth ->
+            // Anonymous 사용자는 인증되지 않은 것으로 처리
+            if (auth is AnonymousAuthenticationToken) {
+                return false
+            }
+
+            // 기본 인증 상태 확인
+            if (!auth.isAuthenticated) {
+                return false
+            }
+
+            // Principal이 실제 사용자 정보인지 확인 (다른 메서드들과 일관성 유지)
+            when (val principal = auth.principal) {
+                is UserDetails -> !principal.username.isNullOrBlank()
+                is String -> principal.isNotBlank()
+                else -> false
+            }
+        } ?: false
     }
 
     fun hasAuthority(authority: String): Boolean {

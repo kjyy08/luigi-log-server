@@ -6,6 +6,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.mockk.*
 import org.springframework.security.authentication.TestingAuthenticationToken
+import org.springframework.security.authentication.AnonymousAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
@@ -184,7 +185,127 @@ class SecurityContextTest : BehaviorSpec({
                 val authoritiesList = SecurityContext.getCurrentUserAuthorities()
                 authoritiesList.size shouldBe 1
                 authoritiesList shouldContain "ROLE_USER"
-                SecurityContext.isAuthenticated() shouldBe true
+                SecurityContext.isAuthenticated() shouldBe false
+            }
+        }
+    }
+
+    given("SecurityContext Anonymous 사용자 처리") {
+        `when`("Anonymous 사용자가 설정되었을 때") {
+            then("인증되지 않은 것으로 처리되어야 한다") {
+                val authorities = listOf(SimpleGrantedAuthority("ROLE_ANONYMOUS"))
+                val authentication = AnonymousAuthenticationToken("anonymous", "anonymousUser", authorities)
+
+                val context = SecurityContextHolder.createEmptyContext()
+                context.authentication = authentication
+                SecurityContextHolder.setContext(context)
+
+                SecurityContext.isAuthenticated() shouldBe false
+                SecurityContext.getCurrentUserId() shouldBe null
+                SecurityContext.getCurrentUsername() shouldBe "anonymousUser"
+                val authoritiesList = SecurityContext.getCurrentUserAuthorities()
+                authoritiesList.size shouldBe 1
+                authoritiesList shouldContain "ROLE_ANONYMOUS"
+            }
+        }
+    }
+
+    given("SecurityContext 빈 Principal 처리") {
+        `when`("빈 문자열 principal이 설정되었을 때") {
+            then("인증되지 않은 것으로 처리되어야 한다") {
+                val authorities = listOf(SimpleGrantedAuthority("ROLE_USER"))
+                val authentication = TestingAuthenticationToken("", "password", authorities)
+                authentication.isAuthenticated = true
+
+                val context = SecurityContextHolder.createEmptyContext()
+                context.authentication = authentication
+                SecurityContextHolder.setContext(context)
+
+                SecurityContext.isAuthenticated() shouldBe false
+                SecurityContext.getCurrentUsername() shouldBe ""
+                SecurityContext.getCurrentUserId() shouldBe null
+            }
+        }
+
+        `when`("공백만 있는 username을 가진 UserDetails가 설정되었을 때") {
+            then("인증되지 않은 것으로 처리되어야 한다") {
+                val authorities = listOf(SimpleGrantedAuthority("ROLE_USER"))
+                val userDetails = User("   ", "password", authorities)
+                val authentication = TestingAuthenticationToken(userDetails, "password", authorities)
+                authentication.isAuthenticated = true
+
+                val context = SecurityContextHolder.createEmptyContext()
+                context.authentication = authentication
+                SecurityContextHolder.setContext(context)
+
+                SecurityContext.isAuthenticated() shouldBe false
+                SecurityContext.getCurrentUsername() shouldBe "   "
+                SecurityContext.getCurrentUserId() shouldBe null
+            }
+        }
+
+        `when`("공백만 있는 String principal이 설정되었을 때") {
+            then("인증되지 않은 것으로 처리되어야 한다") {
+                val authorities = listOf(SimpleGrantedAuthority("ROLE_USER"))
+                val authentication = TestingAuthenticationToken("   ", "password", authorities)
+                authentication.isAuthenticated = true
+
+                val context = SecurityContextHolder.createEmptyContext()
+                context.authentication = authentication
+                SecurityContextHolder.setContext(context)
+
+                SecurityContext.isAuthenticated() shouldBe false
+                SecurityContext.getCurrentUsername() shouldBe "   "
+                SecurityContext.getCurrentUserId() shouldBe null
+            }
+        }
+    }
+
+    given("SecurityContext isAuthenticated 엣지 케이스") {
+        `when`("인증된 상태이지만 알 수 없는 타입의 principal일 때") {
+            then("인증되지 않은 것으로 처리되어야 한다") {
+                val customPrincipal = mockk<Any>()
+                val authorities = listOf(SimpleGrantedAuthority("ROLE_USER"))
+                val authentication = TestingAuthenticationToken(customPrincipal, "password", authorities)
+                authentication.isAuthenticated = true
+
+                val context = SecurityContextHolder.createEmptyContext()
+                context.authentication = authentication
+                SecurityContextHolder.setContext(context)
+
+                SecurityContext.isAuthenticated() shouldBe false
+                SecurityContext.getCurrentUserId() shouldBe null
+                SecurityContext.getCurrentUsername() shouldBe null
+            }
+        }
+
+        `when`("인증된 상태이지만 null principal일 때") {
+            then("인증되지 않은 것으로 처리되어야 한다") {
+                val authorities = listOf(SimpleGrantedAuthority("ROLE_USER"))
+                val authentication = TestingAuthenticationToken(null, "password", authorities)
+                authentication.isAuthenticated = true
+
+                val context = SecurityContextHolder.createEmptyContext()
+                context.authentication = authentication
+                SecurityContextHolder.setContext(context)
+
+                SecurityContext.isAuthenticated() shouldBe false
+                SecurityContext.getCurrentUserId() shouldBe null
+                SecurityContext.getCurrentUsername() shouldBe null
+            }
+        }
+
+        `when`("인증 상태가 false인 Authentication 객체가 있을 때") {
+            then("인증되지 않은 것으로 처리되어야 한다") {
+                val authorities = listOf(SimpleGrantedAuthority("ROLE_USER"))
+                val authentication = TestingAuthenticationToken("123", "password", authorities)
+                authentication.isAuthenticated = false
+
+                val context = SecurityContextHolder.createEmptyContext()
+                context.authentication = authentication
+                SecurityContextHolder.setContext(context)
+
+                SecurityContext.isAuthenticated() shouldBe false
             }
         }
     }

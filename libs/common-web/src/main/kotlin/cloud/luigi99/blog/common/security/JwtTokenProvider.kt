@@ -2,13 +2,19 @@ package cloud.luigi99.blog.common.security
 
 import io.jsonwebtoken.*
 import io.jsonwebtoken.security.Keys
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.stereotype.Component
 import java.util.*
 import javax.crypto.SecretKey
 
+@Component
 class JwtTokenProvider(
+    @field:Value("\${jwt.secret}")
     private val secretKey: String,
-    private val accessTokenValidityInMilliseconds: Long = 86400000L, // 24시간
-    private val refreshTokenValidityInMilliseconds: Long = 2592000000L // 30일
+    @field:Value("\${jwt.access-token-validity}")
+    private val accessTokenValidityInMilliseconds: Long,
+    @field:Value("\${jwt.refresh-token-validity}")
+    private val refreshTokenValidityInMilliseconds: Long
 ) : TokenProvider {
 
     private val key: SecretKey by lazy {
