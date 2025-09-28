@@ -28,7 +28,7 @@ class JwtTokenProvider(
         return Jwts.builder()
             .subject(userId.toString())
             .claim("authorities", authorities)
-            .claim("type", "access")
+            .claim("type", TokenType.ACCESS.value)
             .issuedAt(now)
             .expiration(expiryDate)
             .signWith(key)
@@ -41,7 +41,7 @@ class JwtTokenProvider(
 
         return Jwts.builder()
             .subject(userId.toString())
-            .claim("type", "refresh")
+            .claim("type", TokenType.REFRESH.value)
             .issuedAt(now)
             .expiration(expiryDate)
             .signWith(key)
@@ -66,6 +66,28 @@ class JwtTokenProvider(
         } catch (ex: IllegalArgumentException) {
             false
         }
+    }
+
+    override fun validateAccessToken(token: String): Boolean {
+        return try {
+            validateToken(token) && getTokenType(token) == TokenType.ACCESS
+        } catch (ex: Exception) {
+            false
+        }
+    }
+
+    override fun validateRefreshToken(token: String): Boolean {
+        return try {
+            validateToken(token) && getTokenType(token) == TokenType.REFRESH
+        } catch (ex: Exception) {
+            false
+        }
+    }
+
+    override fun getTokenType(token: String): TokenType {
+        val claims = getClaims(token)
+        val typeValue = claims.get("type", String::class.java)
+        return TokenType.fromValueOrThrow(typeValue)
     }
 
     override fun getUserIdFromToken(token: String): Long {

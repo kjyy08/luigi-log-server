@@ -175,4 +175,147 @@ class JwtTokenProviderTest : BehaviorSpec({
             }
         }
     }
+
+    given("JwtTokenProvider 토큰 타입 검증") {
+        val secretKey = "testSecretKeyForJwtTokenProviderTestingPurposes123456"
+        val accessTokenValidity = 86400000L
+        val refreshTokenValidity = 2592000000L
+        val jwtTokenProvider = JwtTokenProvider(secretKey, accessTokenValidity, refreshTokenValidity)
+
+        `when`("액세스 토큰을 생성하고 타입을 검증할 때") {
+            val userId = 1L
+            val authorities = listOf("ROLE_USER")
+            val accessToken = jwtTokenProvider.generateAccessToken(userId, authorities)
+
+            then("액세스 토큰 검증이 성공하고 타입이 ACCESS여야 한다") {
+                jwtTokenProvider.validateAccessToken(accessToken) shouldBe true
+                jwtTokenProvider.validateRefreshToken(accessToken) shouldBe false
+                jwtTokenProvider.getTokenType(accessToken) shouldBe TokenType.ACCESS
+            }
+        }
+
+        `when`("리프레시 토큰을 생성하고 타입을 검증할 때") {
+            val userId = 2L
+            val refreshToken = jwtTokenProvider.generateRefreshToken(userId)
+
+            then("리프레시 토큰 검증이 성공하고 타입이 REFRESH여야 한다") {
+                jwtTokenProvider.validateRefreshToken(refreshToken) shouldBe true
+                jwtTokenProvider.validateAccessToken(refreshToken) shouldBe false
+                jwtTokenProvider.getTokenType(refreshToken) shouldBe TokenType.REFRESH
+            }
+        }
+
+        `when`("잘못된 토큰으로 타입 검증을 시도할 때") {
+            val invalidTokens = listOf(
+                "invalid.token",
+                "",
+                "eyJhbGciOiJIUzI1NiJ9.invalid",
+                "malformed.jwt.token"
+            )
+
+            then("모든 타입 검증이 실패해야 한다") {
+                invalidTokens.forEach { invalidToken ->
+                    jwtTokenProvider.validateAccessToken(invalidToken) shouldBe false
+                    jwtTokenProvider.validateRefreshToken(invalidToken) shouldBe false
+
+                    // getTokenType은 예외를 던져야 함
+                    try {
+                        jwtTokenProvider.getTokenType(invalidToken)
+                        throw AssertionError("예외가 발생해야 함")
+                    } catch (ex: Exception) {
+                        // 예외 발생이 정상
+                    }
+                }
+            }
+        }
+
+        `when`("만료된 토큰으로 타입 검증을 시도할 때") {
+            val shortValidity = 1L // 1ms로 설정하여 즉시 만료
+            val expiredTokenProvider = JwtTokenProvider(secretKey, shortValidity, shortValidity)
+            val expiredAccessToken = expiredTokenProvider.generateAccessToken(1L, listOf("ROLE_USER"))
+            val expiredRefreshToken = expiredTokenProvider.generateRefreshToken(1L)
+
+            // 토큰이 만료되도록 잠시 대기
+            Thread.sleep(10)
+
+            then("만료된 토큰의 타입 검증이 실패해야 한다") {
+                jwtTokenProvider.validateAccessToken(expiredAccessToken) shouldBe false
+                jwtTokenProvider.validateRefreshToken(expiredRefreshToken) shouldBe false
+
+                // getTokenType은 만료된 토큰에 대해 예외를 던져야 함 (ExpiredJwtException)
+                try {
+                    jwtTokenProvider.getTokenType(expiredAccessToken)
+                    throw AssertionError("만료된 토큰에 대해 예외가 발생해야 함")
+                } catch (ex: Exception) {
+                    // 예외 발생이 정상
+                }
+
+                try {
+                    jwtTokenProvider.getTokenType(expiredRefreshToken)
+                    throw AssertionError("만료된 토큰에 대해 예외가 발생해야 함")
+                } catch (ex: Exception) {
+                    // 예외 발생이 정상
+                }
+            }
+        }
+
+        `when`("다른 비밀키로 생성된 토큰으로 타입 검증을 시도할 때") {
+            val otherSecretKey = "differentSecretKeyForTestingPurposes987654321"
+            val otherProvider = JwtTokenProvider(otherSecretKey, accessTokenValidity, refreshTokenValidity)
+            val accessTokenFromOther = otherProvider.generateAccessToken(1L, listOf("ROLE_USER"))
+            val refreshTokenFromOther = otherProvider.generateRefreshToken(1L)
+
+            then("다른 키로 서명된 토큰의 타입 검증이 실패해야 한다") {
+                // 다른 키로 서명된 토큰은 서명 검증 단계에서 실패하므로 모든 검증이 false여야 함
+                jwtTokenProvider.validateAccessToken(accessTokenFromOther) shouldBe false
+                jwtTokenProvider.validateRefreshToken(refreshTokenFromOther) shouldBe false
+
+                // getTokenType도 서명 검증에 실패하므로 예외를 던져야 함 (SecurityException 발생)
+                try {
+                    jwtTokenProvider.getTokenType(accessTokenFromOther)
+                    throw AssertionError("서명 검증 실패로 예외가 발생해야 함")
+                } catch (ex: Exception) {
+                    // 예외 발생이 정상
+                }
+
+                try {
+                    jwtTokenProvider.getTokenType(refreshTokenFromOther)
+                    throw AssertionError("서명 검증 실패로 예외가 발생해야 함")
+                } catch (ex: Exception) {
+                    // 예외 발생이 정상
+                }
+            }
+        }
+    }
+
+    given("TokenType enum 클래스") {
+        `when`("유효한 문자열 값으로 TokenType을 찾을 때") {
+            then("올바른 TokenType을 반환해야 한다") {
+                TokenType.fromValue("access") shouldBe TokenType.ACCESS
+                TokenType.fromValue("refresh") shouldBe TokenType.REFRESH
+            }
+        }
+
+        `when`("유효하지 않은 문자열 값으로 TokenType을 찾을 때") {
+            then("null을 반환해야 한다") {
+                TokenType.fromValue("invalid") shouldBe null
+                TokenType.fromValue("") shouldBe null
+                TokenType.fromValue("bearer") shouldBe null
+            }
+        }
+
+        `when`("fromValueOrThrow를 사용할 때") {
+            then("유효한 값은 TokenType을 반환하고 유효하지 않은 값은 예외를 발생시켜야 한다") {
+                TokenType.fromValueOrThrow("access") shouldBe TokenType.ACCESS
+                TokenType.fromValueOrThrow("refresh") shouldBe TokenType.REFRESH
+
+                try {
+                    TokenType.fromValueOrThrow("invalid")
+                    throw AssertionError("예외가 발생해야 함")
+                } catch (ex: IllegalArgumentException) {
+                    ex.message shouldBe "유효하지 않은 토큰 타입: invalid"
+                }
+            }
+        }
+    }
 })

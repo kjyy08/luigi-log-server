@@ -48,36 +48,62 @@ data class PageResponse<T>(
             size: Int,
             oneBasedPage: Boolean = false
         ): PageResponse<T> {
-            // 입력 검증
+            validateInputs(totalElements, currentPage, size, oneBasedPage)
+
+            val adjustedCurrentPage = adjustCurrentPageToZeroBased(currentPage, oneBasedPage)
+            val totalPages = calculateTotalPages(totalElements, size)
+            val validCurrentPage = validateCurrentPageRange(adjustedCurrentPage, totalPages)
+
+            return createPageResponse(
+                content = content,
+                totalElements = totalElements,
+                totalPages = totalPages,
+                validCurrentPage = validCurrentPage,
+                size = size,
+                oneBasedPage = oneBasedPage
+            )
+        }
+
+        private fun validateInputs(totalElements: Long, currentPage: Int, size: Int, oneBasedPage: Boolean) {
             require(totalElements >= 0) { "totalElements는 0 이상이어야 합니다: $totalElements" }
             require(size >= 0) { "size는 0 이상이어야 합니다: $size" }
 
-            val adjustedCurrentPage = if (oneBasedPage) {
+            if (oneBasedPage) {
                 require(currentPage >= 1) { "oneBasedPage가 true일 때 currentPage는 1 이상이어야 합니다: $currentPage" }
-                currentPage - 1 // 내부적으로는 0-based로 처리
             } else {
                 require(currentPage >= 0) { "currentPage는 0 이상이어야 합니다: $currentPage" }
-                currentPage
             }
+        }
 
-            // 페이지 수 계산 (Spring Data와 동일한 로직)
-            val totalPages = if (size == 0) {
+        private fun adjustCurrentPageToZeroBased(currentPage: Int, oneBasedPage: Boolean): Int {
+            return if (oneBasedPage) currentPage - 1 else currentPage
+        }
+
+        private fun calculateTotalPages(totalElements: Long, size: Int): Int {
+            return if (size == 0) {
                 if (totalElements > 0) 1 else 0
             } else {
-                ((totalElements + size - 1) / size).let { pages ->
-                    // 오버플로우 방지
-                    if (pages > Int.MAX_VALUE) Int.MAX_VALUE else pages.toInt()
-                }
+                val pages = (totalElements + size - 1) / size
+                minOf(pages, Int.MAX_VALUE.toLong()).toInt()
             }
+        }
 
-            // 현재 페이지가 유효 범위를 벗어나는 경우 조정
-            val validCurrentPage = when {
+        private fun validateCurrentPageRange(adjustedCurrentPage: Int, totalPages: Int): Int {
+            return when {
                 totalPages == 0 -> 0
                 adjustedCurrentPage >= totalPages -> totalPages - 1
-                adjustedCurrentPage < 0 -> 0
-                else -> adjustedCurrentPage
+                else -> adjustedCurrentPage // adjustedCurrentPage < 0 케이스 제거 (항상 false)
             }
+        }
 
+        private fun <T> createPageResponse(
+            content: List<T>,
+            totalElements: Long,
+            totalPages: Int,
+            validCurrentPage: Int,
+            size: Int,
+            oneBasedPage: Boolean
+        ): PageResponse<T> {
             val isFirst = validCurrentPage == 0
             val isLast = totalPages == 0 || validCurrentPage >= totalPages - 1
             val hasNext = !isLast && totalPages > 0
