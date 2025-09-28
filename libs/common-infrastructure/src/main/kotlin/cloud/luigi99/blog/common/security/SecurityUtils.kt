@@ -98,8 +98,7 @@ object SecurityUtils {
      * @return 권한 보유 여부 (하나라도 있으면 true)
      */
     fun hasAnyAuthority(vararg authorities: String): Boolean {
-        val authentication = getCurrentAuthentication()
-        if (authentication == null) return false
+        val authentication = getCurrentAuthentication() ?: return false
 
         val userAuthorities = authentication.authorities?.map { it.authority }?.toSet() ?: emptySet()
         return authorities.any { it in userAuthorities }

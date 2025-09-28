@@ -4,67 +4,122 @@ import io.jsonwebtoken.*
 import io.jsonwebtoken.security.Keys
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
-import javax.crypto.SecretKey
 import java.util.*
+import javax.crypto.SecretKey
 
 @Component
-class JwtTokenProvider {
-    
-    @Value("\${jwt.secret:my-secret-key-for-jwt-token-generation-must-be-long}")
-    private lateinit var secret: String
-    
-    @Value("\${jwt.access-token-validity:86400000}") // 24 hours
-    private var accessTokenValidityMillis: Long = 86400000
-    
-    @Value("\${jwt.refresh-token-validity:2592000000}") // 30 days  
-    private var refreshTokenValidityMillis: Long = 2592000000
-    
+class JwtTokenProvider(
+    @field:Value("\${jwt.secret}")
+    private val secretKey: String,
+    @field:Value("\${jwt.access-token-validity}")
+    private val accessTokenValidityInMilliseconds: Long,
+    @field:Value("\${jwt.refresh-token-validity}")
+    private val refreshTokenValidityInMilliseconds: Long
+) : TokenProvider {
+
     private val key: SecretKey by lazy {
-        Keys.hmacShaKeyFor(secret.toByteArray())
+        Keys.hmacShaKeyFor(secretKey.toByteArray())
     }
-    
-    fun generateAccessToken(username: String): String {
-        return generateToken(username, accessTokenValidityMillis)
-    }
-    
-    fun generateRefreshToken(username: String): String {
-        return generateToken(username, refreshTokenValidityMillis)
-    }
-    
-    private fun generateToken(username: String, validityMillis: Long): String {
+
+    override fun generateAccessToken(userId: Long, authorities: List<String>): String {
         val now = Date()
-        val validity = Date(now.time + validityMillis)
-        
+        val expiryDate = Date(now.time + accessTokenValidityInMilliseconds)
+
         return Jwts.builder()
-            .subject(username)
+            .subject(userId.toString())
+            .claim("authorities", authorities)
+            .claim("type", TokenType.ACCESS.value)
             .issuedAt(now)
-            .expiration(validity)
+            .expiration(expiryDate)
             .signWith(key)
             .compact()
     }
-    
-    fun getUsernameFromToken(token: String): String? {
-        return try {
-            val claims = Jwts.parser()
-                .verifyWith(key)
-                .build()
-                .parseSignedClaims(token)
-                .payload
-            claims.subject
-        } catch (e: JwtException) {
-            null
-        }
+
+    override fun generateRefreshToken(userId: Long): String {
+        val now = Date()
+        val expiryDate = Date(now.time + refreshTokenValidityInMilliseconds)
+
+        return Jwts.builder()
+            .subject(userId.toString())
+            .claim("type", TokenType.REFRESH.value)
+            .issuedAt(now)
+            .expiration(expiryDate)
+            .signWith(key)
+            .compact()
     }
-    
-    fun isTokenValid(token: String): Boolean {
+
+    override fun validateToken(token: String): Boolean {
         return try {
             Jwts.parser()
                 .verifyWith(key)
                 .build()
                 .parseSignedClaims(token)
             true
-        } catch (e: JwtException) {
+        } catch (ex: SecurityException) {
+            false
+        } catch (ex: MalformedJwtException) {
+            false
+        } catch (ex: ExpiredJwtException) {
+            false
+        } catch (ex: UnsupportedJwtException) {
+            false
+        } catch (ex: IllegalArgumentException) {
             false
         }
+    }
+
+    override fun validateAccessToken(token: String): Boolean {
+        return try {
+            validateToken(token) && getTokenType(token) == TokenType.ACCESS
+        } catch (ex: Exception) {
+            false
+        }
+    }
+
+    override fun validateRefreshToken(token: String): Boolean {
+        return try {
+            validateToken(token) && getTokenType(token) == TokenType.REFRESH
+        } catch (ex: Exception) {
+            false
+        }
+    }
+
+    override fun getTokenType(token: String): TokenType {
+        val claims = getClaims(token)
+        val typeValue = claims.get("type", String::class.java)
+        return TokenType.fromValueOrThrow(typeValue)
+    }
+
+    override fun getUserIdFromToken(token: String): Long {
+        val claims = getClaims(token)
+        return claims.subject.toLong()
+    }
+
+    override fun getAuthoritiesFromToken(token: String): List<String> {
+        val claims = getClaims(token)
+        val authorities = claims.get("authorities", List::class.java)
+        return if (authorities is List<*>) {
+            authorities.filterIsInstance<String>()
+        } else {
+            emptyList()
+        }
+    }
+
+    override fun getExpirationFromToken(token: String): Long {
+        val claims = getClaims(token)
+        return claims.expiration.time
+    }
+
+    override fun isTokenExpired(token: String): Boolean {
+        val expiration = getExpirationFromToken(token)
+        return Date(expiration).before(Date())
+    }
+
+    private fun getClaims(token: String): Claims {
+        return Jwts.parser()
+            .verifyWith(key)
+            .build()
+            .parseSignedClaims(token)
+            .payload
     }
 }
