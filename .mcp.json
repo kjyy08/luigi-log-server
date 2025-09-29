@@ -7,14 +7,6 @@
         "@upstash/context7-mcp"
       ]
     },
-    "obsidian": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "obsidian-mcp",
-        "C:\\Users\\kjyy0\\luigi99"
-      ]
-    },
     "sequential-thinking": {
       "command": "npx",
       "args": [
