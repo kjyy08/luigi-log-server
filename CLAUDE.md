@@ -94,11 +94,17 @@ git clone <repository-url>
 cd luigi-log-server
 ./gradlew build
 
-# Run application locally
+# Run application locally (with local profile)
 ./gradlew :mains:monolith-main:bootRun
 ```
 
-*Note: Docker, production database, and advanced tooling configurations are not yet implemented.*
+### Application Configuration
+The application uses Spring profiles for environment-specific configuration:
+- **Local Development**: `application-local.yml` with H2 database
+- **JWT Configuration**: Pre-configured with 24-hour access tokens and 30-day refresh tokens
+- **Management Endpoints**: Health, info, and metrics endpoints exposed for monitoring
+
+*Note: Docker build and PostgreSQL production configuration are configured via CI/CD but not yet used for local development.*
 
 ## Architecture Overview
 
@@ -206,10 +212,11 @@ The project uses a sophisticated multi-module Gradle setup with custom plugins:
 #### Architecture Foundation
 - Multi-module Gradle setup with all 19 modules configured
 - Hexagonal architecture package structure implemented
+- Custom Gradle plugins for consistent module configuration
 - Dependency management and module relationships established
 
 #### Common Libraries (`libs/`)
-- **common-domain**: BaseEntity, DomainEvent, AggregateRoot, ValueObject, business exceptions
+- **common-domain**: BaseEntity, DomainEvent, AggregateRoot, ValueObject, business exceptions with comprehensive tests
 - **common-infrastructure**: JPA base repository, domain event publisher, security utilities
 - **common-web**: API response models, Token provider, validation utilities, security context
 
@@ -227,6 +234,15 @@ The project uses a sophisticated multi-module Gradle setup with custom plugins:
 - **search**: Search functionality (structure ready)
 - **analytics**: Usage analytics and metrics (structure ready)
 - **ai**: AI chatbot services (basic structure for Phase 2)
+
+#### Custom Gradle Plugin System
+- **kotlin-base.gradle.kts**: Core Kotlin compilation settings
+- **domain.gradle.kts**: Domain module conventions
+- **persistence.gradle.kts**: JPA and database configurations
+- **test.gradle.kts**: Test framework and runner configurations
+- **kover.gradle.kts**: Coverage analysis with SonarQube integration
+- **spring-boot.gradle.kts**: Spring Boot application configurations
+- **web.gradle.kts**: Web layer configurations
 
 ### 🔄 Ready for Implementation
 
@@ -379,10 +395,18 @@ The project uses automated CI/CD with comprehensive quality checks:
 - **Gradle**: 8.14.3 (automatically cached)
 - **Timeout**: 15 minutes for test stage
 - **Parallelization**: Enabled with build cache and parallel execution
+- **Container Registry**: GitHub Container Registry (ghcr.io)
 
 #### Secrets Required
 - `SONAR_TOKEN`: For SonarCloud analysis
 - `GITHUB_TOKEN`: For Docker registry (automatically provided)
+
+#### Docker Build & Deployment
+The CI/CD pipeline includes automated Docker image builds:
+- **Triggers**: Push to main branch (after successful tests)
+- **Registry**: GitHub Container Registry (`ghcr.io/${github.repository}`)
+- **Tags**: latest, branch name, SHA, and timestamp-based tags
+- **Optimization**: Uses Docker Buildx with caching for faster builds
 
 ## GitHub Guidelines
 
