@@ -1,5 +1,7 @@
 package cloud.luigi99.blog.common.domain
 
+import cloud.luigi99.blog.common.domain.fixtures.TestEntity
+import cloud.luigi99.blog.common.domain.fixtures.TestEntityId
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -73,8 +75,9 @@ class BaseEntityTest : BehaviorSpec({
         `when`("toString 메서드를 호출하면") {
             val result = entity.toString()
 
-            then("클래스명과 ID, 생성시각, 수정시각을 포함한 문자열을 반환한다") {
+            then("클래스명과 EntityId, 생성시각, 수정시각을 포함한 문자열을 반환한다") {
                 result shouldContain "TestEntity"
+                result shouldContain "entityId"
                 result shouldContain entityId.toString()
                 result shouldContain createdAt.toString()
                 result shouldContain updatedAt.toString()
@@ -120,11 +123,3 @@ class BaseEntityTest : BehaviorSpec({
     }
 })
 
-/**
- * 테스트용 BaseEntity 구현체
- */
-private class TestEntity(
-    override val id: UUID,
-    override val createdAt: LocalDateTime,
-    override var updatedAt: LocalDateTime?
-) : BaseEntity()

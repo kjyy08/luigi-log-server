@@ -1,5 +1,7 @@
 package cloud.luigi99.blog.common.persistence
 
+import cloud.luigi99.blog.common.fixtures.TestJpaEntity
+import cloud.luigi99.blog.common.fixtures.TestEntityId
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -16,9 +18,9 @@ class BaseJpaEntityTest : BehaviorSpec({
                 val entity1 = TestJpaEntity()
                 val entity2 = TestJpaEntity()
 
-                entity1.id.shouldNotBeNull()
-                entity2.id.shouldNotBeNull()
-                entity1.id shouldNotBe entity2.id
+                entity1.entityId.shouldNotBeNull()
+                entity2.entityId.shouldNotBeNull()
+                entity1.entityId shouldNotBe entity2.entityId
             }
 
             then("createdAt이 자동으로 설정되어야 한다") {
@@ -61,9 +63,9 @@ class BaseJpaEntityTest : BehaviorSpec({
     given("동일한 ID를 가진 두 엔티티") {
         `when`("동등성을 비교할 때") {
             then("같다고 판단되어야 한다") {
-                val id = UUID.randomUUID()
-                val entity1 = TestJpaEntity(id)
-                val entity2 = TestJpaEntity(id)
+                val entityId = TestEntityId()
+                val entity1 = TestJpaEntity(entityId)
+                val entity2 = TestJpaEntity(entityId)
 
                 entity1 shouldBe entity2
                 entity1.hashCode() shouldBe entity2.hashCode()
@@ -114,7 +116,7 @@ class BaseJpaEntityTest : BehaviorSpec({
                 val stringRepresentation = entity.toString()
 
                 stringRepresentation shouldContain "TestJpaEntity"
-                stringRepresentation shouldContain "id="
+                stringRepresentation shouldContain "entityId="
                 stringRepresentation shouldContain "createdAt="
                 stringRepresentation shouldContain "updatedAt="
             }
@@ -124,10 +126,10 @@ class BaseJpaEntityTest : BehaviorSpec({
     given("고정된 ID를 가진 엔티티") {
         `when`("생성자에서 ID를 지정할 때") {
             then("지정된 ID가 사용되어야 한다") {
-                val fixedId = UUID.randomUUID()
-                val entity = TestJpaEntity(fixedId)
+                val fixedEntityId = TestEntityId()
+                val entity = TestJpaEntity(fixedEntityId)
 
-                entity.id shouldBe fixedId
+                entity.entityId shouldBe fixedEntityId
             }
         }
     }
@@ -136,7 +138,7 @@ class BaseJpaEntityTest : BehaviorSpec({
         `when`("대량의 엔티티를 생성할 때") {
             then("모든 ID가 고유해야 한다") {
                 val entities = (1..100).map { TestJpaEntity() }
-                val ids = entities.map { it.id }.toSet()
+                val ids = entities.map { it.entityId }.toSet()
 
                 ids.size shouldBe 100 // 모든 ID가 고유하므로 Set 크기는 100이어야 함
             }
@@ -219,12 +221,4 @@ class BaseJpaEntityTest : BehaviorSpec({
     }
 
 }) {
-    /**
-     * 테스트용 JPA 엔티티 클래스
-     */
-    class TestJpaEntity(
-        fixedId: UUID? = null
-    ) : BaseJpaEntity() {
-        override val id: UUID = fixedId ?: super.id
-    }
 }

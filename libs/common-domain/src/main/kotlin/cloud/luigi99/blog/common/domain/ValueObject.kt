@@ -65,8 +65,8 @@ abstract class ValueObject {
      * @throws IllegalArgumentException 값 객체가 유효하지 않은 경우
      */
     protected fun validate() {
-        if (!isValid()) {
-            throw IllegalArgumentException("${this::class.simpleName}의 값이 유효하지 않습니다.")
+        require(isValid()) {
+            "${this::class.simpleName} is not valid"
         }
     }
 }

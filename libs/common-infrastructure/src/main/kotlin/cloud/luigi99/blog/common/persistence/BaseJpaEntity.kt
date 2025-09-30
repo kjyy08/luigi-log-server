@@ -1,6 +1,7 @@
 package cloud.luigi99.blog.common.persistence
 
 import cloud.luigi99.blog.common.domain.BaseEntity
+import cloud.luigi99.blog.common.domain.ValueObject
 import jakarta.persistence.*
 import org.hibernate.annotations.SQLDelete
 import org.hibernate.annotations.SoftDelete
@@ -8,7 +9,6 @@ import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import java.time.LocalDateTime
-import java.util.*
 
 /**
  * JPA 엔티티의 공통 기반 클래스
@@ -18,20 +18,14 @@ import java.util.*
  * - UUID 기반 기본키 매핑
  * - 도메인 엔티티와의 일관성 보장
  * - Soft Delete 자동 적용 (Hibernate 어노테이션 사용)
+ *
+ * @param T 엔티티 식별자 타입 (ValueObject를 상속받은 타입)
  */
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener::class)
 @SoftDelete(columnName = "deleted")
 @SQLDelete(sql = "UPDATE #{#entityName} SET deleted = true, deleted_at = NOW() WHERE id = ?")
-abstract class BaseJpaEntity : BaseEntity() {
-
-    /**
-     * 엔티티의 고유 식별자
-     * UUID를 사용하여 전역적으로 유니크한 값을 보장합니다.
-     */
-    @Id
-    @Column(columnDefinition = "BINARY(16)")
-    override val id: UUID = UUID.randomUUID()
+abstract class BaseJpaEntity<out T : ValueObject> : BaseEntity<T>() {
 
     /**
      * 엔티티 생성 시각

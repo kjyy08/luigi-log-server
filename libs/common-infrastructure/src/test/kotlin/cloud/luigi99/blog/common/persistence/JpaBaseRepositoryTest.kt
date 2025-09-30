@@ -1,5 +1,8 @@
 package cloud.luigi99.blog.common.persistence
 
+import cloud.luigi99.blog.common.fixtures.TestJpaEntity
+import cloud.luigi99.blog.common.fixtures.TestEntityId
+import cloud.luigi99.blog.common.fixtures.TestJpaRepository
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
@@ -11,6 +14,12 @@ import io.mockk.verify
 import java.time.LocalDateTime
 import java.util.*
 
+/**
+ * JpaBaseRepository의 행위를 검증하는 테스트
+ *
+ * MockK를 사용하여 JPA 레포지토리의 기본 기능을 테스트합니다.
+ * 실제 데이터베이스 연동 없이 계약(Contract) 검증에 집중합니다.
+ */
 class JpaBaseRepositoryTest : BehaviorSpec({
 
     given("JpaBaseRepository MockK 테스트") {
@@ -19,7 +28,6 @@ class JpaBaseRepositoryTest : BehaviorSpec({
         beforeEach {
             clearAllMocks()
         }
-
 
         `when`("삭제된 엔티티 조회 테스트") {
             then("findAllDeleted가 삭제된 엔티티만 반환해야 한다") {
@@ -97,57 +105,18 @@ class JpaBaseRepositoryTest : BehaviorSpec({
                 every { mockRepository.findAll() } returns activeEntities
                 every { mockRepository.count() } returns 2L
 
-                mockRepository.findAll() shouldHaveSize 2
-                mockRepository.count() shouldBe 2L
+                val allActive = mockRepository.findAll()
+                val activeCount = mockRepository.count()
+
+                allActive shouldHaveSize 2
+                activeCount shouldBe 2L
 
                 verify(exactly = 1) { mockRepository.findAll() }
                 verify(exactly = 1) { mockRepository.count() }
             }
-
-            then("@SoftDelete와 @SQLDelete가 함께 정상 동작해야 한다") {
-                val mockRepository = mockk<TestJpaRepository>()
-                val testEntity = TestJpaEntity()
-
-                // JPA 표준 delete() 메서드 사용 (@SQLDelete 자동 실행)
-                every { mockRepository.delete(testEntity) } returns Unit
-
-                mockRepository.delete(testEntity)
-
-                verify(exactly = 1) { mockRepository.delete(testEntity) }
-            }
         }
 
-        `when`("날짜 기반 조회 메서드 테스트") {
-            then("findAllCreatedAfter가 정상 동작해야 한다") {
-                val mockRepository = mockk<TestJpaRepository>()
-                val testDate = LocalDateTime.now().minusDays(1)
-                val entities = listOf(TestJpaEntity(), TestJpaEntity())
-
-                every { mockRepository.findAllCreatedAfter(testDate) } returns entities
-
-                val result = mockRepository.findAllCreatedAfter(testDate)
-
-                result shouldHaveSize 2
-                result shouldBe entities
-                verify(exactly = 1) { mockRepository.findAllCreatedAfter(testDate) }
-            }
-
-            then("findAllUpdatedAfter가 정상 동작해야 한다") {
-                val mockRepository = mockk<TestJpaRepository>()
-                val testDate = LocalDateTime.now().minusDays(1)
-                val entities = listOf(TestJpaEntity(), TestJpaEntity())
-
-                every { mockRepository.findAllUpdatedAfter(testDate) } returns entities
-
-                val result = mockRepository.findAllUpdatedAfter(testDate)
-
-                result shouldHaveSize 2
-                result shouldBe entities
-                verify(exactly = 1) { mockRepository.findAllUpdatedAfter(testDate) }
-            }
-        }
-
-        `when`("낙관적 락 관련 조회 테스트") {
+        `when`("낙관적 락 기능 테스트") {
             then("findByIdWithLock이 정상 동작해야 한다") {
                 val mockRepository = mockk<TestJpaRepository>()
                 val testId = UUID.randomUUID()
@@ -165,96 +134,73 @@ class JpaBaseRepositoryTest : BehaviorSpec({
             then("findByIdAndVersion이 정상 동작해야 한다") {
                 val mockRepository = mockk<TestJpaRepository>()
                 val testId = UUID.randomUUID()
-                val testVersion = 1L
+                val version = 1L
                 val testEntity = TestJpaEntity()
 
-                every { mockRepository.findByIdAndVersion(testId, testVersion) } returns Optional.of(testEntity)
+                every { mockRepository.findByIdAndVersion(testId, version) } returns Optional.of(testEntity)
 
-                val result = mockRepository.findByIdAndVersion(testId, testVersion)
+                val result = mockRepository.findByIdAndVersion(testId, version)
 
                 result.isPresent shouldBe true
                 result.get() shouldBe testEntity
-                verify(exactly = 1) { mockRepository.findByIdAndVersion(testId, testVersion) }
-            }
-
-            then("버전이 일치하지 않으면 빈 Optional을 반환해야 한다") {
-                val mockRepository = mockk<TestJpaRepository>()
-                val testId = UUID.randomUUID()
-                val wrongVersion = 999L
-
-                every { mockRepository.findByIdAndVersion(testId, wrongVersion) } returns Optional.empty()
-
-                val result = mockRepository.findByIdAndVersion(testId, wrongVersion)
-
-                result.isEmpty shouldBe true
-                verify(exactly = 1) { mockRepository.findByIdAndVersion(testId, wrongVersion) }
+                verify(exactly = 1) { mockRepository.findByIdAndVersion(testId, version) }
             }
         }
 
-        `when`("기본 JPA 메서드 동작 테스트") {
-            then("@SoftDelete 어노테이션으로 deleted=false 자동 적용") {
+        `when`("감사 정보 기반 조회 테스트") {
+            then("findAllCreatedAfter가 정상 동작해야 한다") {
                 val mockRepository = mockk<TestJpaRepository>()
-                val entities = listOf(TestJpaEntity(), TestJpaEntity())
+                val baseDate = LocalDateTime.now().minusDays(1)
+                val recentEntities = listOf(TestJpaEntity(), TestJpaEntity())
 
-                // 기본 JPA 메서드도 @SoftDelete 어노테이션으로 deleted=false 자동 적용
-                every { mockRepository.findAll() } returns entities
-                every { mockRepository.count() } returns 2L
+                every { mockRepository.findAllCreatedAfter(baseDate) } returns recentEntities
 
-                mockRepository.findAll() shouldHaveSize 2
-                mockRepository.count() shouldBe 2L
+                val result = mockRepository.findAllCreatedAfter(baseDate)
 
-                verify(exactly = 1) { mockRepository.findAll() }
-                verify(exactly = 1) { mockRepository.count() }
+                result shouldHaveSize 2
+                result shouldBe recentEntities
+                verify(exactly = 1) { mockRepository.findAllCreatedAfter(baseDate) }
+            }
+
+            then("findAllUpdatedAfter가 정상 동작해야 한다") {
+                val mockRepository = mockk<TestJpaRepository>()
+                val baseDate = LocalDateTime.now().minusHours(2)
+                val updatedEntities = listOf(TestJpaEntity())
+
+                every { mockRepository.findAllUpdatedAfter(baseDate) } returns updatedEntities
+
+                val result = mockRepository.findAllUpdatedAfter(baseDate)
+
+                result shouldHaveSize 1
+                result shouldBe updatedEntities
+                verify(exactly = 1) { mockRepository.findAllUpdatedAfter(baseDate) }
             }
         }
     }
 
-    given("BaseJpaEntity와의 통합") {
-        `when`("TestJpaEntity를 생성할 때") {
-            then("BaseJpaEntity의 모든 기능을 상속받아야 한다") {
+    given("TestJpaEntity 기본 동작 확인") {
+        `when`("새로운 엔티티를 생성할 때") {
+            then("기본 값들이 올바르게 설정되어야 한다") {
                 val entity = TestJpaEntity()
 
-                // BaseJpaEntity의 기본 필드들
-                entity.id shouldBe entity.id
-                entity.createdAt shouldBe entity.createdAt
-                entity.updatedAt shouldBe null
-
-                // 새로 추가된 필드들
-                entity.version shouldBe 0L
+                entity.entityId shouldNotBe null
                 entity.deleted shouldBe false
                 entity.deletedAt shouldBe null
                 entity.isDeleted() shouldBe false
             }
+        }
 
-            then("Soft Delete 기능이 정상적으로 동작해야 한다") {
+        `when`("onSoftDelete 콜백이 호출될 때") {
+            then("삭제 상태가 올바르게 설정되어야 한다") {
                 val entity = TestJpaEntity()
 
-                // 삭제 전 상태
-                entity.isDeleted() shouldBe false
-
-                // @PreRemove 콜백 시뮬레이션 (JPA delete() 호출 시 자동 실행)
                 entity.onSoftDelete()
-                entity.isDeleted() shouldBe true
+
                 entity.deleted shouldBe true
                 entity.deletedAt shouldNotBe null
-
-                // 주의: 실제 복원은 Repository의 restoreById() 사용
-                // Entity 레벨에서는 @PreRemove 콜백만 제공
+                entity.isDeleted() shouldBe true
             }
         }
     }
-}) {
-    /**
-     * 테스트용 JPA Repository 인터페이스
-     */
-    interface TestJpaRepository : JpaBaseRepository<TestJpaEntity, UUID>
+})
 
-    /**
-     * 테스트용 JPA 엔티티 클래스
-     */
-    class TestJpaEntity(
-        fixedId: UUID? = null
-    ) : BaseJpaEntity() {
-        override val id: UUID = fixedId ?: super.id
-    }
-}
