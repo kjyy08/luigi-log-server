@@ -1,3 +1,10 @@
+---
+argument-hint: [issue-number] [additional-instructions]
+description: Execute development workflow from issue
+---
+
+# Development Task Workflow
+
 Follow this development workflow for all feature implementations. All work and responses must be in Korean.
 
 ## Development Workflow
