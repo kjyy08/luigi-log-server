@@ -10,8 +10,10 @@ package cloud.luigi99.blog.common.domain
  * - 도메인 이벤트 수집 및 발행
  * - 비즈니스 불변 조건 보장
  * - 트랜잭션 경계 정의
+ *
+ * @param T 엔티티 식별자 타입 (ValueObject를 상속받은 타입)
  */
-abstract class AggregateRoot : BaseEntity() {
+abstract class AggregateRoot<out T : ValueObject> : BaseEntity<T>() {
 
     /**
      * 발생한 도메인 이벤트들을 저장하는 내부 컬렉션

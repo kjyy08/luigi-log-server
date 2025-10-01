@@ -1,5 +1,6 @@
 package cloud.luigi99.blog.common.persistence
 
+import cloud.luigi99.blog.common.domain.ValueObject
 import jakarta.persistence.LockModeType
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Lock
@@ -15,15 +16,19 @@ import java.util.*
  *
  * 모든 JPA 레포지토리에서 공통으로 사용되는 메서드들을 제공합니다.
  * - 기본 CRUD 연산 (Soft Delete 자동 적용)
- * - Soft Delete 지원 (BaseJpaEntity의 Hibernate 어노테이션 사용)
+ * - Soft Delete 지원 (JpaAggregate의 Hibernate 어노테이션 사용)
  * - 대량 연산 지원
  * - 감사 정보 기반 조회
  *
- * 주의: BaseJpaEntity의 @SoftDelete 어노테이션으로 인해 모든 조회에서
+ * 주의: JpaAggregate의 @SoftDelete 어노테이션으로 인해 모든 조회에서
  * deleted=false 조건이 자동으로 적용됩니다.
+ *
+ * @param T JPA 엔티티 타입 (JpaAggregate 상속)
+ * @param V 엔티티 식별자의 ValueObject 타입
+ * @param ID JPA 기본키 타입 (일반적으로 UUID)
  */
 @NoRepositoryBean
-interface JpaBaseRepository<T: BaseJpaEntity, ID : Any> : JpaRepository<T, ID> {
+interface JpaBaseRepository<T: JpaAggregate<V>, V : ValueObject, ID : Any> : JpaRepository<T, ID> {
 
     /**
      * 특정 날짜 이후에 생성된 엔티티들을 조회합니다.

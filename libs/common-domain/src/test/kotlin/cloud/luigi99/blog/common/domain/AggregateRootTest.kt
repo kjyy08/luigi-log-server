@@ -1,7 +1,11 @@
 package cloud.luigi99.blog.common.domain
 
+import cloud.luigi99.blog.common.domain.fixtures.TestAggregateRoot
+import cloud.luigi99.blog.common.domain.fixtures.TestAggregateId
+import cloud.luigi99.blog.common.domain.fixtures.TestDomainEvent
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldHaveSize
@@ -173,35 +177,3 @@ class AggregateRootTest : BehaviorSpec({
     }
 })
 
-/**
- * 테스트용 AggregateRoot 구현체
- */
-private class TestAggregateRoot(
-    override val id: UUID,
-    override val createdAt: LocalDateTime,
-    override var updatedAt: LocalDateTime?
-) : AggregateRoot() {
-
-    fun addEvent(event: DomainEvent) {
-        addDomainEvent(event)
-    }
-
-    fun addEvents(vararg events: DomainEvent) {
-        addDomainEvents(*events)
-    }
-
-    fun addEvents(events: Collection<DomainEvent>) {
-        addDomainEvents(events)
-    }
-}
-
-/**
- * 테스트용 DomainEvent 구현체
- */
-private class TestDomainEvent(
-    override val aggregateId: UUID,
-    override val eventType: String
-) : DomainEvent {
-    override val eventId: UUID = UUID.randomUUID()
-    override val occurredAt: LocalDateTime = LocalDateTime.now()
-}
