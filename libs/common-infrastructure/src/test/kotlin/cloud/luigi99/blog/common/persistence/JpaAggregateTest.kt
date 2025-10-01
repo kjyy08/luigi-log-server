@@ -59,9 +59,8 @@ class JpaAggregateTest : BehaviorSpec({
                 aggregate.version shouldBe 0L
             }
 
-            then("deleted가 false로 초기화된다") {
-                aggregate.deleted shouldBe false
-                aggregate.isDeleted() shouldBe false
+            then("deletedAt은 초기에 null이다") {
+                aggregate.deletedAt shouldBe null
             }
         }
     }
@@ -150,16 +149,26 @@ class JpaAggregateTest : BehaviorSpec({
         }
     }
 
-    given("Soft Delete 기능을 테스트할 때") {
-        val aggregate = TestJpaAggregate()
+    given("Soft Delete 기능") {
+        `when`("엔티티를 삭제하면") {
+            val aggregate = TestJpaAggregate()
 
-        `when`("onSoftDelete()가 호출되면") {
+            // 삭제 전 상태 확인
+            aggregate.deletedAt shouldBe null
+
+            // Soft Delete 실행
             aggregate.onSoftDelete()
 
-            then("삭제 상태가 올바르게 설정된다") {
-                aggregate.deleted shouldBe true
+            then("삭제 시각이 기록된다") {
                 aggregate.deletedAt.shouldNotBeNull()
-                aggregate.isDeleted() shouldBe true
+            }
+        }
+
+        `when`("삭제되지 않은 엔티티는") {
+            val aggregate = TestJpaAggregate()
+
+            then("deletedAt이 null이다") {
+                aggregate.deletedAt shouldBe null
             }
         }
     }

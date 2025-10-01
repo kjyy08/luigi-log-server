@@ -2,7 +2,6 @@ package cloud.luigi99.blog.common.fixtures
 
 import cloud.luigi99.blog.common.domain.DomainEvent
 import cloud.luigi99.blog.common.domain.ValueObject
-import cloud.luigi99.blog.common.persistence.BaseJpaEntity
 import cloud.luigi99.blog.common.persistence.JpaAggregate
 import java.time.LocalDateTime
 import java.util.*
@@ -51,13 +50,14 @@ class TestDomainEvent(
 }
 
 /**
- * 테스트용 JPA 엔티티
+ * 테스트용 JPA 엔티티 (단순 엔티티, 도메인 이벤트 불필요)
  *
- * BaseJpaEntity 관련 테스트에서 사용되는 구체 클래스입니다.
+ * 만약 도메인 이벤트가 필요 없는 단순 엔티티가 필요하다면
+ * 이 클래스를 사용할 수 있습니다. 하지만 대부분의 경우 TestJpaAggregate를 사용합니다.
  */
 class TestJpaEntity(
     override val entityId: TestEntityId = TestEntityId()
-) : BaseJpaEntity<TestEntityId>()
+) : JpaAggregate<TestEntityId>()
 
 /**
  * 테스트용 JPA 애그리게이트

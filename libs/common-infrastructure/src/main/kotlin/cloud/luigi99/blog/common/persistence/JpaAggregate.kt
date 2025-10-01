@@ -1,42 +1,76 @@
 package cloud.luigi99.blog.common.persistence
 
-import cloud.luigi99.blog.common.domain.DomainEvent
+import cloud.luigi99.blog.common.domain.AggregateRoot
 import cloud.luigi99.blog.common.domain.ValueObject
-import jakarta.persistence.MappedSuperclass
-import jakarta.persistence.Transient
+import jakarta.persistence.*
+import org.hibernate.annotations.SoftDelete
+import org.springframework.data.annotation.CreatedDate
+import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.domain.Persistable
-import java.util.*
+import org.springframework.data.jpa.domain.support.AuditingEntityListener
+import java.time.LocalDateTime
 
 /**
  * JPA 기반 애그리게이트 루트의 기반이 되는 추상 클래스
  *
- * common-domain의 AggregateRoot와 BaseJpaEntity를 결합하여 JPA 환경에서
+ * common-domain의 AggregateRoot를 상속받아 JPA 환경에서
  * 애그리게이트 패턴을 구현할 수 있도록 지원합니다.
  *
  * 주요 기능:
- * - 도메인 이벤트 관리 (AggregateRoot 상속)
- * - JPA Auditing 및 Soft Delete 지원 (BaseJpaEntity 상속)
+ * - 도메인 이벤트 관리 (AggregateRoot에서 상속)
+ * - JPA Auditing을 통한 자동 생성/수정 시각 관리
+ * - Soft Delete 자동 적용 (Hibernate 6.4+ @SoftDelete)
  * - Persistable 인터페이스로 JPA의 새 엔티티 감지 최적화
  * - 트랜잭션 경계와 비즈니스 불변 조건 보장
  *
- * 실용적 접근:
- * BaseJpaEntity를 상속받아 JPA 특화 기능을 재사용하고,
- * AggregateRoot의 도메인 이벤트 관리 기능을 조합으로 구현합니다.
+ * Hibernate @SoftDelete 어노테이션 사용:
+ * - Hibernate가 자동으로 deleted 컬럼을 관리
+ * - SELECT 쿼리에 자동으로 WHERE deleted = false 조건 추가
+ * - DELETE 시 UPDATE deleted = true로 자동 변환
+ * - 별도의 deleted 필드 선언 불필요 (Hibernate가 자동 생성)
  *
  * @param T 엔티티 식별자 타입 (ValueObject를 상속받은 타입)
  */
 @MappedSuperclass
-abstract class JpaAggregate<T : ValueObject> : BaseJpaEntity<T>(), Persistable<T> {
+@EntityListeners(AuditingEntityListener::class)
+@SoftDelete(columnName = "deleted")
+abstract class JpaAggregate<T : ValueObject> : AggregateRoot<T>(), Persistable<T> {
 
     /**
-     * 애그리게이트 루트의 도메인 이벤트 관리 기능
-     * AggregateRoot와 동일한 기능을 조합(Composition)으로 제공합니다.
+     * 엔티티 생성 시각
+     * JPA Auditing을 통해 자동으로 설정됩니다.
      */
+    @CreatedDate
+    @Column(nullable = false, updatable = false)
+    override val createdAt: LocalDateTime = LocalDateTime.now()
+
     /**
-     * 발생한 도메인 이벤트들을 저장하는 내부 컬렉션
+     * 엔티티 최종 수정 시각
+     * JPA Auditing을 통해 자동으로 관리됩니다.
      */
-    @Transient
-    private val _domainEvents = mutableListOf<DomainEvent>()
+    @LastModifiedDate
+    @Column(nullable = true)
+    override var updatedAt: LocalDateTime? = null
+
+    /**
+     * 낙관적 락을 위한 버전 필드
+     * 엔티티가 수정될 때마다 자동으로 증가됩니다.
+     */
+    @Version
+    @Column(nullable = false)
+    var version: Long = 0L
+        protected set
+
+    /**
+     * 삭제 시각
+     * Soft Delete 수행 시 자동으로 설정됩니다.
+     *
+     * 주의: Hibernate @SoftDelete는 deleted 플래그만 관리하므로,
+     * deletedAt은 애플리케이션 레벨에서 관리해야 합니다.
+     */
+    @Column(nullable = true)
+    var deletedAt: LocalDateTime? = null
+        protected set
 
     /**
      * Persistable 인터페이스 구현: 엔티티 식별자 반환
@@ -58,95 +92,16 @@ abstract class JpaAggregate<T : ValueObject> : BaseJpaEntity<T>(), Persistable<T
      */
     override fun isNew(): Boolean = updatedAt?.equals(createdAt) != false
 
-    // ========================================
-    // 도메인 이벤트 관리 기능 (위임)
-    // ========================================
-
     /**
-     * 현재 애그리게이트에서 발생한 도메인 이벤트들을 읽기 전용으로 반환합니다.
+     * JPA 삭제 이벤트 이전에 실행되는 콜백 메서드
      *
-     * @return 도메인 이벤트 리스트 (읽기 전용)
+     * Hibernate @SoftDelete가 deleted 플래그를 자동으로 true로 설정하므로,
+     * 여기서는 deletedAt 시각만 기록합니다.
+     *
+     * @PreRemove 어노테이션으로 JPA 컨테이너가 자동 호출합니다.
      */
-    val domainEvents: List<DomainEvent>
-        get() = _domainEvents.toList()
-
-    /**
-     * 도메인 이벤트가 존재하는지 확인합니다.
-     *
-     * @return 도메인 이벤트가 하나 이상 있으면 true, 없으면 false
-     */
-    fun hasDomainEvents(): Boolean {
-        return _domainEvents.isNotEmpty()
-    }
-
-    /**
-     * 특정 타입의 도메인 이벤트가 존재하는지 확인합니다.
-     *
-     * @param eventType 확인할 이벤트 타입
-     * @return 해당 타입의 이벤트가 존재하면 true, 없으면 false
-     */
-    fun hasDomainEvent(eventType: String): Boolean {
-        return _domainEvents.any { it.eventType == eventType }
-    }
-
-    /**
-     * 도메인 이벤트를 애그리게이트에 추가합니다.
-     *
-     * 비즈니스 로직 수행 중 발생한 중요한 도메인 이벤트를 기록하여
-     * 나중에 이벤트 발행기를 통해 다른 바운디드 컨텍스트로 전파할 수 있습니다.
-     *
-     * @param event 추가할 도메인 이벤트
-     */
-    protected fun addDomainEvent(event: DomainEvent) {
-        _domainEvents.add(event)
-    }
-
-    /**
-     * 여러 도메인 이벤트를 한 번에 추가합니다.
-     *
-     * @param events 추가할 도메인 이벤트들
-     */
-    protected fun addDomainEvents(vararg events: DomainEvent) {
-        _domainEvents.addAll(events)
-    }
-
-    /**
-     * 여러 도메인 이벤트를 한 번에 추가합니다.
-     *
-     * @param events 추가할 도메인 이벤트 컬렉션
-     */
-    protected fun addDomainEvents(events: Collection<DomainEvent>) {
-        _domainEvents.addAll(events)
-    }
-
-    /**
-     * 저장된 모든 도메인 이벤트를 제거합니다.
-     *
-     * 일반적으로 이벤트 발행이 완료된 후 호출되어 메모리 누수를 방지합니다.
-     * 이벤트 발행기에서 자동으로 호출되므로 직접 호출할 필요는 없습니다.
-     */
-    fun clearDomainEvents() {
-        _domainEvents.clear()
-    }
-
-    /**
-     * 특정 타입의 도메인 이벤트들만 제거합니다.
-     *
-     * @param eventType 제거할 이벤트 타입
-     * @return 제거된 이벤트의 개수
-     */
-    fun clearDomainEvents(eventType: String): Int {
-        val sizeBefore = _domainEvents.size
-        _domainEvents.removeAll { it.eventType == eventType }
-        return sizeBefore - _domainEvents.size
-    }
-
-    /**
-     * 도메인 이벤트의 개수를 반환합니다.
-     *
-     * @return 현재 저장된 도메인 이벤트의 개수
-     */
-    fun domainEventCount(): Int {
-        return _domainEvents.size
+    @PreRemove
+    fun onSoftDelete() {
+        this.deletedAt = LocalDateTime.now()
     }
 }

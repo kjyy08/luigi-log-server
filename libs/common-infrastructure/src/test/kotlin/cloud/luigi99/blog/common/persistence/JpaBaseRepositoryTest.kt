@@ -9,7 +9,9 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.mockk.clearAllMocks
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.Runs
 import io.mockk.verify
 import java.time.LocalDateTime
 import java.util.*
@@ -27,34 +29,6 @@ class JpaBaseRepositoryTest : BehaviorSpec({
         // 각 테스트마다 새로운 mock 인스턴스 생성
         beforeEach {
             clearAllMocks()
-        }
-
-        `when`("삭제된 엔티티 조회 테스트") {
-            then("findAllDeleted가 삭제된 엔티티만 반환해야 한다") {
-                val mockRepository = mockk<TestJpaRepository>()
-                val deletedEntities = listOf(TestJpaEntity(), TestJpaEntity())
-
-                every { mockRepository.findAllDeleted() } returns deletedEntities
-
-                val result = mockRepository.findAllDeleted()
-
-                result shouldHaveSize 2
-                result shouldBe deletedEntities
-                verify(exactly = 1) { mockRepository.findAllDeleted() }
-            }
-
-            then("findAllIncludingDeleted가 모든 엔티티를 반환해야 한다") {
-                val mockRepository = mockk<TestJpaRepository>()
-                val allEntities = listOf(TestJpaEntity(), TestJpaEntity(), TestJpaEntity())
-
-                every { mockRepository.findAllIncludingDeleted() } returns allEntities
-
-                val result = mockRepository.findAllIncludingDeleted()
-
-                result shouldHaveSize 3
-                result shouldBe allEntities
-                verify(exactly = 1) { mockRepository.findAllIncludingDeleted() }
-            }
         }
 
         `when`("엔티티 복원 테스트") {
@@ -96,12 +70,11 @@ class JpaBaseRepositoryTest : BehaviorSpec({
             }
         }
 
-        `when`("@SoftDelete 어노테이션 동작 검증") {
-            then("Hibernate 6.x @SoftDelete가 정상 동작해야 한다") {
+        `when`("Soft Delete가 적용된 엔티티 조회 테스트") {
+            then("기본 조회는 삭제되지 않은 엔티티만 반환해야 한다") {
                 val mockRepository = mockk<TestJpaRepository>()
                 val activeEntities = listOf(TestJpaEntity(), TestJpaEntity())
 
-                // @SoftDelete 어노테이션으로 deleted=false 조건이 자동 적용
                 every { mockRepository.findAll() } returns activeEntities
                 every { mockRepository.count() } returns 2L
 
@@ -113,6 +86,49 @@ class JpaBaseRepositoryTest : BehaviorSpec({
 
                 verify(exactly = 1) { mockRepository.findAll() }
                 verify(exactly = 1) { mockRepository.count() }
+            }
+
+            then("삭제된 엔티티는 기본 조회에서 제외되어야 한다") {
+                val mockRepository = mockk<TestJpaRepository>()
+                val entity = TestJpaEntity()
+
+                // 엔티티 저장 후 삭제
+                every { mockRepository.save(entity) } returns entity
+                every { mockRepository.delete(entity) } just Runs
+                every { mockRepository.findById(entity.entityId.value) } returns Optional.empty()
+
+                mockRepository.save(entity)
+                mockRepository.delete(entity)
+                val result = mockRepository.findById(entity.entityId.value)
+
+                result.isPresent shouldBe false
+                verify(exactly = 1) { mockRepository.delete(entity) }
+            }
+
+            then("명시적으로 삭제된 엔티티를 조회할 수 있어야 한다") {
+                val mockRepository = mockk<TestJpaRepository>()
+                val deletedEntities = listOf(TestJpaEntity(), TestJpaEntity())
+
+                every { mockRepository.findAllDeleted() } returns deletedEntities
+
+                val result = mockRepository.findAllDeleted()
+
+                result shouldHaveSize 2
+                result shouldBe deletedEntities
+                verify(exactly = 1) { mockRepository.findAllDeleted() }
+            }
+
+            then("모든 엔티티를 조회할 수 있어야 한다") {
+                val mockRepository = mockk<TestJpaRepository>()
+                val allEntities = listOf(TestJpaEntity(), TestJpaEntity(), TestJpaEntity())
+
+                every { mockRepository.findAllIncludingDeleted() } returns allEntities
+
+                val result = mockRepository.findAllIncludingDeleted()
+
+                result shouldHaveSize 3
+                result shouldBe allEntities
+                verify(exactly = 1) { mockRepository.findAllIncludingDeleted() }
             }
         }
 
@@ -178,27 +194,27 @@ class JpaBaseRepositoryTest : BehaviorSpec({
         }
     }
 
-    given("TestJpaEntity 기본 동작 확인") {
-        `when`("새로운 엔티티를 생성할 때") {
-            then("기본 값들이 올바르게 설정되어야 한다") {
-                val entity = TestJpaEntity()
+    given("TestJpaEntity Soft Delete") {
+        `when`("새로 생성된 엔티티는") {
+            val entity = TestJpaEntity()
 
+            then("삭제되지 않은 상태이다") {
                 entity.entityId shouldNotBe null
-                entity.deleted shouldBe false
                 entity.deletedAt shouldBe null
-                entity.isDeleted() shouldBe false
             }
         }
 
-        `when`("onSoftDelete 콜백이 호출될 때") {
-            then("삭제 상태가 올바르게 설정되어야 한다") {
-                val entity = TestJpaEntity()
+        `when`("엔티티를 삭제하면") {
+            val entity = TestJpaEntity()
 
-                entity.onSoftDelete()
+            // 삭제 전
+            entity.deletedAt shouldBe null
 
-                entity.deleted shouldBe true
+            // Soft Delete 실행
+            entity.onSoftDelete()
+
+            then("삭제 시각이 기록된다") {
                 entity.deletedAt shouldNotBe null
-                entity.isDeleted() shouldBe true
             }
         }
     }
