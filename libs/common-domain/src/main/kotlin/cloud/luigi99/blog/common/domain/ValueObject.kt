@@ -48,14 +48,12 @@ abstract class ValueObject {
     /**
      * 값 객체의 유효성을 검증합니다.
      *
-     * 구현체에서 필요시 오버라이드하여 비즈니스 규칙에 따른 유효성 검증을 수행할 수 있습니다.
-     * 기본 구현은 항상 true를 반환합니다.
+     * 모든 값 객체는 이 메서드를 구현하여 비즈니스 규칙에 따른 유효성 검증을 수행해야 합니다.
+     * 검증이 필요 없는 단순한 값 객체의 경우에도 명시적으로 true를 반환하도록 구현해야 합니다.
      *
      * @return 값 객체가 유효하면 true, 그렇지 않으면 false
      */
-    protected open fun isValid(): Boolean {
-        return true
-    }
+    protected abstract fun isValid(): Boolean
 
     /**
      * 값 객체의 유효성을 검증하고 유효하지 않은 경우 예외를 발생시킵니다.

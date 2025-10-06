@@ -20,6 +20,7 @@ data class TestEntityId(
 
     override fun hashCode(): Int = value.hashCode()
     override fun toString(): String = value.toString()
+    override fun isValid(): Boolean = true
 }
 
 /**
@@ -36,6 +37,7 @@ data class TestAggregateId(
 
     override fun hashCode(): Int = value.hashCode()
     override fun toString(): String = value.toString()
+    override fun isValid(): Boolean = true
 }
 
 /**

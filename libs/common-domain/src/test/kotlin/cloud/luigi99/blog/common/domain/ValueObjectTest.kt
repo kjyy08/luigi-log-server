@@ -153,6 +153,10 @@ private class TestValueObject(
         return 31 * name.hashCode() + number
     }
 
+    override fun isValid(): Boolean {
+        return name.isNotBlank() && number > 0
+    }
+
     fun testValidate() {
         validate()
     }
