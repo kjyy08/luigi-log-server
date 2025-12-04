@@ -1,0 +1,16 @@
+root = true
+
+# 모든 파일에 적용되는 기본 설정
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Kotlin 파일(*.kt, *.kts) 설정
+[*.{kt,kts}]
+ktlint_code_style = ktlint_official
+indent_size = 4
+# Allow Kotlin keywords in package names (e.g., adapter.in, adapter.out)
+ktlint_standard_package-name = disabled
