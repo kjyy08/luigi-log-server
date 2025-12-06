@@ -12,5 +12,52 @@ trim_trailing_whitespace = true
 [*.{kt,kts}]
 ktlint_code_style = ktlint_official
 indent_size = 4
-# Allow Kotlin keywords in package names (e.g., adapter.in, adapter.out)
+
+# ===== 프로젝트 아키텍처 관련 =====
+
+# Kotlin 예약어를 패키지명으로 사용 가능하도록 허용
 ktlint_standard_package-name = disabled
+
+# ===== Import 설정 =====
+
+# 사용하지 않는 import 자동 제거
+ktlint_standard_no-unused-imports = enabled
+
+# Wildcard import (import foo.*) 금지
+ktlint_standard_no-wildcard-imports = enabled
+
+# IntelliJ IDEA에서 자동으로 wildcard import를 추가하지 않도록 설정
+ij_kotlin_name_count_to_use_star_import = 2147483647
+ij_kotlin_name_count_to_use_star_import_for_members = 2147483647
+ij_kotlin_packages_to_use_import_on_demand = unset
+
+# Import 정렬 순서: 일반 → java.** → javax.** → kotlin.** → 별칭(^)
+ij_kotlin_imports_layout = *,java.**,javax.**,kotlin.**,^
+
+# ===== 코드 포맷팅 =====
+
+# 한 줄 최대 길이 제한
+max_line_length = 120
+
+# 줄 길이 체크 시 backtick으로 감싼 식별자는 무시
+ktlint_ignore_back_ticked_identifier = true
+
+# 테스트 함수에서 표준 네이밍 규칙 무시
+ktlint_function_naming_ignore_when_annotated_with = org.junit.jupiter.api.Test,org.junit.jupiter.api.BeforeEach,org.junit.jupiter.api.AfterEach
+
+# 함수 파라미터가 4개 이상이면 자동으로 멀티라인 포맷 적용
+ktlint_function_signature_rule_force_multiline_when_parameter_count_greater_or_equal_than = 4
+
+# 클래스 생성자 파라미터가 4개 이상이면 자동으로 멀티라인 포맷 적용
+ktlint_class_signature_rule_force_multiline_when_parameter_count_greater_or_equal_than = 4
+
+# 메서드 체이닝이 3번 이상이면 자동으로 멀티라인 포맷 적용
+ktlint_chain_method_rule_force_multiline_when_chain_operator_count_greater_or_equal_than = 3
+
+# ===== Trailing Comma 설정 =====
+
+# 선언부에서 trailing comma 허용 (data class, 함수 파라미터 등)
+ij_kotlin_allow_trailing_comma = true
+
+# 호출부에서 trailing comma 허용 (함수 호출, 컬렉션 초기화 등)
+ij_kotlin_allow_trailing_comma_on_call_site = true
