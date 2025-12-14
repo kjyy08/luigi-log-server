@@ -16,6 +16,9 @@ enum class ErrorCode(val code: String, val message: String, val status: Int) {
     // Member
     MEMBER_NOT_FOUND("MEMBER_001", "회원을 찾을 수 없습니다.", 404),
 
+    // Auth
+    CREDENTIAL_NOT_FOUND("CREDENTIAL_001", "인증 정보를 찾을 수 없습니다.", 404),
+
     // Profile
     PROFILE_NOT_FOUND("PROFILE_001", "프로필을 찾을 수 없습니다.", 404),
 
