@@ -1,4 +1,4 @@
-package cloud.luigi99.blog.app.config
+package cloud.luigi99.blog.adapter.web.config
 
 import io.swagger.v3.oas.models.Components
 import io.swagger.v3.oas.models.OpenAPI

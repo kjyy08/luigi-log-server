@@ -1,0 +1,5 @@
+ALTER TABLE member_credentials
+    ADD COLUMN role VARCHAR(50) NOT NULL DEFAULT 'USER';
+
+ALTER TABLE member
+    DROP COLUMN role;

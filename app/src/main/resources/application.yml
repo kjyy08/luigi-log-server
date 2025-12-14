@@ -20,6 +20,17 @@ spring:
     locations: classpath:db/migration
     validate-on-migrate: true
 
+app:
+  cookie:
+    secure: ${APP_COOKIE_SECURE:true}
+    domain: ${APP_COOKIE_DOMAIN:localhost}
+    same-site: ${APP_COOKIE_SAME_SITE:None}
+  redirect:
+    base-url: ${APP_REDIRECT_BASE_URL:http://localhost:3000}
+    end-point:
+      success: ${APP_REDIRECT_SUCCESS_END_POINT:/login}
+      error: ${APP_REDIRECT_ERROR_END_POINT:/login}
+
 management:
   endpoints:
     web:
