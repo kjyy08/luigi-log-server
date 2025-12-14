@@ -17,13 +17,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ./gradlew clean build                  # Full build with tests
 ./gradlew bootRun                      # Run application (defaults to :app module)
 ./gradlew :app:bootRun                 # Explicitly run app module
-./gradlew :domain:member:build         # Build specific module
+./gradlew :modules:member:domain:build # Build specific module
 ```
 
 ### Testing
 ```bash
 ./gradlew test                         # Run all tests
-./gradlew :domain:content:test         # Test specific module
+./gradlew :modules:content:test        # Test specific module
 ./gradlew test --tests ClassName       # Run specific test class
 ./gradlew test --debug-jvm             # Debug tests on port 5005
 ```
@@ -46,15 +46,23 @@ blog-server/
 ├── buildSrc/              # Convention plugins (build logic)
 │   └── src/main/kotlin/plugin/
 │       ├── conventions.gradle.kts              # Base: JDK 21, Kotlin, Ktlint
+│       ├── spring-library-conventions.gradle.kts  # Spring Library setup
 │       ├── spring-boot-conventions.gradle.kts  # Spring Boot setup
 │       └── kover.gradle.kts                    # Test coverage (60% min)
 ├── gradle/
 │   └── libs.versions.toml # Version catalog (single source of truth)
 ├── libs/                  # Shared libraries
 │   ├── common/            # Shared kernel (DDD base classes, error handling)
-│   └── jpa/               # JPA extensions (JpaAggregateRoot with auditing)
-├── domain/                # Business logic modules
-│   ├── member/            # Authentication (OAuth2 + JWT)
+│   └── adapter/           # Framework adapters
+│       ├── persistence/jpa/    # JPA extensions (JpaAggregateRoot with auditing)
+│       ├── persistence/redis/  # Redis configuration and extensions
+│       ├── message/spring/     # Domain event publishing via Spring
+│       └── web/                # REST common utilities (GlobalExceptionHandler, etc.)
+├── modules/               # Domain modules (bounded contexts)
+│   ├── member/            # Member profiles and management
+│   ├── auth/
+│   │   ├── token/         # JWT token management (Redis-backed)
+│   │   └── credentials/   # OAuth2 authentication credentials
 │   ├── content/           # Blog posts, comments, tags
 │   └── media/             # File upload and storage
 └── app/                   # Application runner (executable JAR)
@@ -65,16 +73,24 @@ blog-server/
 **Every domain module follows this structure strictly:**
 
 ```
-domain/{module}/
-├── adapter/
-│   ├── in/web/              # REST controllers, DTOs
-│   └── out/persistence/     # JPA entities, repository implementations
+modules/{module}/
+├── domain/                  # Pure domain model (NO Spring dependencies)
+│   ├── model/               # Aggregate roots and entities
+│   ├── vo/                  # Value objects (immutable, @JvmInline recommended)
+│   ├── event/               # Domain events
+│   └── exception/           # Domain-specific exceptions
 ├── application/
 │   ├── port/
-│   │   ├── in/              # Use case interfaces (commands)
-│   │   └── out/             # Repository interfaces (ports)
-│   └── service/             # Service implementations
-└── domain/                  # Pure domain model (NO Spring dependencies)
+│   │   ├── in/              # Use case interfaces (commands/queries)
+│   │   └── out/             # Repository port interfaces
+│   └── service/             # Service implementations (business logic)
+└── adapter/
+    ├── in/
+    │   ├── web/             # REST controllers, DTOs, Swagger annotations
+    │   └── event/           # Event listeners (optional)
+    └── out/
+        ├── persistence/jpa/ # JPA entities, repository adapters, mappers
+        └── client/          # External API clients (optional)
 ```
 
 **Dependency flow:** Controller → UseCase (port/in) → Service → Repository (port/out) → Domain
@@ -93,41 +109,91 @@ The `libs/common` module provides base classes used across all domains:
 - **`BusinessException`** - Base exception with `ErrorCode` enum
 - **`ApiResponse<T>`** - Standardized REST API response wrapper
 
-The `libs/jpa` module provides JPA-specific extensions:
+The `libs/adapter` modules provide framework-specific implementations:
 
-- **`JpaAggregateRoot<T>`** - Extends `AggregateRoot` with JPA persistence
-  - Adds `@Id`, `createdAt`, `updatedAt` fields
-  - Implements `Persistable<T>` for proper JPA identity handling
+**libs/adapter/persistence/jpa:**
+- **`JpaAggregateRoot<ID : ValueObject>`** - Extends `AggregateRoot` with JPA persistence
+  - Implements `Persistable<ID>` for proper JPA identity handling
   - Enables JPA Auditing via `@EntityListeners(AuditingEntityListener::class)`
+  - Adds `createdAt`, `updatedAt` fields (marked `@CreatedDate`, `@LastModifiedDate`)
+- **`JpaDomainEntity`** - Base for non-root JPA entities
+- **`JpaConfig`** - Enables JPA auditing, repositories, and entity scanning
+
+**libs/adapter/persistence/redis:**
+- **`RedisConfig`** - Configures `RedisTemplate<String, Any>` with JSON serialization
+- **`RedisDomainEntity`** - Base for Redis-persisted entities
+- Enables `@EnableRedisRepositories`
+
+**libs/adapter/message/spring:**
+- **`EventConfiguration`** - Initializes `EventManager` with Spring implementation
+- **`SpringDomainEventPublisher`** - Publishes domain events via `ApplicationEventPublisher`
+- **`SpringEventContextManager`** - Manages event context per transaction
+
+**libs/adapter/web:**
+- **`CommonResponse<T>`** - Standardized API response wrapper
+- **`GlobalExceptionHandler`** - Centralized exception handling (maps `BusinessException` → HTTP status)
+- **`CookieUtils`** - Cookie manipulation utilities
+- **`SwaggerConfig`** - SpringDoc OpenAPI configuration
 
 **Example usage:**
 ```kotlin
-// Pure domain model (domain/member/domain)
-class Member(id: MemberId) : AggregateRoot<MemberId>(id) {
-    fun register() {
-        registerEvent(MemberRegisteredEvent(this.id))
+// Pure domain model (modules/member/domain/model)
+class Member private constructor(
+    override val entityId: MemberId,
+    val email: Email,
+    val username: Username
+) : AggregateRoot<MemberId>() {
+    fun register(): Member {
+        registerEvent(MemberRegisteredEvent(entityId, email))
+        return this
     }
 }
 
-// JPA persistence entity (domain/member/adapter/out/persistence)
+// JPA persistence entity (modules/member/adapter/out/persistence/jpa)
 @Entity
 @Table(name = "member")
-class MemberJpaEntity(
-    @Id override val id: MemberId,
-    val email: String
-) : JpaAggregateRoot<MemberId>(id)
+class MemberJpaEntity : JpaAggregateRoot<MemberId>() {
+    @Id override val id: UUID
+    @Column(nullable = false, unique = true)
+    lateinit var email: String
+
+    @Column(nullable = false)
+    lateinit var username: String
+}
+
+// Mapper (modules/member/adapter/out/persistence/jpa)
+object MemberMapper {
+    fun toDomain(entity: MemberJpaEntity): Member =
+        Member.from(
+            entityId = MemberId(entity.id),
+            email = Email(entity.email),
+            username = Username(entity.username),
+            createdAt = entity.createdAt,
+            updatedAt = entity.updatedAt
+        )
+
+    fun toEntity(member: Member): MemberJpaEntity =
+        MemberJpaEntity().apply {
+            id = member.entityId.value
+            email = member.email.value
+            username = member.username.value
+        }
+}
 ```
 
 ## Key Configuration Files
 
 ### Version Management
 - **`gradle/libs.versions.toml`** - All dependency versions (update here!)
-- Bundles available: `spring-boot-web`, `spring-boot-security`, `spring-boot-data`, `jwt`
+- Bundles available: `spring-boot-web`, `spring-boot-security`, `spring-boot-data`, `jwt`, `redis`, `spring-ai`, `kotlin-test`
 
 ### Build Configuration
 - **`buildSrc/`** - Convention plugins defining standards for all modules
+  - `conventions` - Base plugin (JDK 21, Kotlin, Ktlint) for `libs/common`
+  - `spring-library-conventions` - Spring Library plugin for `libs/adapter/*`
+  - `spring-boot-conventions` - Spring Boot plugin for `modules/*` (disables bootJar)
   - Apply via: `plugins { id("springBootConventions") }`
-- **`settings.gradle.kts`** - Module declarations
+- **`settings.gradle.kts`** - Module declarations (30+ submodules)
 
 ### Application Configuration
 - **`app/src/main/resources/application.yml`** - Base configuration
@@ -143,17 +209,22 @@ class MemberJpaEntity(
 
 ### Adding New Features
 
-1. **Choose the correct module**: Member (auth), Content (posts), or Media (files)
-2. **Follow hexagonal structure**:
-   - Add domain model in `domain/` (pure Kotlin, no annotations)
-   - Define port interfaces in `application/port/in` (use cases) and `port/out` (repositories)
-   - Implement service in `application/service/`
-   - Create REST endpoints in `adapter/in/web/`
-   - Implement persistence in `adapter/out/persistence/`
+1. **Choose the correct module**: Member, Auth (token/credentials), Content, or Media
+2. **Follow hexagonal structure** (in this order):
+   - Add domain model in `domain/model/` (pure Kotlin, extends `AggregateRoot<T>` or `DomainEntity<T>`)
+   - Create value objects in `domain/vo/` (`@JvmInline value class` recommended for IDs)
+   - Define domain events in `domain/event/` (implement `DomainEvent` interface)
+   - Create domain exceptions in `domain/exception/` (extend `BusinessException`)
+   - Define port interfaces in `application/port/in/` (use cases) and `port/out/` (repositories)
+   - Implement services in `application/service/` (business logic)
+   - Create REST endpoints in `adapter/in/web/` (controllers, DTOs, Swagger)
+   - Implement persistence in `adapter/out/persistence/jpa/` (JPA entities, repository adapters, mappers)
 3. **Use base classes**:
    - Domain models extend `AggregateRoot<T>` or `DomainEntity<T>` from `libs/common`
-   - JPA entities extend `JpaAggregateRoot<T>` from `libs/jpa`
-4. **Error handling**: Throw `BusinessException` with appropriate `ErrorCode`
+   - JPA entities extend `JpaAggregateRoot<ID>` from `libs/adapter/persistence/jpa`
+   - Redis entities extend `RedisDomainEntity` from `libs/adapter/persistence/redis`
+4. **Mapper pattern**: Always create separate JPA entities and domain models, use mapper objects to convert
+5. **Error handling**: Throw `BusinessException` with appropriate `ErrorCode` defined in domain exceptions
 
 ### Code Style
 
@@ -179,11 +250,29 @@ class MemberJpaEntity(
 - **Swagger UI:** `http://localhost:8080/swagger-ui.html`
 - **OpenAPI Spec:** `http://localhost:8080/api-docs`
 
-## Security
+## Security & Authentication
 
-- **Authentication:** JWT tokens (JJWT 0.13.0)
-- **OAuth2:** Social login (Google/GitHub) via Spring Security
-- **Session:** Stateless (no server-side sessions)
+The authentication system is split into two separate bounded contexts:
+
+### Auth Module Architecture
+
+**modules/auth/token/** (JWT token management, Redis-backed):
+- **Domain:** `AuthToken` (refresh tokens), `TokenId` value object
+- **Application:** `IssueTokenUseCase`, `ReissueTokenUseCase`, `RevokeTokenUseCase`
+- **Adapter/Out:** JWT token provider using JJWT 0.13.0, Redis repository for refresh tokens
+- **Purpose:** Token lifecycle management (issue, reissue, revoke, validate)
+
+**modules/auth/credentials/** (OAuth2 authentication, JPA-backed):
+- **Domain:** `MemberCredentials` (OAuth provider, roles), `OAuthInfo` value object
+- **Application:** Authentication flow, credential management
+- **Adapter/In:** OAuth2 login handlers, security filters, JWT authentication filter
+- **Adapter/Out:** JPA repository for credentials
+- **Purpose:** OAuth2 social login (Google/GitHub) and credential storage
+
+**Key points:**
+- **Stateless:** No server-side sessions, JWT tokens only
+- **Separation:** Token management (Redis) separated from credential management (JPA)
+- **OAuth2:** Spring Security OAuth2 Client for social login
 - **CORS:** Configured for localhost:3000 and localhost:5173
 
 ## Common Patterns
@@ -213,9 +302,56 @@ Errors:
 ```
 
 ### Error Codes
-Defined in `libs/common/exception/ErrorCode.kt`:
-- Prefix by domain: `M001` (Member), `P001` (Post), `C001` (Comment), `F001` (File/Media)
-- Includes HTTP status and message
+Defined in domain-specific exception classes:
+- `COMMON_001` - Invalid input (400)
+- `COMMON_002` - Internal server error (500)
+- `AUTH_001` - Unauthorized (401)
+- `AUTH_002` - Invalid token (401)
+- `AUTH_003` - Access denied (403)
+- `MEMBER_001` - Member not found (404)
+- `CREDENTIAL_001` - Credential not found (404)
+- `PROFILE_001` - Profile not found (404)
+- `CONTENT_001` - Post not found (404)
+- `MEDIA_001` - File upload failed (500)
+
+### Domain Events
+Event-driven architecture using service locator pattern:
+
+```kotlin
+// Domain model publishes events
+class Member : AggregateRoot<MemberId>() {
+    fun register(): Member {
+        registerEvent(MemberRegisteredEvent(entityId, email))
+        return this
+    }
+}
+
+// Event is managed by EventManager (service locator)
+object EventManager {
+    fun add(event: DomainEvent)
+    fun clear()
+    fun toListAndClear(): List<DomainEvent>
+}
+
+// Spring adapter publishes events to ApplicationEventPublisher
+@Component
+class SpringDomainEventPublisher(
+    private val publisher: ApplicationEventPublisher
+) : DomainEventPublisher {
+    override fun publish(event: DomainEvent) {
+        publisher.publishEvent(event)
+    }
+}
+
+// Event listeners in adapter/in/event
+@Component
+class MemberEventListener {
+    @EventListener
+    fun handle(event: MemberRegisteredEvent) {
+        // Side effects (send email, create profile, etc.)
+    }
+}
+```
 
 ### Database Migrations
 - Use Flyway for all schema changes
@@ -237,20 +373,32 @@ Defined in `libs/common/exception/ErrorCode.kt`:
 
 **Dependency hierarchy (bottom to top):**
 ```
-libs/common (pure domain, no framework dependencies)
+libs/common (pure domain, NO framework dependencies)
     ↑
-libs/jpa (JPA extensions, depends on libs/common)
+libs/adapter/* (framework adapters: jpa, redis, message/spring, web)
     ↑
-domain/* (each domain module depends on libs/common and libs/jpa)
+modules/*/domain (pure domain models, depends only on libs/common)
     ↑
-app (composes all domain modules into executable application)
+modules/*/application (business logic, depends on domain + libs/common)
+    ↑
+modules/*/adapter (infrastructure, depends on application + libs/adapter/*)
+    ↑
+app (composes all modules, only module with bootJar enabled)
 ```
 
-**Key principle:** Domain modules are independent libraries. Only `app` module produces an executable JAR (bootJar enabled).
+**Key principles:**
+- `libs/common` has ZERO Spring dependencies (pure Kotlin + kotlin-logging only)
+- `modules/*/domain` has ZERO Spring dependencies (pure domain models)
+- Only `adapter/*` and `application/*` layers use Spring annotations
+- Domain modules are independent libraries (bootJar disabled)
+- Only `app` module produces an executable JAR (bootJar enabled)
+- Auth module is split: `auth/token` (JWT, Redis) and `auth/credentials` (OAuth2, JPA)
 
 ## Reference Documentation
 
-- **Architecture Decisions:** `docs/tech-blog.md` (Korean)
-- **Main Application:** `app/src/main/kotlin/cloud/luigi99/blog/api/BlogServerApplication.kt`
-- **Security Config:** `app/src/main/kotlin/cloud/luigi99/blog/api/config/SecurityConfig.kt`
-- **Global Exception Handler:** `app/src/main/kotlin/cloud/luigi99/blog/api/config/GlobalExceptionHandler.kt`
+- **Main Application:** `app/src/main/kotlin/cloud/luigi99/blog/app/BlogServerApplication.kt`
+- **Component Scan:** Scans `cloud.luigi99.blog.app`, `cloud.luigi99.blog.adapter.*`, `cloud.luigi99.blog.member`, `cloud.luigi99.blog.auth`, `cloud.luigi99.blog.content`, `cloud.luigi99.blog.media`, `cloud.luigi99.blog.common`
+- **Global Exception Handler:** `libs/adapter/web/src/main/kotlin/cloud/luigi99/blog/adapter/web/GlobalExceptionHandler.kt`
+- **Security Config:** `modules/auth/credentials/adapter/in/web/src/main/kotlin/.../config/SecurityConfig.kt`
+- **JPA Config:** `libs/adapter/persistence/jpa/src/main/kotlin/.../JpaConfig.kt`
+- **Redis Config:** `libs/adapter/persistence/redis/src/main/kotlin/.../RedisConfig.kt`
