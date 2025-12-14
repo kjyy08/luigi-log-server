@@ -1,6 +1,6 @@
 plugins {
     kotlin("jvm")
-    java
+    `java-library`
     id("org.jlleitschuh.gradle.ktlint")
 }
 

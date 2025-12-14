@@ -1,5 +1,5 @@
 plugins {
-    springBootConventions
+    springLibraryConventions
 }
 
 dependencies {
