@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **blog-server** is a backend REST API for a technical blog and portfolio platform built with:
 - **Language:** Kotlin 2.2.21 (JDK 21)
-- **Framework:** Spring Boot 3.5.7
+- **Framework:** Spring Boot 4.0.0 / Spring Framework 7.0.0
 - **Architecture:** Domain-Driven Design (DDD) + Hexagonal Architecture
 - **Build:** Gradle 8.x multi-module project with Kotlin DSL
 

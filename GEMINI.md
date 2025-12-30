@@ -8,11 +8,12 @@ This file provides context for the Gemini agent when working on the `blog-server
 It is designed using **Domain-Driven Design (DDD)** and **Hexagonal Architecture** principles to ensure maintainability and scalability.
 
 *   **Primary Language:** Kotlin 2.2.21 (JDK 21)
-*   **Framework:** Spring Boot 3.5.7
+*   **Framework:** Spring Boot 4.0.0 (Spring Framework 7.0.0)
 *   **Build System:** Gradle 8.x (Kotlin DSL)
-*   **Database:** PostgreSQL 16 (Managed via Flyway)
+*   **Database:** PostgreSQL (Driver 42.7.6, Managed via Flyway 11.13.2)
 *   **Authentication:** JWT (Stateless) + OAuth2 (Social Login)
-*   **Documentation:** SpringDoc OpenAPI (Swagger)
+*   **Documentation:** SpringDoc OpenAPI (Swagger) 2.8.14
+*   **AI Integration:** Spring AI 1.1.1 (OpenAI, PgVector)
 
 ## 2. Architecture & Module Structure
 
@@ -26,20 +27,26 @@ blog-server/
 ├── gradle/                # Version catalog (libs.versions.toml)
 ├── libs/                  # Shared libraries
 │   ├── common/            # Shared kernel (ErrorCode, DomainEntity, etc.) - NO Framework Dependencies
-│   └── jpa/               # JPA extensions (JpaAggregateRoot) - Depends on :libs:common
-├── domain/                # Business logic (Hexagonal Architecture)
-│   ├── member/            # Authentication & Member management
-│   ├── content/           # Blog posts, comments, tags (CQRS)
-│   └── media/             # File upload/storage abstraction
-└── app/                   # Application runner (BootJar) - Depends on all domains
+│   └── adapter/           # Shared adapters (Web, Persistence, Messaging)
+│       ├── message/
+│       ├── persistence/
+│       └── web/
+├── modules/               # Business Domains (Hexagonal Architecture)
+│   ├── auth/              # Authentication aggregation
+│   │   ├── credentials/   # Credential management
+│   │   └── token/         # Token management
+│   ├── content/           # Blog posts, comments, tags
+│   ├── media/             # File upload/storage abstraction
+│   └── member/            # Member management
+└── app/                   # Application runner (BootJar) - Depends on all modules
 ```
 
 ### Hexagonal Architecture (Per Domain Module)
 
-Each module under `domain/` **MUST** follow this internal structure:
+Each module under `modules/` **MUST** follow this internal structure:
 
 ```
-domain/{module}/
+modules/{module}/
 ├── adapter/
 │   ├── in/web/              # REST Controllers, DTOs (Input Adapters)
 │   └── out/persistence/     # JPA Entities, Repository Impls (Output Adapters)
@@ -67,7 +74,7 @@ Use `./gradlew` for all tasks.
 | **Run App** | `./gradlew bootRun` | Run the main application |
 | **Run Module** | `./gradlew :app:bootRun` | Explicitly run the app module |
 | **Test All** | `./gradlew test` | Run all unit/integration tests |
-| **Test Module** | `./gradlew :domain:content:test` | Test specific domain module |
+| **Test Module** | `./gradlew :modules:content:test` | Test specific domain module |
 | **Lint Check** | `./gradlew ktlintCheck` | Check code style compliance |
 | **Lint Fix** | `./gradlew ktlintFormat` | Auto-fix code style issues |
 | **Coverage** | `./gradlew koverVerify` | Verify min 60% test coverage |
@@ -82,7 +89,7 @@ Use `./gradlew` for all tasks.
     *   Coverage: Aim for >60% line coverage.
 *   **Entities:**
     *   Domain Models: Extend `AggregateRoot<ID>` or `DomainEntity<ID>` (from `:libs:common`).
-    *   JPA Entities: Extend `JpaAggregateRoot<ID>` (from `:libs:jpa`) in `adapter/out/persistence`.
+    *   JPA Entities: Extend `JpaAggregateRoot<ID>` (from `:libs:adapter:persistence:jpa`) in `adapter/out/persistence`.
 *   **API Responses:** Use `ApiResponse<T>` wrapper for consistent JSON structure.
 *   **Exceptions:** Throw `BusinessException` with specific `ErrorCode`.
 
@@ -97,11 +104,11 @@ Use `./gradlew` for all tasks.
 ## 6. Common Tasks Checklist
 
 When implementing a new feature:
-1.  [ ] Define **Domain Model** in `domain/{module}/domain`.
-2.  [ ] Define **Use Case Interface** (Port In) in `domain/{module}/application/port/in`.
-3.  [ ] Define **Repository Interface** (Port Out) in `domain/{module}/application/port/out`.
-4.  [ ] Implement **Service** in `domain/{module}/application/service`.
-5.  [ ] Implement **JPA Adapter** in `domain/{module}/adapter/out/persistence`.
-6.  [ ] Implement **Web Adapter** (Controller) in `domain/{module}/adapter/in/web`.
+1.  [ ] Define **Domain Model** in `modules/{module}/domain`.
+2.  [ ] Define **Use Case Interface** (Port In) in `modules/{module}/application/port/in`.
+3.  [ ] Define **Repository Interface** (Port Out) in `modules/{module}/application/port/out`.
+4.  [ ] Implement **Service** in `modules/{module}/application/service`.
+5.  [ ] Implement **JPA Adapter** in `modules/{module}/adapter/out/persistence`.
+6.  [ ] Implement **Web Adapter** (Controller) in `modules/{module}/adapter/in/web`.
 7.  [ ] Add **Tests** (Unit for Domain/Service, Integration for Adapters).
 8.  [ ] Run `./gradlew ktlintFormat` and `./gradlew test`.
