@@ -23,6 +23,7 @@ dependencies {
     implementation(project(":modules:auth:credentials:adapter:out:client:member"))
 
     implementation(project(":modules:content:domain"))
+    implementation(project(":modules:content:application"))
 
     implementation(libs.bundles.spring.boot.web)
     implementation(libs.bundles.spring.boot.data)
