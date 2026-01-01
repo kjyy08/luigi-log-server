@@ -21,8 +21,10 @@ include("modules:auth:credentials:adapter:in:event")
 include("modules:auth:credentials:adapter:out:persistence:jpa")
 include("modules:auth:credentials:adapter:out:client:member")
 
-include("modules:content")
-include("modules:media")
+include("modules:content:domain")
+include("modules:content:application")
+include("modules:content:adapter:in:web")
+include("modules:content:adapter:out:persistence:jpa")
 
 include("libs:adapter:persistence:jpa")
 include("libs:adapter:persistence:redis")
