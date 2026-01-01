@@ -45,7 +45,7 @@ class SecurityConfig {
                         "/api-docs/**",
                         "/swagger-ui/**",
                         "/actuator/health",
-                        "/api/v1/auth/**",
+                        "/api/v1/**",
                         "/oauth2/**",
                         "/login/oauth2/**",
                     ).permitAll()
