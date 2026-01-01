@@ -24,6 +24,8 @@ dependencies {
 
     implementation(project(":modules:content:domain"))
     implementation(project(":modules:content:application"))
+    implementation(project(":modules:content:adapter:in:web"))
+    implementation(project(":modules:content:adapter:out:persistence:jpa"))
 
     implementation(libs.bundles.spring.boot.web)
     implementation(libs.bundles.spring.boot.data)
