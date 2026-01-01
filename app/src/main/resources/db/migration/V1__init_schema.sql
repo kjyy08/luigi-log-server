@@ -55,35 +55,3 @@ CREATE TABLE post_tag (
 CREATE INDEX idx_post_tag_post_id ON post_tag(post_id);
 CREATE INDEX idx_post_tag_tag_id ON post_tag(tag_id);
 
--- Comment Table
-CREATE TABLE comment (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    post_id UUID NOT NULL REFERENCES post(id) ON DELETE CASCADE,
-    parent_id UUID REFERENCES comment(id) ON DELETE CASCADE,
-    content TEXT NOT NULL,
-    writer_name VARCHAR(100) NOT NULL,
-    writer_password VARCHAR(255),
-    member_id UUID REFERENCES member(id) ON DELETE SET NULL,
-    is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE INDEX idx_comment_post_id ON comment(post_id);
-CREATE INDEX idx_comment_parent_id ON comment(parent_id);
-CREATE INDEX idx_comment_created_at ON comment(created_at DESC);
-
--- ==========================================
--- 3. Media Context
--- ==========================================
-CREATE TABLE media_file (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    original_name VARCHAR(500) NOT NULL,
-    mime_type VARCHAR(100) NOT NULL,
-    size_bytes BIGINT NOT NULL,
-    storage_key VARCHAR(1000) NOT NULL,
-    public_url VARCHAR(2000) NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE INDEX idx_media_file_created_at ON media_file(created_at DESC);
-CREATE INDEX idx_media_file_storage_key ON media_file(storage_key);
