@@ -11,14 +11,14 @@
 
 **Example:**
 ```kotlin
-Given("유효한 이메일과 사용자 이름이 주어졌을 때") {
+Given("신규 사용자가 가입을 위해 유효한 이메일과 이름을 입력했을 때") {
     val email = Email("user@example.com")
     val username = Username("john_doe")
 
-    When("회원을 등록하면") {
+    When("회원 가입을 요청하면") {
         val member = Member.register(email, username)
 
-        Then("회원 ID가 생성된다") {
+        Then("회원 가입이 완료되어 식별자가 부여된다") {
             member.entityId shouldNotBe null  // This will fail initially
         }
     }
