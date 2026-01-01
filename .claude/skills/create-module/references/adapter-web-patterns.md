@@ -108,13 +108,13 @@ class MemberController(
 
 ```kotlin
 data class UpdateProfileRequest(
-    @param:Schema(description = "닉네임", example = "CodingMaster")
+    @field:Schema(description = "닉네임", example = "CodingMaster")
     val nickname: String?,
 
-    @param:Schema(description = "자기소개", example = "새로운 소개글입니다.")
+    @field:Schema(description = "자기소개", example = "새로운 소개글입니다.")
     val bio: String?,
 
-    @param:Schema(description = "기술 스택", example = "[\"Kotlin\", \"Spring\"]")
+    @field:Schema(description = "기술 스택", example = "[\"Kotlin\", \"Spring\"]")
     val techStack: List<String>?,
 )
 ```
@@ -123,17 +123,17 @@ data class UpdateProfileRequest(
 
 ```kotlin
 data class MemberResponse(
-    @param:Schema(description = "회원 ID", example = "123e4567-e89b-12d3-a456-426614174000")
+    @field:Schema(description = "회원 ID", example = "123e4567-e89b-12d3-a456-426614174000")
     val memberId: String,
 
-    @param:Schema(description = "이메일", example = "user@example.com")
+    @field:Schema(description = "이메일", example = "user@example.com")
     val email: String,
 
-    @param:Schema(description = "사용자 이름", example = "Luigi99")
+    @field:Schema(description = "사용자 이름", example = "Luigi99")
     val username: String,
 )
 ```
 
 **Pattern:**
-- `@param:Schema` with Korean description + example
+- `@field:Schema` with Korean description + example
 - Nullable fields for optional data (`String?`)

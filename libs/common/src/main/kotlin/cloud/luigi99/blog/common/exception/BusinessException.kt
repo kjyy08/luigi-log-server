@@ -26,6 +26,9 @@ enum class ErrorCode(val code: String, val message: String, val status: Int) {
     POST_NOT_FOUND("CONTENT_001", "게시글을 찾을 수 없습니다.", 404),
     SLUG_ALREADY_EXISTS("CONTENT_002", "이미 존재하는 슬러그입니다.", 409),
     COMMENT_NOT_FOUND("CONTENT_003", "댓글을 찾을 수 없습니다.", 404),
+    UNAUTHORIZED_POST_ACCESS("CONTENT_004", "게시글에 대한 권한이 없습니다.", 403),
+    UNAUTHORIZED_COMMENT_ACCESS("CONTENT_005", "댓글에 대한 권한이 없습니다.", 403),
+    INVALID_COMMENT_PASSWORD("CONTENT_006", "댓글 비밀번호가 일치하지 않습니다.", 401),
 
     // Media
     FILE_UPLOAD_FAILED("MEDIA_001", "파일 업로드에 실패했습니다.", 500),

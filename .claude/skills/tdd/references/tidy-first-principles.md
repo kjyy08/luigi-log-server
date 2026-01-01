@@ -37,9 +37,9 @@ Examples:
 
 ```kotlin
 // Behavioral: Add email validation
-Given("중복된 이메일로 회원을 등록하려고 할 때") {
-    When("이미 존재하는 이메일로 등록하면") {
-        Then("EmailDuplicatedException이 발생한다") {
+Given("이미 가입된 이메일 주소를 사용하여 가입을 시도할 때") {
+    When("가입 요청을 보내면") {
+        Then("이미 등록된 이메일이므로 가입이 거절된다") {
             // New test for new behavior
         }
     }

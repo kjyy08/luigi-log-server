@@ -22,8 +22,7 @@ dependencies {
     implementation(project(":modules:auth:credentials:adapter:out:persistence:jpa"))
     implementation(project(":modules:auth:credentials:adapter:out:client:member"))
 
-    implementation(project(":modules:content"))
-    implementation(project(":modules:media"))
+    implementation(project(":modules:content:domain"))
 
     implementation(libs.bundles.spring.boot.web)
     implementation(libs.bundles.spring.boot.data)

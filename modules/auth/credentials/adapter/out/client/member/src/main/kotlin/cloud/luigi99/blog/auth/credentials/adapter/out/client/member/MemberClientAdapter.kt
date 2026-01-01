@@ -5,7 +5,13 @@ import cloud.luigi99.blog.member.application.member.port.`in`.command.MemberComm
 import cloud.luigi99.blog.member.application.member.port.`in`.command.RegisterMemberUseCase
 import org.springframework.stereotype.Component
 
-@Component
+/**
+ * Auth Credentials용 Member Client Adapter
+ *
+ * 회원 등록을 위한 클라이언트 어댑터입니다.
+ * MSA 전환 시 HTTP 클라이언트로 대체될 예정입니다.
+ */
+@Component("authMemberClientAdapter")
 class MemberClientAdapter(private val memberCommandFacade: MemberCommandFacade) : MemberClient {
     override fun execute(request: MemberClient.Request): MemberClient.Response {
         val command =
