@@ -108,7 +108,7 @@ class CreatePostServiceTest :
             }
         }
 
-        Given("같은 사용자가 중복된 slug로 글을 생성하려고 할 때") {
+        Given("사용자가 중복된 slug로 글을 생성하려고 할 때") {
             val postRepository = mockk<PostRepository>()
             val service = CreatePostService(postRepository)
             val memberId = UUID.randomUUID().toString()
@@ -141,13 +141,12 @@ class CreatePostServiceTest :
         Given("다른 사용자가 동일한 slug를 사용할 때") {
             val postRepository = mockk<PostRepository>()
             val service = CreatePostService(postRepository)
-            val member1Id = UUID.randomUUID().toString()
-            val member2Id = UUID.randomUUID().toString()
+            val memberId = UUID.randomUUID().toString()
 
             When("다른 사용자가 이미 사용 중인 slug로 글을 생성하면") {
                 val command =
                     CreatePostUseCase.Command(
-                        memberId = member2Id,
+                        memberId = memberId,
                         title = "다른 사용자의 글",
                         slug = "same-slug",
                         body = "내용",
@@ -158,7 +157,7 @@ class CreatePostServiceTest :
                     Post
                         .from(
                             entityId = PostId.generate(),
-                            memberId = MemberId.from(member2Id),
+                            memberId = MemberId.from(memberId),
                             title = Title("다른 사용자의 글"),
                             slug = Slug("same-slug"),
                             body = Body("내용"),
@@ -172,7 +171,7 @@ class CreatePostServiceTest :
                 // member2는 same-slug를 사용하지 않았음
                 every {
                     postRepository.existsByMemberIdAndSlug(
-                        MemberId.from(member2Id),
+                        MemberId.from(memberId),
                         Slug("same-slug"),
                     )
                 } returns false
