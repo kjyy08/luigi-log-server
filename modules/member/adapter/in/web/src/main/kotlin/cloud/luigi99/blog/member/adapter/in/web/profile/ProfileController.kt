@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController
 private val log = KotlinLogging.logger {}
 
 @RestController
-@RequestMapping("/api/v1/profile")
+@RequestMapping("/api/v1/profiles")
 class ProfileController(
     private val memberQueryFacade: MemberQueryFacade,
     private val memberCommandFacade: MemberCommandFacade,
