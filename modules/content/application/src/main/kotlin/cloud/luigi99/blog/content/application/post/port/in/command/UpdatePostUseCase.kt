@@ -1,5 +1,7 @@
 package cloud.luigi99.blog.content.application.post.port.`in`.command
 
+import java.time.LocalDateTime
+
 /**
  * Post 수정 UseCase
  *
@@ -54,7 +56,7 @@ interface UpdatePostUseCase {
         val type: String,
         val status: String,
         val tags: Set<String>,
-        val createdAt: java.time.LocalDateTime?,
-        val updatedAt: java.time.LocalDateTime?,
+        val createdAt: LocalDateTime?,
+        val updatedAt: LocalDateTime?,
     )
 }
