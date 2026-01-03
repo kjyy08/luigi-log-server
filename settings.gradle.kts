@@ -25,6 +25,7 @@ include("modules:content:domain")
 include("modules:content:application")
 include("modules:content:adapter:in:web")
 include("modules:content:adapter:out:persistence:jpa")
+include("modules:content:adapter:out:client:member")
 
 include("modules:media:domain")
 include("modules:media:application")

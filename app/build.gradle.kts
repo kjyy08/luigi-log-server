@@ -26,6 +26,7 @@ dependencies {
     implementation(project(":modules:content:application"))
     implementation(project(":modules:content:adapter:in:web"))
     implementation(project(":modules:content:adapter:out:persistence:jpa"))
+    implementation(project(":modules:content:adapter:out:client:member"))
 
     implementation(project(":modules:media:domain"))
     implementation(project(":modules:media:application"))
