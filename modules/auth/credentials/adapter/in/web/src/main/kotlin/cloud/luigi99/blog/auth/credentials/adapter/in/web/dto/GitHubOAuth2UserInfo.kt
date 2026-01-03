@@ -15,4 +15,8 @@ data class GitHubOAuth2UserInfo(private val attributes: Map<String, Any>) : OAut
     override fun getProviderId(): String =
         attributes["id"]?.toString()
             ?: throw IllegalStateException("GitHub provider ID를 찾을 수 없습니다")
+
+    override fun getProfileImgUrl(): String =
+        attributes["avatar_url"]?.toString()
+            ?: throw IllegalStateException("GitHub 프로필 이미지 URL을 찾을 수 없습니다")
 }

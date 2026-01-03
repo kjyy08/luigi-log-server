@@ -64,6 +64,7 @@ class LoginService(
             email = command.email,
             username = command.username,
             role = credentials.role,
+            profileImgUrl = command.profileImgUrl,
         )
     }
 
@@ -73,6 +74,7 @@ class LoginService(
                 MemberClient.Request(
                     email = command.email,
                     username = command.username,
+                    profileImgUrl = command.profileImgUrl,
                 ),
             )
 
@@ -81,6 +83,7 @@ class LoginService(
                 memberId = MemberId.from(response.memberId),
                 oauthInfo = oauthInfo,
             )
+
         newCredentials.updateLastLogin()
 
         return newCredentials

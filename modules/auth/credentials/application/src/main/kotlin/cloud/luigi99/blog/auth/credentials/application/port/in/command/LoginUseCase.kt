@@ -10,6 +10,7 @@ interface LoginUseCase {
         val username: String,
         val provider: String,
         val providerId: String,
+        val profileImgUrl: String?,
     )
 
     data class Response(
@@ -17,5 +18,6 @@ interface LoginUseCase {
         val email: String,
         val username: String,
         val role: Role,
+        val profileImgUrl: String?,
     )
 }
