@@ -3,6 +3,7 @@ package cloud.luigi99.blog.content.adapter.`in`.web.post
 import cloud.luigi99.blog.content.adapter.`in`.web.post.dto.CreatePostRequest
 import cloud.luigi99.blog.content.adapter.`in`.web.post.dto.UpdatePostRequest
 import cloud.luigi99.blog.content.application.post.port.`in`.command.CreatePostUseCase
+import cloud.luigi99.blog.content.application.post.port.`in`.command.DeletePostUseCase
 import cloud.luigi99.blog.content.application.post.port.`in`.command.PostCommandFacade
 import cloud.luigi99.blog.content.application.post.port.`in`.command.UpdatePostUseCase
 import cloud.luigi99.blog.content.application.post.port.`in`.query.GetPostByIdUseCase
@@ -11,7 +12,9 @@ import cloud.luigi99.blog.content.application.post.port.`in`.query.PostQueryFaca
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import io.mockk.Runs
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import org.springframework.http.HttpStatus
 import java.time.LocalDateTime
@@ -46,7 +49,7 @@ class PostControllerTest :
                 val expectedResponse =
                     CreatePostUseCase.Response(
                         postId = UUID.randomUUID().toString(),
-                        memberId = "member-id",
+                        author = CreatePostUseCase.AuthorInfo("member-id", "Luigi", null),
                         title = "Kotlin DDD",
                         slug = "kotlin-ddd",
                         body = "# Content",
@@ -74,6 +77,10 @@ class PostControllerTest :
                     response.body
                         ?.data
                         ?.status shouldBe "DRAFT"
+                    response.body
+                        ?.data
+                        ?.author
+                        ?.nickname shouldBe "Luigi"
                 }
             }
         }
@@ -89,7 +96,7 @@ class PostControllerTest :
                 val expectedResponse =
                     UpdatePostUseCase.Response(
                         postId = postId,
-                        memberId = "member-id",
+                        author = UpdatePostUseCase.AuthorInfo("member-id", "Luigi", null),
                         title = "수정된 제목",
                         slug = "original-slug",
                         body = "원본 본문",
@@ -132,7 +139,7 @@ class PostControllerTest :
                 val expectedResponse =
                     UpdatePostUseCase.Response(
                         postId = postId,
-                        memberId = "member-id",
+                        author = UpdatePostUseCase.AuthorInfo("member-id", "Luigi", null),
                         title = "원본 제목",
                         slug = "original-slug",
                         body = "원본 본문",
@@ -180,7 +187,7 @@ class PostControllerTest :
                 val expectedResponse =
                     UpdatePostUseCase.Response(
                         postId = postId,
-                        memberId = "member-id",
+                        author = UpdatePostUseCase.AuthorInfo("member-id", "Luigi", null),
                         title = "완전히 수정된 제목",
                         slug = "original-slug",
                         body = "완전히 수정된 본문",
@@ -225,7 +232,7 @@ class PostControllerTest :
                 val expectedResponse =
                     GetPostByIdUseCase.Response(
                         postId = postId,
-                        memberId = "member-id",
+                        author = GetPostByIdUseCase.AuthorInfo("member-id", "Luigi", null),
                         title = "조회된 글",
                         slug = "retrieved-post",
                         body = "본문 내용",
@@ -253,6 +260,10 @@ class PostControllerTest :
                     response.body
                         ?.data
                         ?.title shouldBe "조회된 글"
+                    response.body
+                        ?.data
+                        ?.author
+                        ?.nickname shouldBe "Luigi"
                 }
             }
         }
@@ -268,7 +279,7 @@ class PostControllerTest :
                 val expectedResponse =
                     GetPostBySlugUseCase.Response(
                         postId = UUID.randomUUID().toString(),
-                        memberId = "member-id",
+                        author = GetPostBySlugUseCase.AuthorInfo("member-id", "Luigi", null),
                         title = "테스트 글",
                         slug = slug,
                         body = "본문 내용",
@@ -296,6 +307,28 @@ class PostControllerTest :
                     response.body
                         ?.data
                         ?.title shouldBe "테스트 글"
+                }
+            }
+        }
+
+        Given("작성자가 자신의 글을 삭제하려는 상황에서") {
+            val deletePostUseCase = mockk<DeletePostUseCase>()
+            every { postCommandFacade.deletePost() } returns deletePostUseCase
+
+            When("게시글 삭제 요청을 전송하면") {
+                val postId = UUID.randomUUID().toString()
+                val memberId = "member-id"
+
+                every { deletePostUseCase.execute(any()) } just Runs
+
+                val response = controller.deletePost(memberId, postId)
+
+                Then("요청이 성공적으로 처리되어 204 No Content 응답이 반환된다") {
+                    response.statusCode shouldBe HttpStatus.NO_CONTENT
+                }
+
+                Then("응답 본문은 비어있다") {
+                    response.body shouldBe null
                 }
             }
         }
