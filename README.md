@@ -22,19 +22,26 @@
 ## 🚀 주요 기능
 
 ### 👤 회원 관리
-- 회원 프로필 및 정보 관리
+- 회원 가입 및 프로필 관리
+- 프로필 이미지 지원
+- 기술 스택, 포트폴리오 URL 등 상세 정보 관리
 
 ### 🔒 인증 관리
-- 소셜 로그인 (GitHub) 기반 OAuth2 인증
+- OAuth2 소셜 로그인 (GitHub)
 - JWT 토큰 기반 stateless 인증/인가
+- Redis 기반 Refresh Token 관리
+- Role 기반 접근 제어
 
 ### 📝 콘텐츠 관리
-- 마크다운 기반 블로그 포스트 작성 및 관리
+- 마크다운 기반 블로그 포스트 및 포트폴리오 작성/관리
+- 콘텐츠 타입 분류 (BLOG, PORTFOLIO)
 - 태그 기반 콘텐츠 분류
+- 게시 상태 관리 (DRAFT, PUBLISHED, ARCHIVED)
 
 ### 📁 미디어 관리
 - 파일 업로드 및 저장
-- 스토리지 추상화
+- Cloudflare R2 (S3 호환) 스토리지 지원
+- 이미지 및 파일 관리
 
 ---
 
@@ -42,21 +49,29 @@
 
 ### Hexagonal Architecture (Port & Adapter)
 
+각 도메인 모듈은 Hexagonal Architecture를 따라 구성됩니다:
+
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                     Adapter (In)                        │
-│              REST API, Event Listeners                  │
+│         REST Controllers, Event Listeners               │
 ├─────────────────────────────────────────────────────────┤
 │                   Application Layer                     │
-│         Use Cases, Business Logic, Services             │
+│      Use Cases (Ports), Service Implementations         │
 ├─────────────────────────────────────────────────────────┤
 │                    Domain Layer                         │
 │    Aggregate Roots, Entities, Value Objects, Events     │
+│              (순수 Kotlin, 프레임워크 독립적)              │
 ├─────────────────────────────────────────────────────────┤
 │                   Adapter (Out)                         │
-│          JPA Repository, Redis, External APIs           │
+│    JPA Repositories, Redis, Storage, External APIs      │
 └─────────────────────────────────────────────────────────┘
 ```
+
+**핵심 원칙:**
+- **도메인 순수성**: Domain 계층은 프레임워크 의존성 제로
+- **의존성 역전**: Application 계층이 Port(인터페이스)를 정의하고, Adapter가 구현
+- **독립적 진화**: 각 도메인은 독립적으로 발전 가능
 
 ### 멀티 모듈 구조
 
@@ -87,8 +102,9 @@ blog-server/
 
 ### Persistence
 - **PostgreSQL 16** - 메인 데이터베이스
-- **Redis** - 토큰 저장소 및 캐싱
+- **Redis** - Refresh Token 저장소
 - **Flyway 11.13.2** - 데이터베이스 마이그레이션
+- **Cloudflare R2** - S3 호환 객체 스토리지
 
 ### Security
 - **Spring Security** - 인증/인가
@@ -131,6 +147,13 @@ JWT_SECRET=your-secure-secret-key-minimum-256-bits
 # OAuth2 소셜 로그인 (GitHub)
 GITHUB_CLIENT_ID=your_github_client_id
 GITHUB_CLIENT_SECRET=your_github_client_secret
+
+# Cloudflare R2 스토리지 (미디어 파일)
+CLOUDFLARE_R2_ACCOUNT_ID=your_cloudflare_account_id
+CLOUDFLARE_R2_ACCESS_KEY_ID=your_r2_access_key_id
+CLOUDFLARE_R2_SECRET_ACCESS_KEY=your_r2_secret_access_key
+CLOUDFLARE_R2_BUCKET_NAME=your_bucket_name
+CLOUDFLARE_R2_PUBLIC_URL=https://your-r2-public-url.com
 ```
 
 #### 선택적 환경변수 (기본값 제공)
@@ -191,8 +214,17 @@ SPRING_PROFILES_ACTIVE=dev ./gradlew bootRun
 # 테스트 실행
 ./gradlew test
 
-# 코드 스타일 검사 및 자동 수정
+# 특정 모듈 테스트
+./gradlew :modules:member:domain:test
+
+# 코드 스타일 검사
+./gradlew ktlintCheck
+
+# 코드 스타일 자동 수정
 ./gradlew ktlintFormat
+
+# 커버리지 리포트 생성
+./gradlew koverHtmlReport
 
 # 커버리지 검증 (최소 60%)
 ./gradlew koverVerify
@@ -200,3 +232,38 @@ SPRING_PROFILES_ACTIVE=dev ./gradlew bootRun
 # 전체 검사 (테스트 + 린트 + 커버리지)
 ./gradlew check
 ```
+
+---
+
+## 📚 프로젝트 구조 및 규칙
+
+### Convention Plugins (buildSrc)
+
+프로젝트는 빌드 설정을 표준화하기 위해 Convention Plugins를 사용합니다:
+
+- **`conventions`** - 기본 설정 (JDK 21, Kotlin, Ktlint)
+- **`spring-library-conventions`** - Spring Library 모듈용 설정
+- **`spring-boot-conventions`** - Spring Boot 모듈용 설정
+- **`kover`** - 코드 커버리지 설정 (최소 60%)
+
+### 의존성 관리
+
+모든 라이브러리 버전은 `gradle/libs.versions.toml`에서 중앙 관리됩니다:
+
+```kotlin
+dependencies {
+    implementation(libs.bundles.spring.boot.web)      // Spring Web, Validation, Actuator, Swagger
+    implementation(libs.bundles.spring.boot.data)     // JPA, Flyway, PostgreSQL
+    implementation(libs.bundles.spring.boot.security) // Spring Security, OAuth2
+    implementation(libs.bundles.jwt)                  // JJWT
+    implementation(libs.bundles.redis)                // Redis
+}
+```
+
+### DDD 패턴
+
+- **Aggregate Root**: `AggregateRoot<T>` 상속
+- **Entity**: `DomainEntity<T>` 상속
+- **Value Object**: `@JvmInline value class` 사용 권장
+- **Domain Event**: 도메인 이벤트로 부수 효과 표현
+- **Mapper Pattern**: JPA Entity ↔ Domain Model 변환
