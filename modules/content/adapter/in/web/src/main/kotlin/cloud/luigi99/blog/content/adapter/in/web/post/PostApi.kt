@@ -48,7 +48,11 @@ interface PostApi {
                                   "success": true,
                                   "data": {
                                     "postId": "550e8400-e29b-41d4-a716-446655440000",
-                                    "memberId": "987e6543-e21b-98d7-a654-426614174111",
+                                    "author": {
+                                      "memberId": "987e6543-e21b-98d7-a654-426614174111",
+                                      "nickname": "Luigi99",
+                                      "profileImageUrl": null
+                                    },
                                     "title": "Kotlin으로 DDD 구현하기",
                                     "slug": "kotlin-ddd-implementation",
                                     "body": "# 시작하기\n\nKotlin과 DDD를 결합하면...",
@@ -256,7 +260,11 @@ interface PostApi {
                                   "success": true,
                                   "data": {
                                     "postId": "550e8400-e29b-41d4-a716-446655440000",
-                                    "memberId": "987e6543-e21b-98d7-a654-426614174111",
+                                    "author": {
+                                      "memberId": "987e6543-e21b-98d7-a654-426614174111",
+                                      "nickname": "Luigi99",
+                                      "profileImageUrl": "https://example.com/profile.jpg"
+                                    },
                                     "title": "Kotlin으로 DDD 구현하기",
                                     "slug": "kotlin-ddd-implementation",
                                     "body": "# 시작하기\n\nKotlin과 DDD를 결합하면...",
@@ -329,7 +337,11 @@ interface PostApi {
                                     "posts": [
                                       {
                                         "postId": "550e8400-e29b-41d4-a716-446655440000",
-                                        "memberId": "987e6543-e21b-98d7-a654-426614174111",
+                                        "author": {
+                                          "memberId": "987e6543-e21b-98d7-a654-426614174111",
+                                          "nickname": "Luigi99",
+                                          "profileImageUrl": "https://example.com/profile.jpg"
+                                        },
                                         "title": "Kotlin으로 DDD 구현하기",
                                         "slug": "kotlin-ddd-implementation",
                                         "type": "BLOG",
@@ -355,4 +367,97 @@ interface PostApi {
         @Parameter(description = "상태 필터 (DRAFT, PUBLISHED, ARCHIVED)") @RequestParam(required = false) status: String?,
         @Parameter(description = "타입 필터 (BLOG, PORTFOLIO)") @RequestParam(required = false) type: String?,
     ): ResponseEntity<CommonResponse<PostListResponse>>
+
+    @Operation(
+        summary = "블로그 글 삭제",
+        description = "Post ID로 블로그 글을 삭제합니다. 작성자만 삭제할 수 있습니다.",
+        security = [SecurityRequirement(name = "Bearer Authentication")],
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "204",
+                description = "글 삭제 성공",
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "인증되지 않은 사용자",
+                content = [
+                    Content(
+                        schema = Schema(implementation = CommonResponse::class),
+                        examples = [
+                            ExampleObject(
+                                name = "Unauthorized",
+                                value = """
+                                {
+                                  "success": false,
+                                  "data": null,
+                                  "error": {
+                                    "code": "AUTH_001",
+                                    "message": "인증에 실패했습니다."
+                                  },
+                                  "timestamp": "2025-12-31T12:00:00"
+                                }
+                                """,
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+            ApiResponse(
+                responseCode = "403",
+                description = "삭제 권한 없음",
+                content = [
+                    Content(
+                        schema = Schema(implementation = CommonResponse::class),
+                        examples = [
+                            ExampleObject(
+                                name = "Forbidden",
+                                value = """
+                                {
+                                  "success": false,
+                                  "data": null,
+                                  "error": {
+                                    "code": "AUTH_003",
+                                    "message": "접근 권한이 없습니다."
+                                  },
+                                  "timestamp": "2025-12-31T12:00:00"
+                                }
+                                """,
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+            ApiResponse(
+                responseCode = "404",
+                description = "글을 찾을 수 없음",
+                content = [
+                    Content(
+                        schema = Schema(implementation = CommonResponse::class),
+                        examples = [
+                            ExampleObject(
+                                name = "PostNotFound",
+                                value = """
+                                {
+                                  "success": false,
+                                  "data": null,
+                                  "error": {
+                                    "code": "CONTENT_001",
+                                    "message": "글을 찾을 수 없습니다."
+                                  },
+                                  "timestamp": "2025-12-31T12:00:00"
+                                }
+                                """,
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+        ],
+    )
+    fun deletePost(
+        @AuthenticationPrincipal memberId: String,
+        @Parameter(description = "Post ID") @PathVariable postId: String,
+    ): ResponseEntity<Unit>
 }

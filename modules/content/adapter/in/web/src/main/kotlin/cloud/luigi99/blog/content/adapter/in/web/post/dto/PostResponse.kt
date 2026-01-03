@@ -9,8 +9,8 @@ import java.time.LocalDateTime
 data class PostResponse(
     @field:Schema(description = "Post ID", example = "123e4567-e89b-12d3-a456-426614174000")
     val postId: String,
-    @field:Schema(description = "작성자 Member ID", example = "987e6543-e21b-98d7-a654-426614174111")
-    val memberId: String,
+    @field:Schema(description = "작성자 정보")
+    val author: AuthorResponse,
     @field:Schema(description = "제목", example = "Kotlin으로 DDD 구현하기")
     val title: String,
     @field:Schema(description = "URL slug", example = "kotlin-ddd-implementation")

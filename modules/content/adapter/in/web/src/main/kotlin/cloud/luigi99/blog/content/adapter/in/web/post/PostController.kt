@@ -1,12 +1,14 @@
 package cloud.luigi99.blog.content.adapter.`in`.web.post
 
 import cloud.luigi99.blog.adapter.web.dto.CommonResponse
+import cloud.luigi99.blog.content.adapter.`in`.web.post.dto.AuthorResponse
 import cloud.luigi99.blog.content.adapter.`in`.web.post.dto.CreatePostRequest
 import cloud.luigi99.blog.content.adapter.`in`.web.post.dto.PostListResponse
 import cloud.luigi99.blog.content.adapter.`in`.web.post.dto.PostResponse
 import cloud.luigi99.blog.content.adapter.`in`.web.post.dto.PostSummaryResponse
 import cloud.luigi99.blog.content.adapter.`in`.web.post.dto.UpdatePostRequest
 import cloud.luigi99.blog.content.application.post.port.`in`.command.CreatePostUseCase
+import cloud.luigi99.blog.content.application.post.port.`in`.command.DeletePostUseCase
 import cloud.luigi99.blog.content.application.post.port.`in`.command.PostCommandFacade
 import cloud.luigi99.blog.content.application.post.port.`in`.command.UpdatePostUseCase
 import cloud.luigi99.blog.content.application.post.port.`in`.query.GetPostByIdUseCase
@@ -18,6 +20,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -38,7 +41,7 @@ private val log = KotlinLogging.logger {}
 @RequestMapping("/api/v1/posts")
 class PostController(private val postQueryFacade: PostQueryFacade, private val postCommandFacade: PostCommandFacade) :
     PostApi {
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @PostMapping
     override fun createPost(
         @AuthenticationPrincipal memberId: String,
@@ -62,7 +65,12 @@ class PostController(private val postQueryFacade: PostQueryFacade, private val p
             CommonResponse.success(
                 PostResponse(
                     postId = response.postId,
-                    memberId = response.memberId,
+                    author =
+                        AuthorResponse(
+                            memberId = response.author.memberId,
+                            nickname = response.author.nickname,
+                            profileImageUrl = response.author.profileImageUrl,
+                        ),
                     title = response.title,
                     slug = response.slug,
                     body = response.body,
@@ -76,7 +84,7 @@ class PostController(private val postQueryFacade: PostQueryFacade, private val p
         )
     }
 
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @PutMapping("/{postId}")
     override fun updatePost(
         @AuthenticationPrincipal memberId: String,
@@ -102,7 +110,12 @@ class PostController(private val postQueryFacade: PostQueryFacade, private val p
             CommonResponse.success(
                 PostResponse(
                     postId = response.postId,
-                    memberId = response.memberId,
+                    author =
+                        AuthorResponse(
+                            memberId = response.author.memberId,
+                            nickname = response.author.nickname,
+                            profileImageUrl = response.author.profileImageUrl,
+                        ),
                     title = response.title,
                     slug = response.slug,
                     body = response.body,
@@ -129,7 +142,12 @@ class PostController(private val postQueryFacade: PostQueryFacade, private val p
             CommonResponse.success(
                 PostResponse(
                     postId = response.postId,
-                    memberId = response.memberId,
+                    author =
+                        AuthorResponse(
+                            memberId = response.author.memberId,
+                            nickname = response.author.nickname,
+                            profileImageUrl = response.author.profileImageUrl,
+                        ),
                     title = response.title,
                     slug = response.slug,
                     body = response.body,
@@ -157,7 +175,12 @@ class PostController(private val postQueryFacade: PostQueryFacade, private val p
             CommonResponse.success(
                 PostResponse(
                     postId = response.postId,
-                    memberId = response.memberId,
+                    author =
+                        AuthorResponse(
+                            memberId = response.author.memberId,
+                            nickname = response.author.nickname,
+                            profileImageUrl = response.author.profileImageUrl,
+                        ),
                     title = response.title,
                     slug = response.slug,
                     body = response.body,
@@ -185,7 +208,12 @@ class PostController(private val postQueryFacade: PostQueryFacade, private val p
             response.posts.map { post ->
                 PostSummaryResponse(
                     postId = post.postId,
-                    memberId = post.memberId,
+                    author =
+                        AuthorResponse(
+                            memberId = post.author.memberId,
+                            nickname = post.author.nickname,
+                            profileImageUrl = post.author.profileImageUrl,
+                        ),
                     title = post.title,
                     slug = post.slug,
                     type = post.type,
@@ -203,5 +231,19 @@ class PostController(private val postQueryFacade: PostQueryFacade, private val p
                 ),
             ),
         )
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    @DeleteMapping("/{postId}")
+    override fun deletePost(
+        @AuthenticationPrincipal memberId: String,
+        @PathVariable postId: String,
+    ): ResponseEntity<Unit> {
+        log.info { "Deleting post: $postId by member: $memberId" }
+
+        val command = DeletePostUseCase.Command(memberId = memberId, postId = postId)
+        postCommandFacade.deletePost().execute(command)
+
+        return ResponseEntity.noContent().build()
     }
 }
