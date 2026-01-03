@@ -20,6 +20,9 @@ flyway = "11.13.2"
 # Security
 jjwt = "0.13.0"
 
+# AWS SDK
+awsSdk = "2.21.0"
+
 # Documentation
 springdoc = "2.8.14"
 
@@ -76,6 +79,10 @@ mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 # Documentation
 springdoc-openapi = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
 
+# AWS SDK for S3 (R2 compatible)
+aws-s3 = { module = "software.amazon.awssdk:s3", version.ref = "awsSdk" }
+aws-core = { module = "software.amazon.awssdk:aws-core", version.ref = "awsSdk" }
+
 [bundles]
 kotlin-dependencies = ["kotlin-reflect", "kotlin-logging"]
 kotlin-test = ["kotest-runner-junit5", "kotest-assertions-core", "mockk"]
@@ -87,4 +94,5 @@ spring-ai = ["spring-ai-openai-spring-boot-starter", "spring-ai-pgvector-store-s
 
 jwt = ["jjwt-api", "jjwt-impl", "jjwt-jackson"]
 redis = ["spring-boot-starter-data-redis"]
+aws-s3 = ["aws-s3", "aws-core"]
 
