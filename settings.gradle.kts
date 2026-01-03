@@ -28,6 +28,9 @@ include("modules:content:adapter:out:persistence:jpa")
 
 include("modules:media:domain")
 include("modules:media:application")
+include("modules:media:adapter:in:web")
+include("modules:media:adapter:out:persistence:jpa")
+include("modules:media:adapter:out:storage:r2")
 
 include("libs:adapter:persistence:jpa")
 include("libs:adapter:persistence:redis")

@@ -20,6 +20,20 @@ spring:
     locations: classpath:db/migration
     validate-on-migrate: true
 
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 50MB
+      max-request-size: 50MB
+
+cloudflare:
+  r2:
+    account-id: ${CLOUDFLARE_R2_ACCOUNT_ID}
+    access-key-id: ${CLOUDFLARE_R2_ACCESS_KEY_ID}
+    secret-access-key: ${CLOUDFLARE_R2_SECRET_ACCESS_KEY}
+    bucket-name: ${CLOUDFLARE_R2_BUCKET_NAME}
+    public-url: ${CLOUDFLARE_R2_PUBLIC_URL}
+
 app:
   cookie:
     secure: ${APP_COOKIE_SECURE:true}
