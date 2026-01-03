@@ -26,7 +26,7 @@ interface GetPostBySlugUseCase {
      * Post 조회 응답
      *
      * @property postId Post ID
-     * @property memberId 작성자 Member ID
+     * @property author 작성자 정보
      * @property title 제목
      * @property slug URL slug
      * @property body 본문
@@ -38,7 +38,7 @@ interface GetPostBySlugUseCase {
      */
     data class Response(
         val postId: String,
-        val memberId: String,
+        val author: AuthorInfo,
         val title: String,
         val slug: String,
         val body: String,
@@ -48,4 +48,6 @@ interface GetPostBySlugUseCase {
         val createdAt: java.time.LocalDateTime?,
         val updatedAt: java.time.LocalDateTime?,
     )
+
+    data class AuthorInfo(val memberId: String, val nickname: String, val profileImageUrl: String?)
 }

@@ -33,7 +33,7 @@ interface GetPostsUseCase {
      * Post 요약 정보
      *
      * @property postId Post ID
-     * @property memberId 작성자 Member ID
+     * @property author 작성자 정보
      * @property title 제목
      * @property slug URL slug
      * @property type 컨텐츠 타입
@@ -43,7 +43,7 @@ interface GetPostsUseCase {
      */
     data class PostSummary(
         val postId: String,
-        val memberId: String,
+        val author: AuthorInfo,
         val title: String,
         val slug: String,
         val type: String,
@@ -51,4 +51,6 @@ interface GetPostsUseCase {
         val tags: Set<String>,
         val createdAt: java.time.LocalDateTime?,
     )
+
+    data class AuthorInfo(val memberId: String, val nickname: String, val profileImageUrl: String?)
 }

@@ -1,6 +1,7 @@
 package cloud.luigi99.blog.content.application.post.service.query
 
 import cloud.luigi99.blog.content.application.post.port.`in`.query.GetPostByIdUseCase
+import cloud.luigi99.blog.content.application.post.port.out.MemberClient
 import cloud.luigi99.blog.content.application.post.port.out.PostRepository
 import cloud.luigi99.blog.content.domain.post.exception.PostNotFoundException
 import cloud.luigi99.blog.content.domain.post.vo.PostId
@@ -17,7 +18,8 @@ private val log = KotlinLogging.logger {}
  * Post ID를 사용하여 Post를 조회합니다.
  */
 @Service
-class GetPostByIdService(private val postRepository: PostRepository) : GetPostByIdUseCase {
+class GetPostByIdService(private val postRepository: PostRepository, private val memberClient: MemberClient) :
+    GetPostByIdUseCase {
     @Transactional(readOnly = true)
     override fun execute(query: GetPostByIdUseCase.Query): GetPostByIdUseCase.Response {
         log.info { "Getting post by id: ${query.postId}" }
@@ -27,13 +29,22 @@ class GetPostByIdService(private val postRepository: PostRepository) : GetPostBy
             postRepository.findById(postId)
                 ?: throw PostNotFoundException("Post ID ${query.postId}를 찾을 수 없습니다")
 
+        val author =
+            memberClient.getAuthor(
+                post.memberId.value
+                    .toString(),
+            )
+
         return GetPostByIdUseCase.Response(
             postId =
                 post.entityId.value
                     .toString(),
-            memberId =
-                post.memberId.value
-                    .toString(),
+            author =
+                GetPostByIdUseCase.AuthorInfo(
+                    memberId = author.memberId,
+                    nickname = author.nickname,
+                    profileImageUrl = author.profileImageUrl,
+                ),
             title = post.title.value,
             slug = post.slug.value,
             body = post.body.value,

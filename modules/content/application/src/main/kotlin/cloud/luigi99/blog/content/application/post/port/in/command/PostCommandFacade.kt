@@ -15,4 +15,9 @@ interface PostCommandFacade {
      * Post 수정 UseCase를 반환합니다.
      */
     fun updatePost(): UpdatePostUseCase
+
+    /**
+     * Post 삭제 UseCase를 반환합니다.
+     */
+    fun deletePost(): DeletePostUseCase
 }
