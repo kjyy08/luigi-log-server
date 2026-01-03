@@ -1,6 +1,7 @@
 package cloud.luigi99.blog.content.application.post.service.command
 
 import cloud.luigi99.blog.content.application.post.port.`in`.command.UpdatePostUseCase
+import cloud.luigi99.blog.content.application.post.port.out.MemberClient
 import cloud.luigi99.blog.content.application.post.port.out.PostRepository
 import cloud.luigi99.blog.content.domain.post.exception.PostNotFoundException
 import cloud.luigi99.blog.content.domain.post.exception.UnauthorizedPostAccessException
@@ -21,7 +22,8 @@ private val log = KotlinLogging.logger {}
  * Post의 제목, 본문, 상태를 선택적으로 수정합니다.
  */
 @Service
-class UpdatePostService(private val postRepository: PostRepository) : UpdatePostUseCase {
+class UpdatePostService(private val postRepository: PostRepository, private val memberClient: MemberClient) :
+    UpdatePostUseCase {
     @Transactional
     override fun execute(command: UpdatePostUseCase.Command): UpdatePostUseCase.Response {
         log.info {
@@ -65,13 +67,22 @@ class UpdatePostService(private val postRepository: PostRepository) : UpdatePost
 
         log.info { "Successfully updated post: ${savedPost.entityId}, status=${savedPost.status}" }
 
+        val author =
+            memberClient.getAuthor(
+                savedPost.memberId.value
+                    .toString(),
+            )
+
         return UpdatePostUseCase.Response(
             postId =
                 savedPost.entityId.value
                     .toString(),
-            memberId =
-                savedPost.memberId.value
-                    .toString(),
+            author =
+                UpdatePostUseCase.AuthorInfo(
+                    memberId = author.memberId,
+                    nickname = author.nickname,
+                    profileImageUrl = author.profileImageUrl,
+                ),
             title = savedPost.title.value,
             slug = savedPost.slug.value,
             body = savedPost.body.value,

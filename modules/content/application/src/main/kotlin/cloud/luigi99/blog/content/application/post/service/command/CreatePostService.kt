@@ -1,6 +1,7 @@
 package cloud.luigi99.blog.content.application.post.service.command
 
 import cloud.luigi99.blog.content.application.post.port.`in`.command.CreatePostUseCase
+import cloud.luigi99.blog.content.application.post.port.out.MemberClient
 import cloud.luigi99.blog.content.application.post.port.out.PostRepository
 import cloud.luigi99.blog.content.domain.post.exception.DuplicateSlugException
 import cloud.luigi99.blog.content.domain.post.model.Post
@@ -22,7 +23,8 @@ private val log = KotlinLogging.logger {}
  * Slug 중복 검증을 수행합니다.
  */
 @Service
-class CreatePostService(private val postRepository: PostRepository) : CreatePostUseCase {
+class CreatePostService(private val postRepository: PostRepository, private val memberClient: MemberClient) :
+    CreatePostUseCase {
     @Transactional
     override fun execute(command: CreatePostUseCase.Command): CreatePostUseCase.Response {
         log.info { "Creating new post with slug: ${command.slug} by member: ${command.memberId}" }
@@ -59,13 +61,22 @@ class CreatePostService(private val postRepository: PostRepository) : CreatePost
 
         log.info { "Successfully created post: ${savedPost.entityId}" }
 
+        val author =
+            memberClient.getAuthor(
+                savedPost.memberId.value
+                    .toString(),
+            )
+
         return CreatePostUseCase.Response(
             postId =
                 savedPost.entityId.value
                     .toString(),
-            memberId =
-                savedPost.memberId.value
-                    .toString(),
+            author =
+                CreatePostUseCase.AuthorInfo(
+                    memberId = author.memberId,
+                    nickname = author.nickname,
+                    profileImageUrl = author.profileImageUrl,
+                ),
             title = savedPost.title.value,
             slug = savedPost.slug.value,
             body = savedPost.body.value,

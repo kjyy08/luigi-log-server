@@ -2,6 +2,7 @@ package cloud.luigi99.blog.content.application.post.service.query
 
 import cloud.luigi99.blog.common.domain.event.EventManager
 import cloud.luigi99.blog.content.application.post.port.`in`.query.GetPostByIdUseCase
+import cloud.luigi99.blog.content.application.post.port.out.MemberClient
 import cloud.luigi99.blog.content.application.post.port.out.PostRepository
 import cloud.luigi99.blog.content.domain.post.exception.PostNotFoundException
 import cloud.luigi99.blog.content.domain.post.model.Post
@@ -32,7 +33,8 @@ class GetPostByIdServiceTest :
 
         Given("ID로 글을 조회할 때") {
             val postRepository = mockk<PostRepository>()
-            val service = GetPostByIdService(postRepository)
+            val memberClient = mockk<MemberClient>()
+            val service = GetPostByIdService(postRepository, memberClient)
 
             When("존재하는 Post ID로 조회하면") {
                 val postId = PostId.generate()
@@ -48,6 +50,14 @@ class GetPostByIdServiceTest :
                     )
 
                 every { postRepository.findById(postId) } returns post
+                every { memberClient.getAuthor(any()) } returns
+                    MemberClient.Author(
+                        memberId =
+                            post.memberId.value
+                                .toString(),
+                        nickname = "TestUser",
+                        profileImageUrl = null,
+                    )
 
                 val response = service.execute(query)
 
@@ -63,7 +73,8 @@ class GetPostByIdServiceTest :
 
         Given("존재하지 않는 ID로 조회할 때") {
             val postRepository = mockk<PostRepository>()
-            val service = GetPostByIdService(postRepository)
+            val memberClient = mockk<MemberClient>()
+            val service = GetPostByIdService(postRepository, memberClient)
 
             When("없는 Post ID로 조회하면") {
                 val postId = UUID.randomUUID()

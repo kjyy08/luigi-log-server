@@ -37,7 +37,7 @@ interface UpdatePostUseCase {
      * Post 수정 응답
      *
      * @property postId Post ID
-     * @property memberId 작성자 Member ID
+     * @property author 작성자 정보
      * @property title 수정된 제목
      * @property slug URL slug
      * @property body 수정된 본문
@@ -49,7 +49,7 @@ interface UpdatePostUseCase {
      */
     data class Response(
         val postId: String,
-        val memberId: String,
+        val author: AuthorInfo,
         val title: String,
         val slug: String,
         val body: String,
@@ -59,4 +59,6 @@ interface UpdatePostUseCase {
         val createdAt: LocalDateTime?,
         val updatedAt: LocalDateTime?,
     )
+
+    data class AuthorInfo(val memberId: String, val nickname: String, val profileImageUrl: String?)
 }
