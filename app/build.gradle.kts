@@ -31,6 +31,7 @@ dependencies {
     implementation(project(":modules:media:application"))
     implementation(project(":modules:media:adapter:in:web"))
     implementation(project(":modules:media:adapter:out:persistence:jpa"))
+    implementation(project(":modules:media:adapter:out:storage:r2"))
 
     implementation(libs.bundles.spring.boot.web)
     implementation(libs.bundles.spring.boot.data)
