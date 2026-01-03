@@ -43,6 +43,7 @@ class RegisterMemberServiceTest :
                     RegisterMemberUseCase.Command(
                         email = "user@example.com",
                         username = "john_doe",
+                        profileImgUrl = "https://example.com/profile.jpg",
                     )
 
                 val savedMemberSlot = slot<Member>()
@@ -95,6 +96,7 @@ class RegisterMemberServiceTest :
                     RegisterMemberUseCase.Command(
                         email = "test@example.com",
                         username = "testuser",
+                        profileImgUrl = "https://example.com/profile.jpg",
                     )
 
                 val memberSlot = slot<Member>()
@@ -138,6 +140,7 @@ class RegisterMemberServiceTest :
                             RegisterMemberUseCase.Command(
                                 email = email,
                                 username = username,
+                                profileImgUrl = "https://example.com/profile.jpg",
                             ),
                         )
                     }
@@ -172,6 +175,7 @@ class RegisterMemberServiceTest :
                     RegisterMemberUseCase.Command(
                         email = "domain@example.com",
                         username = "domainuser",
+                        profileImgUrl = "https://example.com/profile.jpg",
                     )
 
                 val memberSlot = slot<Member>()
