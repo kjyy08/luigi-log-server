@@ -9,4 +9,6 @@ interface MemberRepository : Repository<Member, MemberId> {
     fun findByEmail(email: Email): Member?
 
     fun existsByEmail(email: Email): Boolean
+
+    fun findAllById(ids: List<MemberId>): List<Member>
 }

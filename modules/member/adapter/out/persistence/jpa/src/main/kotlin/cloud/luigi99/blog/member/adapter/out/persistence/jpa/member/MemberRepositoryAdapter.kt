@@ -78,4 +78,14 @@ class MemberRepositoryAdapter(
         jpaRepository.deleteById(id.value)
         log.info { "Deleted member: $id" }
     }
+
+    /**
+     * 여러 ID로 회원 목록을 조회합니다.
+     */
+    override fun findAllById(ids: List<MemberId>): List<Member> {
+        log.debug { "Finding members by IDs: $ids" }
+        return jpaRepository
+            .findAllById(ids.map { it.value })
+            .map { MemberMapper.toDomain(it) }
+    }
 }

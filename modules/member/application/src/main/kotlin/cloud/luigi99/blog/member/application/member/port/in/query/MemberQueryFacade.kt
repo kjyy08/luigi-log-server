@@ -4,4 +4,6 @@ interface MemberQueryFacade {
     fun getCurrentMember(): GetCurrentMemberUseCase
 
     fun getMemberProfile(): GetMemberProfileUseCase
+
+    fun getMembersProfile(): GetMembersProfileUseCase
 }
