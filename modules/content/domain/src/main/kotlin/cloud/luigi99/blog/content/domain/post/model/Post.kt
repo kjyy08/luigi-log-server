@@ -3,6 +3,7 @@ package cloud.luigi99.blog.content.domain.post.model
 import cloud.luigi99.blog.common.domain.AggregateRoot
 import cloud.luigi99.blog.content.domain.post.event.PostArchivedEvent
 import cloud.luigi99.blog.content.domain.post.event.PostCreatedEvent
+import cloud.luigi99.blog.content.domain.post.event.PostDeletedEvent
 import cloud.luigi99.blog.content.domain.post.event.PostPublishedEvent
 import cloud.luigi99.blog.content.domain.post.vo.Body
 import cloud.luigi99.blog.content.domain.post.vo.ContentType
@@ -175,6 +176,30 @@ class Post private constructor(
 
         archived.registerEvent(PostArchivedEvent(archived.entityId, archived.slug))
         return archived
+    }
+
+    /**
+     * Post를 삭제합니다.
+     *
+     * @return 삭제 이벤트가 등록된 Post
+     */
+    fun delete(): Post {
+        val deleted =
+            Post(
+                entityId = entityId,
+                memberId = memberId,
+                title = title,
+                slug = slug,
+                body = body,
+                type = type,
+                status = status,
+                tags = tags,
+            )
+        deleted.createdAt = createdAt
+        deleted.updatedAt = updatedAt
+
+        deleted.registerEvent(PostDeletedEvent(deleted.entityId, deleted.memberId))
+        return deleted
     }
 
     /**

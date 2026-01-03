@@ -20,6 +20,7 @@ import io.kotest.matchers.types.shouldNotBeSameInstanceAs
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
+import java.time.LocalDateTime
 
 /**
  * Post Aggregate Root 테스트
@@ -287,7 +288,7 @@ class PostTest :
             val body = Body("재구성 내용")
             val tags = setOf("kotlin", "tdd")
             val metadata =
-                java.time.LocalDateTime
+                LocalDateTime
                     .now()
 
             When("from()으로 Post를 재구성하면") {
@@ -319,6 +320,26 @@ class PostTest :
 
                 Then("이벤트가 발행되지 않는다") {
                     post.getEvents().shouldBeEmpty()
+                }
+            }
+        }
+
+        Given("작성자가 게시글을 삭제하려는 상황에서") {
+            val post =
+                Post.create(
+                    MemberId.generate(),
+                    Title("삭제할 글"),
+                    Slug("delete-post"),
+                    Body("내용"),
+                    ContentType.BLOG,
+                )
+            post.clearEvents()
+
+            When("삭제를 수행하면") {
+                val deleted = post.delete()
+
+                Then("기존 객체와 다른 새로운 인스턴스가 반환된다") {
+                    deleted shouldNotBeSameInstanceAs post
                 }
             }
         }
