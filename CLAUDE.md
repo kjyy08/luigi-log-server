@@ -141,24 +141,60 @@ The `libs/adapter` modules provide framework-specific implementations:
 class Member private constructor(
     override val entityId: MemberId,
     val email: Email,
-    val username: Username
+    val username: Username,
+    val profile: Profile?
 ) : AggregateRoot<MemberId>() {
-    fun register(): Member {
-        registerEvent(MemberRegisteredEvent(entityId, email))
-        return this
+    companion object {
+        fun register(email: Email, username: Username, profile: Profile? = null): Member {
+            val member = Member(
+                entityId = MemberId.generate(),
+                email = email,
+                username = username,
+                profile = profile
+            )
+            member.registerEvent(MemberRegisteredEvent(member.entityId, member.email))
+            return member
+        }
+
+        fun from(
+            entityId: MemberId,
+            email: Email,
+            username: Username,
+            profile: Profile?,
+            createdAt: LocalDateTime?,
+            updatedAt: LocalDateTime?
+        ): Member {
+            val member = Member(entityId, email, username, profile)
+            member.createdAt = createdAt
+            member.updatedAt = updatedAt
+            return member
+        }
     }
 }
 
 // JPA persistence entity (modules/member/adapter/out/persistence/jpa)
 @Entity
 @Table(name = "member")
-class MemberJpaEntity : JpaAggregateRoot<MemberId>() {
-    @Id override val id: UUID
-    @Column(nullable = false, unique = true)
-    lateinit var email: String
+@DynamicUpdate
+class MemberJpaEntity private constructor(
+    @Id
+    @Column(name = "id")
+    val id: UUID,
+    @Column(name = "email", nullable = false, unique = true)
+    val email: String,
+    @Column(name = "username", nullable = false, length = 100)
+    val username: String,
+    @OneToOne(cascade = [CascadeType.ALL], orphanRemoval = true)
+    @JoinColumn(name = "profile_id")
+    var profile: ProfileJpaEntity? = null
+) : JpaAggregateRoot<MemberId>() {
+    override val entityId: MemberId
+        get() = MemberId(id)
 
-    @Column(nullable = false)
-    lateinit var username: String
+    companion object {
+        fun from(entityId: UUID, email: String, username: String): MemberJpaEntity =
+            MemberJpaEntity(id = entityId, email = email, username = username)
+    }
 }
 
 // Mapper (modules/member/adapter/out/persistence/jpa)
@@ -168,16 +204,25 @@ object MemberMapper {
             entityId = MemberId(entity.id),
             email = Email(entity.email),
             username = Username(entity.username),
+            profile = entity.profile?.let { ProfileMapper.toDomain(it) },
             createdAt = entity.createdAt,
             updatedAt = entity.updatedAt
         )
 
-    fun toEntity(member: Member): MemberJpaEntity =
-        MemberJpaEntity().apply {
-            id = member.entityId.value
-            email = member.email.value
+    fun toEntity(member: Member): MemberJpaEntity {
+        val memberJpaEntity = MemberJpaEntity.from(
+            entityId = member.entityId.value,
+            email = member.email.value,
             username = member.username.value
+        ).apply {
+            createdAt = member.createdAt
+            updatedAt = member.updatedAt
         }
+
+        memberJpaEntity.profile = member.profile?.let { ProfileMapper.toEntity(it) }
+
+        return memberJpaEntity
+    }
 }
 ```
 
@@ -312,7 +357,13 @@ Defined in domain-specific exception classes:
 - `CREDENTIAL_001` - Credential not found (404)
 - `PROFILE_001` - Profile not found (404)
 - `CONTENT_001` - Post not found (404)
+- `CONTENT_002` - Slug already exists (409)
+- `CONTENT_003` - Comment not found (404)
+- `CONTENT_004` - Unauthorized post access (403)
+- `CONTENT_005` - Unauthorized comment access (403)
+- `CONTENT_006` - Invalid comment password (401)
 - `MEDIA_001` - File upload failed (500)
+- `MEDIA_002` - Invalid file type (400)
 
 ### Domain Events
 Event-driven architecture using service locator pattern:
