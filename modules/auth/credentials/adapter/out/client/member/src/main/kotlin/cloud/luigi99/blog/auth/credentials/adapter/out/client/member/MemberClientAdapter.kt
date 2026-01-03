@@ -18,6 +18,7 @@ class MemberClientAdapter(private val memberCommandFacade: MemberCommandFacade) 
             RegisterMemberUseCase.Command(
                 email = request.email,
                 username = request.username,
+                profileImgUrl = request.profileImgUrl,
             )
 
         // MSA 전환 시 실제 API 요청 전송 코드로 변경 필요
@@ -27,6 +28,7 @@ class MemberClientAdapter(private val memberCommandFacade: MemberCommandFacade) 
             memberId = response.memberId,
             email = response.email,
             username = response.username,
+            profileImgUrl = response.profileImgUrl,
         )
     }
 }

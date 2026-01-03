@@ -6,4 +6,6 @@ interface OAuth2UserInfo {
     fun getUsername(): String
 
     fun getProviderId(): String
+
+    fun getProfileImgUrl(): String
 }

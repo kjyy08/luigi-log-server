@@ -54,6 +54,7 @@ class OAuth2AuthenticationSuccessHandler(
                         username = userInfo.getUsername(),
                         provider = provider,
                         providerId = userInfo.getProviderId(),
+                        profileImgUrl = userInfo.getProfileImgUrl(),
                     ),
                 )
 
