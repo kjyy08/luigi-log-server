@@ -2,6 +2,7 @@ package cloud.luigi99.blog.content.application.post.service.command
 
 import cloud.luigi99.blog.common.domain.event.EventManager
 import cloud.luigi99.blog.content.application.post.port.`in`.command.UpdatePostUseCase
+import cloud.luigi99.blog.content.application.post.port.out.MemberClient
 import cloud.luigi99.blog.content.application.post.port.out.PostRepository
 import cloud.luigi99.blog.content.domain.post.exception.PostNotFoundException
 import cloud.luigi99.blog.content.domain.post.exception.UnauthorizedPostAccessException
@@ -34,7 +35,8 @@ class UpdatePostServiceTest :
 
         Given("글을 수정할 때") {
             val postRepository = mockk<PostRepository>()
-            val service = UpdatePostService(postRepository)
+            val memberClient = mockk<MemberClient>()
+            val service = UpdatePostService(postRepository, memberClient)
             val memberId = MemberId.generate()
 
             When("작성자가 제목과 본문을 수정하면") {
@@ -60,11 +62,21 @@ class UpdatePostServiceTest :
 
                 every { postRepository.findById(postId) } returns originalPost
                 every { postRepository.save(any()) } returns updatedPost
+                every { memberClient.getAuthor(memberId.value.toString()) } returns
+                    MemberClient.Author(
+                        memberId = memberId.value.toString(),
+                        nickname = "TestUser",
+                        profileImageUrl = null,
+                    )
 
                 val response = service.execute(command)
 
                 Then("수정된 제목이 반환된다") {
                     response.title shouldBe "수정된 제목"
+                }
+
+                Then("작성자 정보가 반환된다") {
+                    response.author.nickname shouldBe "TestUser"
                 }
 
                 Then("수정된 본문이 반환된다") {
@@ -79,7 +91,8 @@ class UpdatePostServiceTest :
 
         Given("글의 상태를 PUBLISHED로 변경할 때") {
             val postRepository = mockk<PostRepository>()
-            val service = UpdatePostService(postRepository)
+            val memberClient = mockk<MemberClient>()
+            val service = UpdatePostService(postRepository, memberClient)
             val memberId = MemberId.generate()
 
             When("작성자가 status를 PUBLISHED로 수정하면") {
@@ -106,6 +119,12 @@ class UpdatePostServiceTest :
 
                 every { postRepository.findById(postId) } returns originalPost
                 every { postRepository.save(any()) } returns publishedPost
+                every { memberClient.getAuthor(memberId.value.toString()) } returns
+                    MemberClient.Author(
+                        memberId = memberId.value.toString(),
+                        nickname = "TestUser",
+                        profileImageUrl = null,
+                    )
 
                 val response = service.execute(command)
 
@@ -121,7 +140,8 @@ class UpdatePostServiceTest :
 
         Given("글의 상태를 ARCHIVED로 변경할 때") {
             val postRepository = mockk<PostRepository>()
-            val service = UpdatePostService(postRepository)
+            val memberClient = mockk<MemberClient>()
+            val service = UpdatePostService(postRepository, memberClient)
             val memberId = MemberId.generate()
 
             When("작성자가 status를 ARCHIVED로 수정하면") {
@@ -148,6 +168,12 @@ class UpdatePostServiceTest :
 
                 every { postRepository.findById(postId) } returns originalPost
                 every { postRepository.save(any()) } returns archivedPost
+                every { memberClient.getAuthor(memberId.value.toString()) } returns
+                    MemberClient.Author(
+                        memberId = memberId.value.toString(),
+                        nickname = "TestUser",
+                        profileImageUrl = null,
+                    )
 
                 val response = service.execute(command)
 
@@ -163,7 +189,8 @@ class UpdatePostServiceTest :
 
         Given("제목, 본문, 상태를 동시에 수정할 때") {
             val postRepository = mockk<PostRepository>()
-            val service = UpdatePostService(postRepository)
+            val memberClient = mockk<MemberClient>()
+            val service = UpdatePostService(postRepository, memberClient)
             val memberId = MemberId.generate()
 
             When("작성자가 모든 필드를 수정하면") {
@@ -191,6 +218,12 @@ class UpdatePostServiceTest :
 
                 every { postRepository.findById(postId) } returns originalPost
                 every { postRepository.save(any()) } returns publishedPost
+                every { memberClient.getAuthor(memberId.value.toString()) } returns
+                    MemberClient.Author(
+                        memberId = memberId.value.toString(),
+                        nickname = "TestUser",
+                        profileImageUrl = null,
+                    )
 
                 val response = service.execute(command)
 
@@ -214,7 +247,8 @@ class UpdatePostServiceTest :
 
         Given("존재하지 않는 글을 수정하려고 할 때") {
             val postRepository = mockk<PostRepository>()
-            val service = UpdatePostService(postRepository)
+            val memberClient = mockk<MemberClient>()
+            val service = UpdatePostService(postRepository, memberClient)
             val memberId = MemberId.generate()
 
             When("없는 Post ID로 수정하면") {
@@ -239,7 +273,8 @@ class UpdatePostServiceTest :
 
         Given("다른 사용자의 글을 수정하려고 할 때") {
             val postRepository = mockk<PostRepository>()
-            val service = UpdatePostService(postRepository)
+            val memberClient = mockk<MemberClient>()
+            val service = UpdatePostService(postRepository, memberClient)
             val authorId = MemberId.generate()
             val otherMemberId = MemberId.generate()
 

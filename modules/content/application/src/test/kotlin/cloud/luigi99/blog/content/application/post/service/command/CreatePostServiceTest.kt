@@ -2,6 +2,7 @@ package cloud.luigi99.blog.content.application.post.service.command
 
 import cloud.luigi99.blog.common.domain.event.EventManager
 import cloud.luigi99.blog.content.application.post.port.`in`.command.CreatePostUseCase
+import cloud.luigi99.blog.content.application.post.port.out.MemberClient
 import cloud.luigi99.blog.content.application.post.port.out.PostRepository
 import cloud.luigi99.blog.content.domain.post.exception.DuplicateSlugException
 import cloud.luigi99.blog.content.domain.post.model.Post
@@ -36,7 +37,8 @@ class CreatePostServiceTest :
 
         Given("블로그 글을 생성할 때") {
             val postRepository = mockk<PostRepository>()
-            val service = CreatePostService(postRepository)
+            val memberClient = mockk<MemberClient>()
+            val service = CreatePostService(postRepository, memberClient)
             val memberId = UUID.randomUUID().toString()
 
             When("유효한 memberId, 제목, slug로 생성하면") {
@@ -71,6 +73,12 @@ class CreatePostServiceTest :
                     )
                 } returns false
                 every { postRepository.save(capture(savedPostSlot)) } returns savedPost
+                every { memberClient.getAuthor(memberId) } returns
+                    MemberClient.Author(
+                        memberId = memberId,
+                        nickname = "TestUser",
+                        profileImageUrl = null,
+                    )
 
                 val response = service.execute(command)
 
@@ -78,8 +86,9 @@ class CreatePostServiceTest :
                     response.postId shouldNotBe null
                 }
 
-                Then("memberId가 반환된다") {
-                    response.memberId shouldBe memberId
+                Then("작성자 정보가 반환된다") {
+                    response.author.memberId shouldBe memberId
+                    response.author.nickname shouldBe "TestUser"
                 }
 
                 Then("제목이 반환된다") {
@@ -110,7 +119,8 @@ class CreatePostServiceTest :
 
         Given("사용자가 중복된 slug로 글을 생성하려고 할 때") {
             val postRepository = mockk<PostRepository>()
-            val service = CreatePostService(postRepository)
+            val memberClient = mockk<MemberClient>()
+            val service = CreatePostService(postRepository, memberClient)
             val memberId = UUID.randomUUID().toString()
 
             When("이미 자신이 사용 중인 slug를 사용하면") {
@@ -140,7 +150,8 @@ class CreatePostServiceTest :
 
         Given("다른 사용자가 동일한 slug를 사용할 때") {
             val postRepository = mockk<PostRepository>()
-            val service = CreatePostService(postRepository)
+            val memberClient = mockk<MemberClient>()
+            val service = CreatePostService(postRepository, memberClient)
             val memberId = UUID.randomUUID().toString()
 
             When("다른 사용자가 이미 사용 중인 slug로 글을 생성하면") {
@@ -176,6 +187,12 @@ class CreatePostServiceTest :
                     )
                 } returns false
                 every { postRepository.save(any()) } returns savedPost
+                every { memberClient.getAuthor(memberId) } returns
+                    MemberClient.Author(
+                        memberId = memberId,
+                        nickname = "TestUser",
+                        profileImageUrl = null,
+                    )
 
                 val response = service.execute(command)
 
@@ -188,7 +205,8 @@ class CreatePostServiceTest :
 
         Given("태그와 함께 글을 생성할 때") {
             val postRepository = mockk<PostRepository>()
-            val service = CreatePostService(postRepository)
+            val memberClient = mockk<MemberClient>()
+            val service = CreatePostService(postRepository, memberClient)
             val memberId = UUID.randomUUID().toString()
 
             When("여러 태그를 포함하여 생성하면") {
@@ -224,6 +242,12 @@ class CreatePostServiceTest :
                     )
                 } returns false
                 every { postRepository.save(any()) } returns savedPost
+                every { memberClient.getAuthor(memberId) } returns
+                    MemberClient.Author(
+                        memberId = memberId,
+                        nickname = "TestUser",
+                        profileImageUrl = null,
+                    )
 
                 val response = service.execute(command)
 
@@ -235,7 +259,8 @@ class CreatePostServiceTest :
 
         Given("여러 타입의 글을 생성할 때") {
             val postRepository = mockk<PostRepository>()
-            val service = CreatePostService(postRepository)
+            val memberClient = mockk<MemberClient>()
+            val service = CreatePostService(postRepository, memberClient)
             val memberId = UUID.randomUUID().toString()
 
             When("BLOG 타입으로 생성하면") {
@@ -256,6 +281,12 @@ class CreatePostServiceTest :
                     )
                 } returns false
                 every { postRepository.save(capture(postSlot)) } answers { firstArg() }
+                every { memberClient.getAuthor(memberId) } returns
+                    MemberClient.Author(
+                        memberId = memberId,
+                        nickname = "TestUser",
+                        profileImageUrl = null,
+                    )
 
                 service.execute(command)
 
@@ -288,6 +319,12 @@ class CreatePostServiceTest :
                     )
                 } returns false
                 every { postRepository.save(capture(postSlot)) } answers { firstArg() }
+                every { memberClient.getAuthor(memberId) } returns
+                    MemberClient.Author(
+                        memberId = memberId,
+                        nickname = "TestUser",
+                        profileImageUrl = null,
+                    )
 
                 service.execute(command)
 

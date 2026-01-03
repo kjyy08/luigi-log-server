@@ -2,6 +2,7 @@ package cloud.luigi99.blog.content.application.post.service.query
 
 import cloud.luigi99.blog.common.domain.event.EventManager
 import cloud.luigi99.blog.content.application.post.port.`in`.query.GetPostsUseCase
+import cloud.luigi99.blog.content.application.post.port.out.MemberClient
 import cloud.luigi99.blog.content.application.post.port.out.PostRepository
 import cloud.luigi99.blog.content.domain.post.model.Post
 import cloud.luigi99.blog.content.domain.post.vo.Body
@@ -29,7 +30,8 @@ class GetPostsServiceTest :
 
         Given("전체 글 목록을 조회할 때") {
             val postRepository = mockk<PostRepository>()
-            val service = GetPostsService(postRepository)
+            val memberClient = mockk<MemberClient>()
+            val service = GetPostsService(postRepository, memberClient)
 
             When("필터 없이 조회하면") {
                 val query = GetPostsUseCase.Query()
@@ -53,18 +55,26 @@ class GetPostsServiceTest :
                     )
 
                 every { postRepository.findAll() } returns posts
+                every { memberClient.getAuthors(any()) } returns emptyMap()
 
                 val response = service.execute(query)
 
                 Then("모든 글이 반환된다") {
                     response.posts.size shouldBe 2
                 }
+
+                Then("작성자 정보를 찾을 수 없는 경우 Unknown으로 반환된다") {
+                    response.posts.forEach { post ->
+                        post.author.nickname shouldBe "Unknown"
+                    }
+                }
             }
         }
 
         Given("상태별로 글 목록을 조회할 때") {
             val postRepository = mockk<PostRepository>()
-            val service = GetPostsService(postRepository)
+            val memberClient = mockk<MemberClient>()
+            val service = GetPostsService(postRepository, memberClient)
 
             When("PUBLISHED 상태로 필터링하면") {
                 val query = GetPostsUseCase.Query(status = "PUBLISHED")
@@ -82,6 +92,7 @@ class GetPostsServiceTest :
                     )
 
                 every { postRepository.findAllByStatus(PostStatus.PUBLISHED) } returns publishedPosts
+                every { memberClient.getAuthors(any()) } returns emptyMap()
 
                 val response = service.execute(query)
 
@@ -93,7 +104,8 @@ class GetPostsServiceTest :
 
         Given("타입별로 글 목록을 조회할 때") {
             val postRepository = mockk<PostRepository>()
-            val service = GetPostsService(postRepository)
+            val memberClient = mockk<MemberClient>()
+            val service = GetPostsService(postRepository, memberClient)
 
             When("PORTFOLIO 타입으로 필터링하면") {
                 val query = GetPostsUseCase.Query(type = "PORTFOLIO")
@@ -110,6 +122,7 @@ class GetPostsServiceTest :
                     )
 
                 every { postRepository.findAllByContentType(ContentType.PORTFOLIO) } returns portfolioPosts
+                every { memberClient.getAuthors(any()) } returns emptyMap()
 
                 val response = service.execute(query)
 

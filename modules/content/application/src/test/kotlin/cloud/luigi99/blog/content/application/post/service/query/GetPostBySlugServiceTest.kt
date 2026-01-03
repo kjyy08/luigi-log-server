@@ -2,6 +2,7 @@ package cloud.luigi99.blog.content.application.post.service.query
 
 import cloud.luigi99.blog.common.domain.event.EventManager
 import cloud.luigi99.blog.content.application.post.port.`in`.query.GetPostBySlugUseCase
+import cloud.luigi99.blog.content.application.post.port.out.MemberClient
 import cloud.luigi99.blog.content.application.post.port.out.PostRepository
 import cloud.luigi99.blog.content.domain.post.exception.PostNotFoundException
 import cloud.luigi99.blog.content.domain.post.model.Post
@@ -30,8 +31,9 @@ class GetPostBySlugServiceTest :
 
         Given("Username과 Slug로 글을 조회할 때") {
             val postRepository = mockk<PostRepository>()
+            val memberClient = mockk<MemberClient>()
             // MemberClient 제거됨
-            val service = GetPostBySlugService(postRepository)
+            val service = GetPostBySlugService(postRepository, memberClient)
 
             When("존재하는 Username과 Slug로 조회하면") {
                 val memberId = MemberId.generate()
@@ -49,6 +51,12 @@ class GetPostBySlugServiceTest :
                 // MemberClient 호출 모킹 제거
                 // findByUsernameAndSlug 모킹 추가
                 every { postRepository.findByUsernameAndSlug("testuser", Slug("test-post")) } returns post
+                every { memberClient.getAuthor(any()) } returns
+                    MemberClient.Author(
+                        memberId = memberId.value.toString(),
+                        nickname = "TestUser",
+                        profileImageUrl = null,
+                    )
 
                 val response = service.execute(query)
 
@@ -68,7 +76,8 @@ class GetPostBySlugServiceTest :
 
         Given("존재하지 않는 Username으로 조회할 때") {
             val postRepository = mockk<PostRepository>()
-            val service = GetPostBySlugService(postRepository)
+            val memberClient = mockk<MemberClient>()
+            val service = GetPostBySlugService(postRepository, memberClient)
 
             When("존재하지 않는 Username으로 조회하면") {
                 val query = GetPostBySlugUseCase.Query(username = "nonexistent", slug = "test-post")
@@ -85,7 +94,8 @@ class GetPostBySlugServiceTest :
 
         Given("존재하지 않는 Slug로 조회할 때") {
             val postRepository = mockk<PostRepository>()
-            val service = GetPostBySlugService(postRepository)
+            val memberClient = mockk<MemberClient>()
+            val service = GetPostBySlugService(postRepository, memberClient)
 
             When("존재하는 Username이지만 없는 Slug로 조회하면") {
                 val query = GetPostBySlugUseCase.Query(username = "testuser", slug = "non-existent")
