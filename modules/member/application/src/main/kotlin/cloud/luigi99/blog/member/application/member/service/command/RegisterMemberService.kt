@@ -7,6 +7,7 @@ import cloud.luigi99.blog.member.domain.member.vo.Email
 import cloud.luigi99.blog.member.domain.member.vo.Username
 import cloud.luigi99.blog.member.domain.profile.model.Profile
 import cloud.luigi99.blog.member.domain.profile.vo.Nickname
+import cloud.luigi99.blog.member.domain.profile.vo.Url
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -40,6 +41,7 @@ class RegisterMemberService(private val memberRepository: MemberRepository) : Re
         val profile =
             Profile.create(
                 nickname = Nickname(command.username),
+                profileImageUrl = command.profileImgUrl?.let { Url(it) },
             )
 
         // 프로필 연결 및 저장
@@ -54,6 +56,10 @@ class RegisterMemberService(private val memberRepository: MemberRepository) : Re
                     .toString(),
             email = savedMember.email.value,
             username = savedMember.username.value,
+            profileImgUrl =
+                savedMember.profile
+                    ?.profileImageUrl
+                    ?.value,
         )
     }
 }
