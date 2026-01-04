@@ -15,12 +15,13 @@ class MemberClientAdapter(private val memberQueryFacade: MemberQueryFacade) : Me
 
         val memberProfile =
             response.members.firstOrNull()
-                ?: return MemberClient.Author(memberId, "Unknown", null)
+                ?: return MemberClient.Author(memberId, "Unknown", null, "unknown")
 
         return MemberClient.Author(
             memberId = memberProfile.memberId,
             nickname = memberProfile.profile?.nickname ?: memberProfile.username,
             profileImageUrl = memberProfile.profile?.profileImageUrl,
+            username = memberProfile.username,
         )
     }
 
@@ -38,6 +39,7 @@ class MemberClientAdapter(private val memberQueryFacade: MemberQueryFacade) : Me
                     memberId = memberProfile.memberId,
                     nickname = memberProfile.profile?.nickname ?: memberProfile.username,
                     profileImageUrl = memberProfile.profile?.profileImageUrl,
+                    username = memberProfile.username,
                 )
         }
     }
