@@ -9,4 +9,6 @@ data class AuthorResponse(
     val nickname: String,
     @field:Schema(description = "작성자 프로필 이미지 URL", example = "https://example.com/profile.jpg")
     val profileImageUrl: String?,
+    @field:Schema(description = "작성자 사용자 이름", example = "luigi99")
+    val username: String,
 )
