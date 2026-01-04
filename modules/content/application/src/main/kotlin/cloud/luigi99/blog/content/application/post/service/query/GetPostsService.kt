@@ -61,7 +61,7 @@ class GetPostsService(private val postRepository: PostRepository, private val me
                 val memberIdStr =
                     post.memberId.value
                         .toString()
-                val author = authors[memberIdStr] ?: MemberClient.Author(memberIdStr, "Unknown", null)
+                val author = authors[memberIdStr] ?: MemberClient.Author(memberIdStr, "Unknown", null, "unknown")
 
                 GetPostsUseCase.PostSummary(
                     postId =
@@ -72,6 +72,7 @@ class GetPostsService(private val postRepository: PostRepository, private val me
                             memberId = author.memberId,
                             nickname = author.nickname,
                             profileImageUrl = author.profileImageUrl,
+                            username = author.username,
                         ),
                     title = post.title.value,
                     slug = post.slug.value,

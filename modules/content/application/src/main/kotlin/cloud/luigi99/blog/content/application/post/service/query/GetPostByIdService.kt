@@ -44,6 +44,7 @@ class GetPostByIdService(private val postRepository: PostRepository, private val
                     memberId = author.memberId,
                     nickname = author.nickname,
                     profileImageUrl = author.profileImageUrl,
+                    username = author.username,
                 ),
             title = post.title.value,
             slug = post.slug.value,
