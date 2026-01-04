@@ -26,6 +26,7 @@ class MemberCredentialsController(
     private val credentialsQueryFacade: CredentialsQueryFacade,
     private val credentialsCommandFacade: CredentialsCommandFacade,
 ) : MemberCredentialsApi {
+    @PreAuthorize("hasAnyRole('ADMIN', 'MEMBER')")
     @GetMapping("/me")
     override fun getMemberCredentials(
         @AuthenticationPrincipal memberId: String,
