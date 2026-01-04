@@ -8,7 +8,7 @@ import io.kotest.matchers.string.shouldContain
 /**
  * Slug Value Object 테스트
  *
- * Slug는 URL에 사용되는 고유 식별자로 소문자, 숫자, 하이픈만 허용됩니다.
+ * Slug는 URL에 사용되는 고유 식별자로 한글, 영문, 숫자, 하이픈, 대괄호를 허용합니다.
  */
 class SlugTest :
     BehaviorSpec({
@@ -45,22 +45,6 @@ class SlugTest :
 
                 Then("예외가 발생한다") {
                     exception.message shouldContain "Slug cannot be blank"
-                }
-            }
-        }
-
-        Given("대문자가 포함된 slug가 주어졌을 때") {
-            val invalidSlug = "My-First-Post"
-
-            When("Slug 객체를 생성하려고 하면") {
-                val exception =
-                    shouldThrow<IllegalArgumentException> {
-                        Slug(invalidSlug)
-                    }
-
-                Then("예외가 발생한다") {
-                    exception.message shouldContain "Invalid slug format"
-                    exception.message shouldContain invalidSlug
                 }
             }
         }
@@ -140,8 +124,8 @@ class SlugTest :
             }
         }
 
-        Given("255자 slug가 주어졌을 때") {
-            val maxLength = "a".repeat(255)
+        Given("500자 slug가 주어졌을 때") {
+            val maxLength = "a".repeat(500)
 
             When("Slug 객체를 생성하면") {
                 val slug = Slug(maxLength)
@@ -152,8 +136,8 @@ class SlugTest :
             }
         }
 
-        Given("256자 slug가 주어졌을 때") {
-            val tooLong = "a".repeat(256)
+        Given("501자 slug가 주어졌을 때") {
+            val tooLong = "a".repeat(501)
 
             When("Slug 객체를 생성하려고 하면") {
                 val exception =
@@ -162,8 +146,8 @@ class SlugTest :
                     }
 
                 Then("예외가 발생한다") {
-                    exception.message shouldContain "Slug must not exceed 255 characters"
-                    exception.message shouldContain "256"
+                    exception.message shouldContain "Slug must not exceed 500 characters"
+                    exception.message shouldContain "501"
                 }
             }
         }
@@ -190,6 +174,90 @@ class SlugTest :
 
                 Then("원본 문자열이 반환된다") {
                     result shouldBe slugString
+                }
+            }
+        }
+
+        Given("한글이 포함된 slug가 주어졌을 때") {
+            val koreanSlug = "스위프-후기-생성형-ai를-활용한-여행-서비스-개발-회고"
+
+            When("Slug 객체를 생성하면") {
+                val slug = Slug(koreanSlug)
+
+                Then("객체가 정상적으로 생성된다") {
+                    slug.value shouldBe koreanSlug
+                }
+            }
+        }
+
+        Given("한글과 영문이 혼합된 slug가 주어졌을 때") {
+            val mixedSlug = "kotlin-코틀린-spring-스프링부트-tutorial"
+
+            When("Slug 객체를 생성하면") {
+                val slug = Slug(mixedSlug)
+
+                Then("객체가 정상적으로 생성된다") {
+                    slug.value shouldBe mixedSlug
+                }
+            }
+        }
+
+        Given("한글과 숫자가 포함된 slug가 주어졌을 때") {
+            val koreanWithNumbers = "블로그-포스트-2024"
+
+            When("Slug 객체를 생성하면") {
+                val slug = Slug(koreanWithNumbers)
+
+                Then("객체가 정상적으로 생성된다") {
+                    slug.value shouldBe koreanWithNumbers
+                }
+            }
+        }
+
+        Given("순수 한글만 포함된 slug가 주어졌을 때") {
+            val pureKorean = "한글슬러그"
+
+            When("Slug 객체를 생성하면") {
+                val slug = Slug(pureKorean)
+
+                Then("객체가 정상적으로 생성된다") {
+                    slug.value shouldBe pureKorean
+                }
+            }
+        }
+
+        Given("대괄호가 포함된 slug가 주어졌을 때") {
+            val withBrackets = "[스위프-후기]-생성형-AI를-활용한-여행-서비스-개발-회고"
+
+            When("Slug 객체를 생성하면") {
+                val slug = Slug(withBrackets)
+
+                Then("객체가 정상적으로 생성된다") {
+                    slug.value shouldBe withBrackets
+                }
+            }
+        }
+
+        Given("대문자가 포함된 slug가 주어졌을 때") {
+            val withUppercase = "Spring-Boot-Tutorial"
+
+            When("Slug 객체를 생성하면") {
+                val slug = Slug(withUppercase)
+
+                Then("객체가 정상적으로 생성된다") {
+                    slug.value shouldBe withUppercase
+                }
+            }
+        }
+
+        Given("대괄호와 한글이 혼합된 slug가 주어졌을 때") {
+            val mixed = "[Kotlin]-코틀린-완벽가이드-[2024]"
+
+            When("Slug 객체를 생성하면") {
+                val slug = Slug(mixed)
+
+                Then("객체가 정상적으로 생성된다") {
+                    slug.value shouldBe mixed
                 }
             }
         }

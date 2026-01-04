@@ -51,7 +51,8 @@ interface PostApi {
                                     "author": {
                                       "memberId": "987e6543-e21b-98d7-a654-426614174111",
                                       "nickname": "Luigi99",
-                                      "profileImageUrl": null
+                                      "profileImageUrl": null,
+                                      "username": "luigi99"
                                     },
                                     "title": "Kotlin으로 DDD 구현하기",
                                     "slug": "kotlin-ddd-implementation",
@@ -121,6 +122,31 @@ interface PostApi {
                     ),
                 ],
             ),
+            ApiResponse(
+                responseCode = "403",
+                description = "생성 권한 없음",
+                content = [
+                    Content(
+                        schema = Schema(implementation = CommonResponse::class),
+                        examples = [
+                            ExampleObject(
+                                name = "Forbidden",
+                                value = """
+                                {
+                                  "success": false,
+                                  "data": null,
+                                  "error": {
+                                    "code": "AUTH_003",
+                                    "message": "접근 권한이 없습니다."
+                                  },
+                                  "timestamp": "2025-12-31T12:00:00"
+                                }
+                                """,
+                            ),
+                        ],
+                    ),
+                ],
+            ),
         ],
     )
     fun createPost(
@@ -156,6 +182,31 @@ interface PostApi {
                                   "error": {
                                     "code": "AUTH_001",
                                     "message": "인증에 실패했습니다."
+                                  },
+                                  "timestamp": "2025-12-31T12:00:00"
+                                }
+                                """,
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+            ApiResponse(
+                responseCode = "403",
+                description = "수정 권한 없음",
+                content = [
+                    Content(
+                        schema = Schema(implementation = CommonResponse::class),
+                        examples = [
+                            ExampleObject(
+                                name = "Forbidden",
+                                value = """
+                                {
+                                  "success": false,
+                                  "data": null,
+                                  "error": {
+                                    "code": "AUTH_003",
+                                    "message": "접근 권한이 없습니다."
                                   },
                                   "timestamp": "2025-12-31T12:00:00"
                                 }
@@ -207,7 +258,40 @@ interface PostApi {
             ApiResponse(
                 responseCode = "200",
                 description = "글 조회 성공",
-                content = [Content(schema = Schema(implementation = CommonResponse::class))],
+                content = [
+                    Content(
+                        schema = Schema(implementation = CommonResponse::class),
+                        examples = [
+                            ExampleObject(
+                                name = "GetPostByIdSuccess",
+                                value = """
+                                {
+                                  "success": true,
+                                  "data": {
+                                    "postId": "550e8400-e29b-41d4-a716-446655440000",
+                                    "author": {
+                                      "memberId": "987e6543-e21b-98d7-a654-426614174111",
+                                      "nickname": "Luigi99",
+                                      "profileImageUrl": "https://example.com/profile.jpg",
+                                      "username": "luigi99"
+                                    },
+                                    "title": "Kotlin으로 DDD 구현하기",
+                                    "slug": "kotlin-ddd-implementation",
+                                    "body": "# 시작하기\n\nKotlin과 DDD를 결합하면...",
+                                    "type": "BLOG",
+                                    "status": "PUBLISHED",
+                                    "tags": ["Kotlin", "DDD"],
+                                    "createdAt": "2025-12-31T12:00:00",
+                                    "updatedAt": "2025-12-31T12:00:00"
+                                  },
+                                  "error": null,
+                                  "timestamp": "2025-12-31T12:00:00"
+                                }
+                                """,
+                            ),
+                        ],
+                    ),
+                ],
             ),
             ApiResponse(
                 responseCode = "404",
@@ -263,7 +347,8 @@ interface PostApi {
                                     "author": {
                                       "memberId": "987e6543-e21b-98d7-a654-426614174111",
                                       "nickname": "Luigi99",
-                                      "profileImageUrl": "https://example.com/profile.jpg"
+                                      "profileImageUrl": "https://example.com/profile.jpg",
+                                      "username": "luigi99"
                                     },
                                     "title": "Kotlin으로 DDD 구현하기",
                                     "slug": "kotlin-ddd-implementation",
@@ -340,7 +425,8 @@ interface PostApi {
                                         "author": {
                                           "memberId": "987e6543-e21b-98d7-a654-426614174111",
                                           "nickname": "Luigi99",
-                                          "profileImageUrl": "https://example.com/profile.jpg"
+                                          "profileImageUrl": "https://example.com/profile.jpg",
+                                          "username": "luigi99"
                                         },
                                         "title": "Kotlin으로 DDD 구현하기",
                                         "slug": "kotlin-ddd-implementation",

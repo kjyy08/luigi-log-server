@@ -52,5 +52,10 @@ interface GetPostsUseCase {
         val createdAt: java.time.LocalDateTime?,
     )
 
-    data class AuthorInfo(val memberId: String, val nickname: String, val profileImageUrl: String?)
+    data class AuthorInfo(
+        val memberId: String,
+        val nickname: String,
+        val profileImageUrl: String?,
+        val username: String,
+    )
 }

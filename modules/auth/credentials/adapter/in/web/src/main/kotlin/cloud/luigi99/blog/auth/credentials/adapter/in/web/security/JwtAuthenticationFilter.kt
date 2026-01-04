@@ -1,5 +1,6 @@
 package cloud.luigi99.blog.auth.credentials.adapter.`in`.web.security
 
+import cloud.luigi99.blog.adapter.web.util.CookieUtils
 import cloud.luigi99.blog.auth.credentials.application.port.`in`.query.CredentialsQueryFacade
 import cloud.luigi99.blog.auth.credentials.application.port.`in`.query.GetMemberCredentialsUseCase
 import cloud.luigi99.blog.auth.token.application.port.`in`.query.TokenQueryFacade
@@ -21,6 +22,7 @@ private val log = KotlinLogging.logger {}
 class JwtAuthenticationFilter(
     private val credentialsQueryFacade: CredentialsQueryFacade,
     private val tokenQueryFacade: TokenQueryFacade,
+    private val cookieUtils: CookieUtils,
 ) : OncePerRequestFilter() {
     override fun doFilterInternal(
         request: HttpServletRequest,
@@ -67,12 +69,9 @@ class JwtAuthenticationFilter(
         filterChain.doFilter(request, response)
     }
 
-    private fun extractTokenFromRequest(request: HttpServletRequest): String? {
-        val bearerToken = request.getHeader("Authorization")
-        return if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            bearerToken.substring(7)
-        } else {
-            null
-        }
-    }
+    private fun extractTokenFromRequest(request: HttpServletRequest): String? =
+        request.cookies
+            ?.firstOrNull {
+                it.name == "accessToken"
+            }?.value
 }

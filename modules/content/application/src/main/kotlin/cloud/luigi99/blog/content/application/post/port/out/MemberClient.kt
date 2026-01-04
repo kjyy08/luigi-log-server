@@ -17,5 +17,10 @@ interface MemberClient {
     /**
      * 작성자 정보 DTO
      */
-    data class Author(val memberId: String, val nickname: String, val profileImageUrl: String?)
+    data class Author(
+        val memberId: String,
+        val nickname: String,
+        val profileImageUrl: String?,
+        val username: String,
+    )
 }

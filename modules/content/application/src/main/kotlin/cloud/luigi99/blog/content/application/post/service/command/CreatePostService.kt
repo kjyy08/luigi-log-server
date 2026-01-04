@@ -76,6 +76,7 @@ class CreatePostService(private val postRepository: PostRepository, private val 
                     memberId = author.memberId,
                     nickname = author.nickname,
                     profileImageUrl = author.profileImageUrl,
+                    username = author.username,
                 ),
             title = savedPost.title.value,
             slug = savedPost.slug.value,

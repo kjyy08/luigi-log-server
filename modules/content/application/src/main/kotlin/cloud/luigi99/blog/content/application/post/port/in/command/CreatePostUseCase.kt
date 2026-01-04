@@ -65,5 +65,10 @@ interface CreatePostUseCase {
     /**
      * 작성자 정보
      */
-    data class AuthorInfo(val memberId: String, val nickname: String, val profileImageUrl: String?)
+    data class AuthorInfo(
+        val memberId: String,
+        val nickname: String,
+        val profileImageUrl: String?,
+        val username: String,
+    )
 }

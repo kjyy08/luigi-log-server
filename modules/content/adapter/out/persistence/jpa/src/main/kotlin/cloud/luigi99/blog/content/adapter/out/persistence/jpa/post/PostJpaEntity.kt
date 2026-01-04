@@ -32,7 +32,7 @@ class PostJpaEntity private constructor(
     val memberId: UUID,
     @Column(name = "title", nullable = false, length = 200)
     val title: String,
-    @Column(name = "slug", nullable = false, unique = true, length = 200)
+    @Column(name = "slug", nullable = false, unique = true, length = 500)
     val slug: String,
     @Column(name = "body", nullable = false, columnDefinition = "TEXT")
     val body: String,
