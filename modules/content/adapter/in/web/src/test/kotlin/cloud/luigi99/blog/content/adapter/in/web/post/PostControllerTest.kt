@@ -49,7 +49,7 @@ class PostControllerTest :
                 val expectedResponse =
                     CreatePostUseCase.Response(
                         postId = UUID.randomUUID().toString(),
-                        author = CreatePostUseCase.AuthorInfo("member-id", "Luigi", null),
+                        author = CreatePostUseCase.AuthorInfo("member-id", "Luigi", null, "test-user"),
                         title = "Kotlin DDD",
                         slug = "kotlin-ddd",
                         body = "# Content",
@@ -76,11 +76,12 @@ class PostControllerTest :
                         ?.title shouldBe "Kotlin DDD"
                     response.body
                         ?.data
-                        ?.status shouldBe "DRAFT"
+                        ?.author
+                        ?.nickname shouldBe "Luigi"
                     response.body
                         ?.data
                         ?.author
-                        ?.nickname shouldBe "Luigi"
+                        ?.username shouldBe "test-user"
                 }
             }
         }
@@ -96,7 +97,7 @@ class PostControllerTest :
                 val expectedResponse =
                     UpdatePostUseCase.Response(
                         postId = postId,
-                        author = UpdatePostUseCase.AuthorInfo("member-id", "Luigi", null),
+                        author = UpdatePostUseCase.AuthorInfo("member-id", "Luigi", null, "test-user"),
                         title = "수정된 제목",
                         slug = "original-slug",
                         body = "원본 본문",
@@ -139,7 +140,7 @@ class PostControllerTest :
                 val expectedResponse =
                     UpdatePostUseCase.Response(
                         postId = postId,
-                        author = UpdatePostUseCase.AuthorInfo("member-id", "Luigi", null),
+                        author = UpdatePostUseCase.AuthorInfo("member-id", "Luigi", null, "test-user"),
                         title = "원본 제목",
                         slug = "original-slug",
                         body = "원본 본문",
@@ -187,7 +188,7 @@ class PostControllerTest :
                 val expectedResponse =
                     UpdatePostUseCase.Response(
                         postId = postId,
-                        author = UpdatePostUseCase.AuthorInfo("member-id", "Luigi", null),
+                        author = UpdatePostUseCase.AuthorInfo("member-id", "Luigi", null, "test-user"),
                         title = "완전히 수정된 제목",
                         slug = "original-slug",
                         body = "완전히 수정된 본문",
@@ -232,7 +233,7 @@ class PostControllerTest :
                 val expectedResponse =
                     GetPostByIdUseCase.Response(
                         postId = postId,
-                        author = GetPostByIdUseCase.AuthorInfo("member-id", "Luigi", null),
+                        author = GetPostByIdUseCase.AuthorInfo("member-id", "Luigi", null, "test-user"),
                         title = "조회된 글",
                         slug = "retrieved-post",
                         body = "본문 내용",
@@ -279,7 +280,7 @@ class PostControllerTest :
                 val expectedResponse =
                     GetPostBySlugUseCase.Response(
                         postId = UUID.randomUUID().toString(),
-                        author = GetPostBySlugUseCase.AuthorInfo("member-id", "Luigi", null),
+                        author = GetPostBySlugUseCase.AuthorInfo("member-id", "Luigi", null, "test-user"),
                         title = "테스트 글",
                         slug = slug,
                         body = "본문 내용",
