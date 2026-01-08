@@ -141,18 +141,18 @@ Table chat_session {
   guest_session_id varchar [not null] // Frontend Generated UUID
   title varchar
   created_at timestamp
-  last_accessed_at timestamp
+  updated_at timestamp
 }
 
-Enum message_role { USER, ASSISTANT, SYSTEM }
+Enum message_role { USER, ASSISTANT, SYSTEM, TOOL }
 
 Table chat_message {
   id uuid [pk, default: `gen_random_uuid()`]
   session_id uuid [not null]
   role message_role [not null]
   content text [not null]
-  token_usage int
   created_at timestamp
+  updated_at timestamp
   indexes { (session_id, created_at) }
 }
 Ref: chat_message.session_id > chat_session.id [delete: cascade]
