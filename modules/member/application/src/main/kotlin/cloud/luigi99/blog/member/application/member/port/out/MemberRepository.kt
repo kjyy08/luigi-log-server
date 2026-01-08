@@ -4,6 +4,7 @@ import cloud.luigi99.blog.common.application.port.out.Repository
 import cloud.luigi99.blog.member.domain.member.model.Member
 import cloud.luigi99.blog.member.domain.member.vo.Email
 import cloud.luigi99.blog.member.domain.member.vo.MemberId
+import cloud.luigi99.blog.member.domain.member.vo.Username
 
 interface MemberRepository : Repository<Member, MemberId> {
     fun findByEmail(email: Email): Member?
@@ -11,4 +12,6 @@ interface MemberRepository : Repository<Member, MemberId> {
     fun existsByEmail(email: Email): Boolean
 
     fun findAllById(ids: List<MemberId>): List<Member>
+
+    fun findByUsername(username: Username): Member?
 }

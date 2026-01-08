@@ -3,7 +3,7 @@ package cloud.luigi99.blog.member.application.member.service.query
 import cloud.luigi99.blog.member.application.member.port.`in`.query.GetMemberProfileUseCase
 import cloud.luigi99.blog.member.application.member.port.out.MemberRepository
 import cloud.luigi99.blog.member.domain.member.exception.MemberNotFoundException
-import cloud.luigi99.blog.member.domain.member.vo.MemberId
+import cloud.luigi99.blog.member.domain.member.vo.Username
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -14,11 +14,11 @@ private val log = KotlinLogging.logger {}
 class GetMemberProfileService(private val memberRepository: MemberRepository) : GetMemberProfileUseCase {
     @Transactional(readOnly = true)
     override fun execute(query: GetMemberProfileUseCase.Query): GetMemberProfileUseCase.Response {
-        log.info { "Getting member with profile: ${query.memberId}" }
+        log.info { "Getting member with profile by username: ${query.username}" }
 
         val member =
-            memberRepository.findById(MemberId.from(query.memberId))
-                ?: throw MemberNotFoundException("Member not found: ${query.memberId}")
+            memberRepository.findByUsername(Username(query.username))
+                ?: throw MemberNotFoundException("Member not found with username: ${query.username}")
 
         val profileResponse =
             member.profile?.let {
@@ -29,8 +29,10 @@ class GetMemberProfileService(private val memberRepository: MemberRepository) : 
                     nickname = it.nickname.value,
                     bio = it.bio?.value,
                     profileImageUrl = it.profileImageUrl?.value,
+                    readme = it.readme?.value,
+                    company = it.company?.value,
+                    location = it.location?.value,
                     jobTitle = it.jobTitle?.value,
-                    techStack = it.techStack.values,
                     githubUrl = it.githubUrl?.value,
                     contactEmail = it.contactEmail?.value,
                     websiteUrl = it.websiteUrl?.value,
