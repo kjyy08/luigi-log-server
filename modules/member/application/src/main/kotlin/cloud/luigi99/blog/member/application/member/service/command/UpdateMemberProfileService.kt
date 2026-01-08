@@ -6,10 +6,12 @@ import cloud.luigi99.blog.member.domain.member.exception.MemberNotFoundException
 import cloud.luigi99.blog.member.domain.member.vo.MemberId
 import cloud.luigi99.blog.member.domain.profile.model.Profile
 import cloud.luigi99.blog.member.domain.profile.vo.Bio
+import cloud.luigi99.blog.member.domain.profile.vo.Company
 import cloud.luigi99.blog.member.domain.profile.vo.ContactEmail
 import cloud.luigi99.blog.member.domain.profile.vo.JobTitle
+import cloud.luigi99.blog.member.domain.profile.vo.Location
 import cloud.luigi99.blog.member.domain.profile.vo.Nickname
-import cloud.luigi99.blog.member.domain.profile.vo.TechStack
+import cloud.luigi99.blog.member.domain.profile.vo.Readme
 import cloud.luigi99.blog.member.domain.profile.vo.Url
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
@@ -33,8 +35,10 @@ class UpdateMemberProfileService(private val memberRepository: MemberRepository)
                     nickname = command.nickname?.let { Nickname(it) } ?: member.profile!!.nickname,
                     bio = command.bio?.let { Bio(it) } ?: member.profile!!.bio,
                     profileImageUrl = command.profileImageUrl?.let { Url(it) } ?: member.profile!!.profileImageUrl,
+                    readme = command.readme?.let { Readme(it) } ?: member.profile!!.readme,
+                    company = command.company?.let { Company(it) } ?: member.profile!!.company,
+                    location = command.location?.let { Location(it) } ?: member.profile!!.location,
                     jobTitle = command.jobTitle?.let { JobTitle(it) } ?: member.profile!!.jobTitle,
-                    techStack = command.techStack?.let { TechStack(it) } ?: member.profile!!.techStack,
                     githubUrl = command.githubUrl?.let { Url(it) } ?: member.profile!!.githubUrl,
                     contactEmail = command.contactEmail?.let { ContactEmail(it) } ?: member.profile!!.contactEmail,
                     websiteUrl = command.websiteUrl?.let { Url(it) } ?: member.profile!!.websiteUrl,
@@ -47,8 +51,10 @@ class UpdateMemberProfileService(private val memberRepository: MemberRepository)
                         ),
                     bio = command.bio?.let { Bio(it) },
                     profileImageUrl = command.profileImageUrl?.let { Url(it) },
+                    readme = command.readme?.let { Readme(it) },
+                    company = command.company?.let { Company(it) },
+                    location = command.location?.let { Location(it) },
                     jobTitle = command.jobTitle?.let { JobTitle(it) },
-                    techStack = command.techStack?.let { TechStack(it) } ?: TechStack(emptyList()),
                     githubUrl = command.githubUrl?.let { Url(it) },
                     contactEmail = command.contactEmail?.let { ContactEmail(it) },
                     websiteUrl = command.websiteUrl?.let { Url(it) },
@@ -65,8 +71,10 @@ class UpdateMemberProfileService(private val memberRepository: MemberRepository)
             nickname = updatedProfile.nickname.value,
             bio = updatedProfile.bio?.value,
             profileImageUrl = updatedProfile.profileImageUrl?.value,
+            readme = updatedProfile.readme?.value,
+            company = updatedProfile.company?.value,
+            location = updatedProfile.location?.value,
             jobTitle = updatedProfile.jobTitle?.value,
-            techStack = updatedProfile.techStack.values,
             githubUrl = updatedProfile.githubUrl?.value,
             contactEmail = updatedProfile.contactEmail?.value,
             websiteUrl = updatedProfile.websiteUrl?.value,

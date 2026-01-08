@@ -10,7 +10,6 @@ import cloud.luigi99.blog.member.domain.member.vo.MemberId
 import cloud.luigi99.blog.member.domain.member.vo.Username
 import cloud.luigi99.blog.member.domain.profile.model.Profile
 import cloud.luigi99.blog.member.domain.profile.vo.Nickname
-import cloud.luigi99.blog.member.domain.profile.vo.TechStack
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
@@ -38,7 +37,6 @@ class UpdateMemberProfileServiceTest :
                 Profile.create(
                     nickname = Nickname("OldNick"),
                     bio = null,
-                    techStack = TechStack(emptyList()),
                 )
             val member =
                 Member.from(
@@ -57,8 +55,10 @@ class UpdateMemberProfileServiceTest :
                         nickname = "NewNick",
                         bio = "새로운 자기소개",
                         profileImageUrl = null,
+                        readme = "# README\n프로필 README",
+                        company = "테크 회사",
+                        location = "서울, 대한민국",
                         jobTitle = "Senior Developer",
-                        techStack = listOf("Kotlin", "Spring Boot"),
                         githubUrl = "https://github.com/testuser",
                         contactEmail = null,
                         websiteUrl = null,
@@ -86,8 +86,16 @@ class UpdateMemberProfileServiceTest :
                     response.jobTitle shouldBe "Senior Developer"
                 }
 
-                Then("기술 스택이 업데이트된다") {
-                    response.techStack shouldBe listOf("Kotlin", "Spring Boot")
+                Then("README가 업데이트된다") {
+                    response.readme shouldBe "# README\n프로필 README"
+                }
+
+                Then("회사 정보가 업데이트된다") {
+                    response.company shouldBe "테크 회사"
+                }
+
+                Then("위치 정보가 업데이트된다") {
+                    response.location shouldBe "서울, 대한민국"
                 }
 
                 Then("GitHub URL이 업데이트된다") {
@@ -132,8 +140,10 @@ class UpdateMemberProfileServiceTest :
                         nickname = "FirstNick",
                         bio = "첫 자기소개",
                         profileImageUrl = null,
+                        readme = "# 소개\n첫 README",
+                        company = "스타트업",
+                        location = "판교",
                         jobTitle = null,
-                        techStack = listOf("Kotlin"),
                         githubUrl = null,
                         contactEmail = null,
                         websiteUrl = null,
@@ -158,8 +168,16 @@ class UpdateMemberProfileServiceTest :
                     response.bio shouldBe "첫 자기소개"
                 }
 
-                Then("기술 스택이 설정된다") {
-                    response.techStack shouldBe listOf("Kotlin")
+                Then("README가 설정된다") {
+                    response.readme shouldBe "# 소개\n첫 README"
+                }
+
+                Then("회사 정보가 설정된다") {
+                    response.company shouldBe "스타트업"
+                }
+
+                Then("위치 정보가 설정된다") {
+                    response.location shouldBe "판교"
                 }
             }
         }
@@ -186,8 +204,10 @@ class UpdateMemberProfileServiceTest :
                         nickname = null,
                         bio = "자기소개",
                         profileImageUrl = null,
+                        readme = null,
+                        company = null,
+                        location = null,
                         jobTitle = null,
-                        techStack = null,
                         githubUrl = null,
                         contactEmail = null,
                         websiteUrl = null,
@@ -214,8 +234,10 @@ class UpdateMemberProfileServiceTest :
                         nickname = "NewNick",
                         bio = null,
                         profileImageUrl = null,
+                        readme = null,
+                        company = null,
+                        location = null,
                         jobTitle = null,
-                        techStack = null,
                         githubUrl = null,
                         contactEmail = null,
                         websiteUrl = null,
@@ -241,7 +263,6 @@ class UpdateMemberProfileServiceTest :
                     nickname = Nickname("OldNick"),
                     bio = null,
                     jobTitle = null,
-                    techStack = TechStack(emptyList()),
                 )
             val member =
                 Member.from(
@@ -260,8 +281,10 @@ class UpdateMemberProfileServiceTest :
                         nickname = "UpdatedNick",
                         bio = null,
                         profileImageUrl = null,
+                        readme = null,
+                        company = null,
+                        location = null,
                         jobTitle = null,
-                        techStack = null,
                         githubUrl = null,
                         contactEmail = null,
                         websiteUrl = null,

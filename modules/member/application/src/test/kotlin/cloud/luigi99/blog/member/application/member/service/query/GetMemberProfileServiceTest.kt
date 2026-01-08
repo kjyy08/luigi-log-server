@@ -10,9 +10,11 @@ import cloud.luigi99.blog.member.domain.member.vo.MemberId
 import cloud.luigi99.blog.member.domain.member.vo.Username
 import cloud.luigi99.blog.member.domain.profile.model.Profile
 import cloud.luigi99.blog.member.domain.profile.vo.Bio
+import cloud.luigi99.blog.member.domain.profile.vo.Company
 import cloud.luigi99.blog.member.domain.profile.vo.JobTitle
+import cloud.luigi99.blog.member.domain.profile.vo.Location
 import cloud.luigi99.blog.member.domain.profile.vo.Nickname
-import cloud.luigi99.blog.member.domain.profile.vo.TechStack
+import cloud.luigi99.blog.member.domain.profile.vo.Readme
 import cloud.luigi99.blog.member.domain.profile.vo.Url
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
@@ -40,8 +42,10 @@ class GetMemberProfileServiceTest :
                     nickname = Nickname("TestNick"),
                     bio = Bio("테스트 자기소개"),
                     profileImageUrl = Url("https://example.com/profile.jpg"),
+                    readme = Readme("# 소개\n개발자"),
+                    company = Company("테크 회사"),
+                    location = Location("서울"),
                     jobTitle = JobTitle("Developer"),
-                    techStack = TechStack(listOf("Kotlin", "Spring Boot")),
                     githubUrl = Url("https://github.com/testuser"),
                     contactEmail = null,
                     websiteUrl = Url("https://testuser.com"),
@@ -59,10 +63,10 @@ class GetMemberProfileServiceTest :
             When("회원 프로필을 조회하면") {
                 val query =
                     GetMemberProfileUseCase.Query(
-                        memberId = memberId.toString(),
+                        username = "testuser",
                     )
 
-                every { memberRepository.findById(memberId) } returns member
+                every { memberRepository.findByUsername(Username("testuser")) } returns member
 
                 val response = service.execute(query)
 
@@ -77,8 +81,10 @@ class GetMemberProfileServiceTest :
                     response.profile?.nickname shouldBe "TestNick"
                     response.profile?.bio shouldBe "테스트 자기소개"
                     response.profile?.profileImageUrl shouldBe "https://example.com/profile.jpg"
+                    response.profile?.readme shouldBe "# 소개\n개발자"
+                    response.profile?.company shouldBe "테크 회사"
+                    response.profile?.location shouldBe "서울"
                     response.profile?.jobTitle shouldBe "Developer"
-                    response.profile?.techStack shouldBe listOf("Kotlin", "Spring Boot")
                     response.profile?.githubUrl shouldBe "https://github.com/testuser"
                     response.profile?.websiteUrl shouldBe "https://testuser.com"
                 }
@@ -103,10 +109,10 @@ class GetMemberProfileServiceTest :
             When("회원 프로필을 조회하면") {
                 val query =
                     GetMemberProfileUseCase.Query(
-                        memberId = memberId.toString(),
+                        username = "testuser",
                     )
 
-                every { memberRepository.findById(memberId) } returns member
+                every { memberRepository.findByUsername(Username("testuser")) } returns member
 
                 val response = service.execute(query)
 
@@ -129,10 +135,10 @@ class GetMemberProfileServiceTest :
             When("존재하지 않는 회원 ID로 조회하면") {
                 val query =
                     GetMemberProfileUseCase.Query(
-                        memberId = MemberId.generate().toString(),
+                        username = "nonexistent",
                     )
 
-                every { memberRepository.findById(any()) } returns null
+                every { memberRepository.findByUsername(any()) } returns null
 
                 Then("MemberNotFoundException이 발생한다") {
                     shouldThrow<MemberNotFoundException> {
@@ -152,8 +158,10 @@ class GetMemberProfileServiceTest :
                     nickname = Nickname("MinimalNick"),
                     bio = null,
                     profileImageUrl = null,
+                    readme = null,
+                    company = null,
+                    location = null,
                     jobTitle = null,
-                    techStack = TechStack(emptyList()),
                     githubUrl = null,
                     contactEmail = null,
                     websiteUrl = null,
@@ -171,10 +179,10 @@ class GetMemberProfileServiceTest :
             When("회원 프로필을 조회하면") {
                 val query =
                     GetMemberProfileUseCase.Query(
-                        memberId = memberId.toString(),
+                        username = "testuser",
                     )
 
-                every { memberRepository.findById(memberId) } returns member
+                every { memberRepository.findByUsername(Username("testuser")) } returns member
 
                 val response = service.execute(query)
 
@@ -182,8 +190,10 @@ class GetMemberProfileServiceTest :
                     response.profile?.nickname shouldBe "MinimalNick"
                     response.profile?.bio shouldBe null
                     response.profile?.profileImageUrl shouldBe null
+                    response.profile?.readme shouldBe null
+                    response.profile?.company shouldBe null
+                    response.profile?.location shouldBe null
                     response.profile?.jobTitle shouldBe null
-                    response.profile?.techStack shouldBe emptyList()
                     response.profile?.githubUrl shouldBe null
                     response.profile?.contactEmail shouldBe null
                     response.profile?.websiteUrl shouldBe null

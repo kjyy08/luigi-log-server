@@ -48,7 +48,9 @@ class ProfileControllerTest :
                                 bio = "안녕하세요",
                                 profileImageUrl = "https://example.com/image.jpg",
                                 jobTitle = "Backend Developer",
-                                techStack = listOf("Kotlin", "Spring Boot"),
+                                readme = "# 프로필 README",
+                                company = "Test Company",
+                                location = "Seoul",
                                 githubUrl = "https://github.com/testuser",
                                 contactEmail = "contact@example.com",
                                 websiteUrl = "https://testuser.dev",
@@ -77,7 +79,13 @@ class ProfileControllerTest :
                         ?.bio shouldBe "안녕하세요"
                     response.body
                         ?.data
-                        ?.techStack shouldBe listOf("Kotlin", "Spring Boot")
+                        ?.readme shouldBe "# 프로필 README"
+                    response.body
+                        ?.data
+                        ?.company shouldBe "Test Company"
+                    response.body
+                        ?.data
+                        ?.location shouldBe "Seoul"
                 }
             }
         }
@@ -121,7 +129,9 @@ class ProfileControllerTest :
                         bio = "업데이트된 소개",
                         profileImageUrl = "https://example.com/new-image.jpg",
                         jobTitle = "Senior Backend Developer",
-                        techStack = listOf("Kotlin", "Spring Boot", "DDD"),
+                        readme = "# 업데이트된 README",
+                        company = "New Company",
+                        location = "Busan",
                         githubUrl = "https://github.com/newuser",
                         contactEmail = "new@example.com",
                         websiteUrl = "https://newuser.dev",
@@ -134,7 +144,9 @@ class ProfileControllerTest :
                         bio = "업데이트된 소개",
                         profileImageUrl = "https://example.com/new-image.jpg",
                         jobTitle = "Senior Backend Developer",
-                        techStack = listOf("Kotlin", "Spring Boot", "DDD"),
+                        readme = "# 업데이트된 README",
+                        company = "New Company",
+                        location = "Busan",
                         githubUrl = "https://github.com/newuser",
                         contactEmail = "new@example.com",
                         websiteUrl = "https://newuser.dev",
@@ -162,7 +174,13 @@ class ProfileControllerTest :
                         ?.jobTitle shouldBe "Senior Backend Developer"
                     response.body
                         ?.data
-                        ?.techStack shouldBe listOf("Kotlin", "Spring Boot", "DDD")
+                        ?.readme shouldBe "# 업데이트된 README"
+                    response.body
+                        ?.data
+                        ?.company shouldBe "New Company"
+                    response.body
+                        ?.data
+                        ?.location shouldBe "Busan"
                 }
             }
         }
@@ -181,7 +199,9 @@ class ProfileControllerTest :
                         bio = null,
                         profileImageUrl = null,
                         jobTitle = null,
-                        techStack = emptyList(),
+                        readme = null,
+                        company = null,
+                        location = null,
                         githubUrl = null,
                         contactEmail = null,
                         websiteUrl = null,
@@ -194,7 +214,9 @@ class ProfileControllerTest :
                         bio = null,
                         profileImageUrl = null,
                         jobTitle = null,
-                        techStack = emptyList(),
+                        readme = null,
+                        company = null,
+                        location = null,
                         githubUrl = null,
                         contactEmail = null,
                         websiteUrl = null,
@@ -217,7 +239,13 @@ class ProfileControllerTest :
                         ?.profileImageUrl shouldBe null
                     response.body
                         ?.data
-                        ?.techStack shouldBe emptyList()
+                        ?.readme shouldBe null
+                    response.body
+                        ?.data
+                        ?.company shouldBe null
+                    response.body
+                        ?.data
+                        ?.location shouldBe null
                 }
             }
         }

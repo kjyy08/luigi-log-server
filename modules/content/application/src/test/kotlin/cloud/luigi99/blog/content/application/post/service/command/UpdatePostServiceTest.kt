@@ -67,6 +67,7 @@ class UpdatePostServiceTest :
                         memberId = memberId.value.toString(),
                         nickname = "TestUser",
                         profileImageUrl = null,
+                        username = "test_user",
                     )
 
                 val response = service.execute(command)
@@ -124,6 +125,7 @@ class UpdatePostServiceTest :
                         memberId = memberId.value.toString(),
                         nickname = "TestUser",
                         profileImageUrl = null,
+                        username = "test_user",
                     )
 
                 val response = service.execute(command)
@@ -173,6 +175,7 @@ class UpdatePostServiceTest :
                         memberId = memberId.value.toString(),
                         nickname = "TestUser",
                         profileImageUrl = null,
+                        username = "test_user",
                     )
 
                 val response = service.execute(command)
@@ -223,6 +226,7 @@ class UpdatePostServiceTest :
                         memberId = memberId.value.toString(),
                         nickname = "TestUser",
                         profileImageUrl = null,
+                        username = "test_user",
                     )
 
                 val response = service.execute(command)

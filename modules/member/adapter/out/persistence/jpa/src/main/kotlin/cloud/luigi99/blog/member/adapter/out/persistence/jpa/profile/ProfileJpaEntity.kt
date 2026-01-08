@@ -7,8 +7,6 @@ import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import org.hibernate.annotations.DynamicUpdate
-import org.hibernate.annotations.JdbcTypeCode
-import org.hibernate.type.SqlTypes
 import java.util.UUID
 
 @Entity
@@ -24,11 +22,14 @@ class ProfileJpaEntity private constructor(
     val bio: String?,
     @Column(name = "profile_image_url", length = 2000)
     val profileImageUrl: String?,
+    @Column(name = "readme", columnDefinition = "TEXT")
+    val readme: String?,
+    @Column(name = "company", length = 100)
+    val company: String?,
+    @Column(name = "location", length = 100)
+    val location: String?,
     @Column(name = "job_title", length = 100)
     val jobTitle: String?,
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "tech_stack", columnDefinition = "JSON")
-    val techStack: List<String> = emptyList(),
     @Column(name = "github_url", length = 500)
     val githubUrl: String?,
     @Column(name = "contact_email", length = 255)
@@ -45,8 +46,10 @@ class ProfileJpaEntity private constructor(
             nickname: String,
             bio: String?,
             profileImageUrl: String?,
+            readme: String?,
+            company: String?,
+            location: String?,
             jobTitle: String?,
-            techStack: List<String>,
             githubUrl: String?,
             contactEmail: String?,
             websiteUrl: String?,
@@ -56,8 +59,10 @@ class ProfileJpaEntity private constructor(
                 nickname = nickname,
                 bio = bio,
                 profileImageUrl = profileImageUrl,
+                readme = readme,
+                company = company,
+                location = location,
                 jobTitle = jobTitle,
-                techStack = techStack,
                 githubUrl = githubUrl,
                 contactEmail = contactEmail,
                 websiteUrl = websiteUrl,

@@ -56,6 +56,7 @@ class GetPostBySlugServiceTest :
                         memberId = memberId.value.toString(),
                         nickname = "TestUser",
                         profileImageUrl = null,
+                        username = "test_user",
                     )
 
                 val response = service.execute(query)

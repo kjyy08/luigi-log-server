@@ -3,7 +3,7 @@ package cloud.luigi99.blog.member.application.member.port.`in`.query
 interface GetMemberProfileUseCase {
     fun execute(query: Query): Response
 
-    data class Query(val memberId: String)
+    data class Query(val username: String)
 
     data class Response(
         val memberId: String,
@@ -17,8 +17,10 @@ interface GetMemberProfileUseCase {
         val nickname: String,
         val bio: String?,
         val profileImageUrl: String?,
+        val readme: String?,
+        val company: String?,
+        val location: String?,
         val jobTitle: String?,
-        val techStack: List<String>,
         val githubUrl: String?,
         val contactEmail: String?,
         val websiteUrl: String?,

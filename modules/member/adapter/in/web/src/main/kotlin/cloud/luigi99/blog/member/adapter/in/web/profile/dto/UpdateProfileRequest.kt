@@ -9,10 +9,14 @@ data class UpdateProfileRequest(
     val bio: String?,
     @field:Schema(description = "프로필 이미지 URL", example = "https://example.com/images/new_profile.jpg")
     val profileImageUrl: String?,
+    @field:Schema(description = "프로필 Readme (Markdown)", example = "# About Me\\n\\nI'm a passionate developer!")
+    val readme: String?,
+    @field:Schema(description = "소속 회사", example = "Tech Startup Inc")
+    val company: String?,
+    @field:Schema(description = "거주지", example = "Busan, South Korea")
+    val location: String?,
     @field:Schema(description = "직업/직무", example = "Full Stack Developer")
     val jobTitle: String?,
-    @field:Schema(description = "기술 스택", example = "[\"Java\", \"React\", \"AWS\"]")
-    val techStack: List<String>?,
     @field:Schema(description = "GitHub URL", example = "https://github.com/new-user")
     val githubUrl: String?,
     @field:Schema(description = "연락처 이메일", example = "new.email@example.com")

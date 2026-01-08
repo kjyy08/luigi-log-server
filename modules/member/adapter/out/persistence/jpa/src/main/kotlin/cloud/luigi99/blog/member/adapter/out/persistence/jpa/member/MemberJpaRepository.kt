@@ -17,4 +17,9 @@ interface MemberJpaRepository : JpaRepository<MemberJpaEntity, UUID> {
     fun existsByEmailValue(
         @Param("email") email: String,
     ): Boolean
+
+    @Query("SELECT m FROM MemberJpaEntity m WHERE m.username = :username")
+    fun findByUsernameValue(
+        @Param("username") username: String,
+    ): MemberJpaEntity?
 }
