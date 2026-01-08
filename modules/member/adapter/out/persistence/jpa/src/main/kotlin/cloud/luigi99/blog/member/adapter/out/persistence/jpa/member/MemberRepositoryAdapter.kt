@@ -6,6 +6,7 @@ import cloud.luigi99.blog.member.application.member.port.out.MemberRepository
 import cloud.luigi99.blog.member.domain.member.model.Member
 import cloud.luigi99.blog.member.domain.member.vo.Email
 import cloud.luigi99.blog.member.domain.member.vo.MemberId
+import cloud.luigi99.blog.member.domain.member.vo.Username
 import mu.KotlinLogging
 import org.springframework.stereotype.Repository
 
@@ -87,5 +88,13 @@ class MemberRepositoryAdapter(
         return jpaRepository
             .findAllById(ids.map { it.value })
             .map { MemberMapper.toDomain(it) }
+    }
+
+    /**
+     * 사용자명으로 회원을 조회합니다.
+     */
+    override fun findByUsername(username: Username): Member? {
+        log.debug { "Finding member by username: $username" }
+        return jpaRepository.findByUsernameValue(username.value)?.let { MemberMapper.toDomain(it) }
     }
 }

@@ -2,10 +2,12 @@ package cloud.luigi99.blog.member.adapter.out.persistence.jpa.profile
 
 import cloud.luigi99.blog.member.domain.profile.model.Profile
 import cloud.luigi99.blog.member.domain.profile.vo.Bio
+import cloud.luigi99.blog.member.domain.profile.vo.Company
 import cloud.luigi99.blog.member.domain.profile.vo.ContactEmail
 import cloud.luigi99.blog.member.domain.profile.vo.JobTitle
+import cloud.luigi99.blog.member.domain.profile.vo.Location
 import cloud.luigi99.blog.member.domain.profile.vo.Nickname
-import cloud.luigi99.blog.member.domain.profile.vo.TechStack
+import cloud.luigi99.blog.member.domain.profile.vo.Readme
 import cloud.luigi99.blog.member.domain.profile.vo.Url
 
 object ProfileMapper {
@@ -15,8 +17,10 @@ object ProfileMapper {
             nickname = Nickname(entity.nickname),
             bio = entity.bio?.let { Bio(it) },
             profileImageUrl = entity.profileImageUrl?.let { Url(it) },
+            readme = entity.readme?.let { Readme(it) },
+            company = entity.company?.let { Company(it) },
+            location = entity.location?.let { Location(it) },
             jobTitle = entity.jobTitle?.let { JobTitle(it) },
-            techStack = TechStack(entity.techStack),
             githubUrl = entity.githubUrl?.let { Url(it) },
             contactEmail = entity.contactEmail?.let { ContactEmail(it) },
             websiteUrl = entity.websiteUrl?.let { Url(it) },
@@ -32,8 +36,10 @@ object ProfileMapper {
                     nickname = domain.nickname.value,
                     bio = domain.bio?.value,
                     profileImageUrl = domain.profileImageUrl?.value,
+                    readme = domain.readme?.value,
+                    company = domain.company?.value,
+                    location = domain.location?.value,
                     jobTitle = domain.jobTitle?.value,
-                    techStack = domain.techStack.values,
                     githubUrl = domain.githubUrl?.value,
                     contactEmail = domain.contactEmail?.value,
                     websiteUrl = domain.websiteUrl?.value,
