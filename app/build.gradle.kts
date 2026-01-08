@@ -22,11 +22,11 @@ dependencies {
     implementation(project(":modules:auth:credentials:adapter:out:persistence:jpa"))
     implementation(project(":modules:auth:credentials:adapter:out:client:member"))
 
-    implementation(project(":modules:content:domain"))
-    implementation(project(":modules:content:application"))
-    implementation(project(":modules:content:adapter:in:web"))
-    implementation(project(":modules:content:adapter:out:persistence:jpa"))
-    implementation(project(":modules:content:adapter:out:client:member"))
+    implementation(project(":modules:content:post:domain"))
+    implementation(project(":modules:content:post:application"))
+    implementation(project(":modules:content:post:adapter:in:web"))
+    implementation(project(":modules:content:post:adapter:out:persistence:jpa"))
+    implementation(project(":modules:content:post:adapter:out:client:member"))
 
     implementation(project(":modules:media:domain"))
     implementation(project(":modules:media:application"))
