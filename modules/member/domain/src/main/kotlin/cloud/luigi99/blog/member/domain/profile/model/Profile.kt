@@ -2,11 +2,13 @@ package cloud.luigi99.blog.member.domain.profile.model
 
 import cloud.luigi99.blog.common.domain.DomainEntity
 import cloud.luigi99.blog.member.domain.profile.vo.Bio
+import cloud.luigi99.blog.member.domain.profile.vo.Company
 import cloud.luigi99.blog.member.domain.profile.vo.ContactEmail
 import cloud.luigi99.blog.member.domain.profile.vo.JobTitle
+import cloud.luigi99.blog.member.domain.profile.vo.Location
 import cloud.luigi99.blog.member.domain.profile.vo.Nickname
 import cloud.luigi99.blog.member.domain.profile.vo.ProfileId
-import cloud.luigi99.blog.member.domain.profile.vo.TechStack
+import cloud.luigi99.blog.member.domain.profile.vo.Readme
 import cloud.luigi99.blog.member.domain.profile.vo.Url
 import java.time.LocalDateTime
 
@@ -15,8 +17,10 @@ class Profile private constructor(
     val nickname: Nickname,
     val bio: Bio?,
     val profileImageUrl: Url?,
+    val readme: Readme?,
+    val company: Company?,
+    val location: Location?,
     val jobTitle: JobTitle?,
-    val techStack: TechStack,
     val githubUrl: Url?,
     val contactEmail: ContactEmail?,
     val websiteUrl: Url?,
@@ -26,8 +30,10 @@ class Profile private constructor(
             nickname: Nickname,
             bio: Bio? = null,
             profileImageUrl: Url? = null,
+            readme: Readme? = null,
+            company: Company? = null,
+            location: Location? = null,
             jobTitle: JobTitle? = null,
-            techStack: TechStack = TechStack(emptyList()),
             githubUrl: Url? = null,
             contactEmail: ContactEmail? = null,
             websiteUrl: Url? = null,
@@ -37,8 +43,10 @@ class Profile private constructor(
                 nickname = nickname,
                 bio = bio,
                 profileImageUrl = profileImageUrl,
+                readme = readme,
+                company = company,
+                location = location,
                 jobTitle = jobTitle,
-                techStack = techStack,
                 githubUrl = githubUrl,
                 contactEmail = contactEmail,
                 websiteUrl = websiteUrl,
@@ -49,8 +57,10 @@ class Profile private constructor(
             nickname: Nickname,
             bio: Bio?,
             profileImageUrl: Url?,
+            readme: Readme?,
+            company: Company?,
+            location: Location?,
             jobTitle: JobTitle?,
-            techStack: TechStack,
             githubUrl: Url?,
             contactEmail: ContactEmail?,
             websiteUrl: Url?,
@@ -63,8 +73,10 @@ class Profile private constructor(
                     nickname = nickname,
                     bio = bio,
                     profileImageUrl = profileImageUrl,
+                    readme = readme,
+                    company = company,
+                    location = location,
                     jobTitle = jobTitle,
-                    techStack = techStack,
                     githubUrl = githubUrl,
                     contactEmail = contactEmail,
                     websiteUrl = websiteUrl,
@@ -79,8 +91,10 @@ class Profile private constructor(
         nickname: Nickname = this.nickname,
         bio: Bio? = this.bio,
         profileImageUrl: Url? = this.profileImageUrl,
+        readme: Readme? = this.readme,
+        company: Company? = this.company,
+        location: Location? = this.location,
         jobTitle: JobTitle? = this.jobTitle,
-        techStack: TechStack = this.techStack,
         githubUrl: Url? = this.githubUrl,
         contactEmail: ContactEmail? = this.contactEmail,
         websiteUrl: Url? = this.websiteUrl,
@@ -91,8 +105,10 @@ class Profile private constructor(
                 nickname = nickname,
                 bio = bio,
                 profileImageUrl = profileImageUrl,
+                readme = readme,
+                company = company,
+                location = location,
                 jobTitle = jobTitle,
-                techStack = techStack,
                 githubUrl = githubUrl,
                 contactEmail = contactEmail,
                 websiteUrl = websiteUrl,
