@@ -10,10 +10,10 @@ import cloud.luigi99.blog.member.domain.member.vo.MemberId
 import cloud.luigi99.blog.member.domain.member.vo.Username
 import cloud.luigi99.blog.member.domain.profile.model.Profile
 import cloud.luigi99.blog.member.domain.profile.vo.Bio
-import cloud.luigi99.blog.member.domain.profile.vo.JobTitle
-import cloud.luigi99.blog.member.domain.profile.vo.Nickname
 import cloud.luigi99.blog.member.domain.profile.vo.Company
+import cloud.luigi99.blog.member.domain.profile.vo.JobTitle
 import cloud.luigi99.blog.member.domain.profile.vo.Location
+import cloud.luigi99.blog.member.domain.profile.vo.Nickname
 import cloud.luigi99.blog.member.domain.profile.vo.Readme
 import cloud.luigi99.blog.member.domain.profile.vo.Url
 import io.kotest.assertions.throwables.shouldThrow

@@ -10,9 +10,6 @@ import cloud.luigi99.blog.member.domain.member.vo.MemberId
 import cloud.luigi99.blog.member.domain.member.vo.Username
 import cloud.luigi99.blog.member.domain.profile.model.Profile
 import cloud.luigi99.blog.member.domain.profile.vo.Nickname
-import cloud.luigi99.blog.member.domain.profile.vo.Company
-import cloud.luigi99.blog.member.domain.profile.vo.Location
-import cloud.luigi99.blog.member.domain.profile.vo.Readme
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
