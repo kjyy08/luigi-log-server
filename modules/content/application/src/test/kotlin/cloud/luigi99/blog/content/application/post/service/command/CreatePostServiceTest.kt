@@ -78,6 +78,7 @@ class CreatePostServiceTest :
                         memberId = memberId,
                         nickname = "TestUser",
                         profileImageUrl = null,
+                        username = "test_user",
                     )
 
                 val response = service.execute(command)
@@ -192,6 +193,7 @@ class CreatePostServiceTest :
                         memberId = memberId,
                         nickname = "TestUser",
                         profileImageUrl = null,
+                        username = "test_user",
                     )
 
                 val response = service.execute(command)
@@ -247,6 +249,7 @@ class CreatePostServiceTest :
                         memberId = memberId,
                         nickname = "TestUser",
                         profileImageUrl = null,
+                        username = "test_user",
                     )
 
                 val response = service.execute(command)
@@ -286,6 +289,7 @@ class CreatePostServiceTest :
                         memberId = memberId,
                         nickname = "TestUser",
                         profileImageUrl = null,
+                        username = "test_user",
                     )
 
                 service.execute(command)
@@ -324,6 +328,7 @@ class CreatePostServiceTest :
                         memberId = memberId,
                         nickname = "TestUser",
                         profileImageUrl = null,
+                        username = "test_user",
                     )
 
                 service.execute(command)
