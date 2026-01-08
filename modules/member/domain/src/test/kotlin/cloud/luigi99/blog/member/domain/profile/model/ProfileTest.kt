@@ -5,7 +5,9 @@ import cloud.luigi99.blog.member.domain.profile.vo.ContactEmail
 import cloud.luigi99.blog.member.domain.profile.vo.JobTitle
 import cloud.luigi99.blog.member.domain.profile.vo.Nickname
 import cloud.luigi99.blog.member.domain.profile.vo.ProfileId
-import cloud.luigi99.blog.member.domain.profile.vo.TechStack
+import cloud.luigi99.blog.member.domain.profile.vo.Company
+import cloud.luigi99.blog.member.domain.profile.vo.Location
+import cloud.luigi99.blog.member.domain.profile.vo.Readme
 import cloud.luigi99.blog.member.domain.profile.vo.Url
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
@@ -32,8 +34,10 @@ class ProfileTest :
                 Then("선택 필드들은 null 또는 기본값이다") {
                     profile.bio shouldBe null
                     profile.profileImageUrl shouldBe null
+                    profile.readme shouldBe null
+                    profile.company shouldBe null
+                    profile.location shouldBe null
                     profile.jobTitle shouldBe null
-                    profile.techStack.isEmpty() shouldBe true
                     profile.githubUrl shouldBe null
                     profile.contactEmail shouldBe null
                     profile.websiteUrl shouldBe null
@@ -45,8 +49,10 @@ class ProfileTest :
             val nickname = Nickname("개발자")
             val bio = Bio("백엔드 개발자입니다.")
             val profileImageUrl = Url("https://example.com/profile.jpg")
+            val readme = Readme("# README\n프로필 정보")
+            val company = Company("테크 회사")
+            val location = Location("서울, 대한민국")
             val jobTitle = JobTitle("Senior Developer")
-            val techStack = TechStack(listOf("Kotlin", "Spring Boot"))
             val githubUrl = Url("https://github.com/developer")
             val contactEmail = ContactEmail("contact@example.com")
             val websiteUrl = Url("https://developer.com")
@@ -57,8 +63,10 @@ class ProfileTest :
                         nickname = nickname,
                         bio = bio,
                         profileImageUrl = profileImageUrl,
+                        readme = readme,
+                        company = company,
+                        location = location,
                         jobTitle = jobTitle,
-                        techStack = techStack,
                         githubUrl = githubUrl,
                         contactEmail = contactEmail,
                         websiteUrl = websiteUrl,
@@ -68,8 +76,10 @@ class ProfileTest :
                     profile.nickname shouldBe nickname
                     profile.bio shouldBe bio
                     profile.profileImageUrl shouldBe profileImageUrl
+                    profile.readme shouldBe readme
+                    profile.company shouldBe company
+                    profile.location shouldBe location
                     profile.jobTitle shouldBe jobTitle
-                    profile.techStack shouldBe techStack
                     profile.githubUrl shouldBe githubUrl
                     profile.contactEmail shouldBe contactEmail
                     profile.websiteUrl shouldBe websiteUrl
@@ -82,7 +92,7 @@ class ProfileTest :
                 Profile.create(
                     nickname = Nickname("개발자"),
                     bio = Bio("백엔드 개발자입니다."),
-                    techStack = TechStack(listOf("Kotlin")),
+                    readme = Readme("# 소개\n개발자 소개"),
                 )
 
             When("닉네임만 변경하면") {
@@ -96,26 +106,32 @@ class ProfileTest :
                 Then("다른 필드들은 유지된다") {
                     updatedProfile.entityId shouldBe profile.entityId
                     updatedProfile.bio shouldBe profile.bio
-                    updatedProfile.techStack shouldBe profile.techStack
+                    updatedProfile.readme shouldBe profile.readme
                 }
             }
 
             When("여러 필드를 동시에 변경하면") {
                 val newNickname = Nickname("시니어 개발자")
                 val newBio = Bio("10년차 백엔드 개발자입니다.")
-                val newTechStack = TechStack(listOf("Kotlin", "Spring Boot", "PostgreSQL"))
+                val newReadme = Readme("# 시니어 개발자\n10년차 개발자")
+                val newCompany = Company("글로벌 기업")
+                val newLocation = Location("서울")
 
                 val updatedProfile =
                     profile.update(
                         nickname = newNickname,
                         bio = newBio,
-                        techStack = newTechStack,
+                        readme = newReadme,
+                        company = newCompany,
+                        location = newLocation,
                     )
 
                 Then("모든 변경사항이 반영된다") {
                     updatedProfile.nickname shouldBe newNickname
                     updatedProfile.bio shouldBe newBio
-                    updatedProfile.techStack shouldBe newTechStack
+                    updatedProfile.readme shouldBe newReadme
+                    updatedProfile.company shouldBe newCompany
+                    updatedProfile.location shouldBe newLocation
                 }
 
                 Then("엔티티 ID는 유지된다") {
@@ -129,8 +145,10 @@ class ProfileTest :
             val nickname = Nickname("개발자")
             val bio = Bio("백엔드 개발자입니다.")
             val profileImageUrl = Url("https://example.com/profile.jpg")
+            val readme = Readme("# README\n프로필")
+            val company = Company("테크 기업")
+            val location = Location("서울")
             val jobTitle = JobTitle("Senior Developer")
-            val techStack = TechStack(listOf("Kotlin", "Spring Boot"))
             val githubUrl = Url("https://github.com/developer")
             val contactEmail = ContactEmail("contact@example.com")
             val websiteUrl = Url("https://developer.com")
@@ -144,8 +162,10 @@ class ProfileTest :
                         nickname = nickname,
                         bio = bio,
                         profileImageUrl = profileImageUrl,
+                        readme = readme,
+                        company = company,
+                        location = location,
                         jobTitle = jobTitle,
-                        techStack = techStack,
                         githubUrl = githubUrl,
                         contactEmail = contactEmail,
                         websiteUrl = websiteUrl,
@@ -158,8 +178,10 @@ class ProfileTest :
                     profile.nickname shouldBe nickname
                     profile.bio shouldBe bio
                     profile.profileImageUrl shouldBe profileImageUrl
+                    profile.readme shouldBe readme
+                    profile.company shouldBe company
+                    profile.location shouldBe location
                     profile.jobTitle shouldBe jobTitle
-                    profile.techStack shouldBe techStack
                     profile.githubUrl shouldBe githubUrl
                     profile.contactEmail shouldBe contactEmail
                     profile.websiteUrl shouldBe websiteUrl
@@ -204,7 +226,7 @@ class ProfileTest :
                 Profile.create(
                     nickname = Nickname("개발자"),
                     bio = Bio("백엔드 개발자"),
-                    techStack = TechStack(listOf("Kotlin")),
+                    readme = Readme("# 개발자\n소개"),
                     jobTitle = JobTitle("Developer"),
                 )
 
@@ -214,7 +236,7 @@ class ProfileTest :
                 Then("모든 필드가 원본과 동일하게 유지된다") {
                     updatedProfile.nickname shouldBe profile.nickname
                     updatedProfile.bio shouldBe profile.bio
-                    updatedProfile.techStack shouldBe profile.techStack
+                    updatedProfile.readme shouldBe profile.readme
                     updatedProfile.jobTitle shouldBe profile.jobTitle
                 }
             }
@@ -233,7 +255,7 @@ class ProfileTest :
 
                 Then("다른 필드는 유지된다") {
                     updatedProfile.nickname shouldBe profile.nickname
-                    updatedProfile.techStack shouldBe profile.techStack
+                    updatedProfile.readme shouldBe profile.readme
                 }
             }
         }
@@ -260,29 +282,28 @@ class ProfileTest :
             }
         }
 
-        Given("기술 스택 변경 테스트") {
+        Given("README 변경 테스트") {
             val profile =
                 Profile.create(
                     nickname = Nickname("개발자"),
-                    techStack = TechStack(listOf("Java")),
+                    readme = Readme("# 소개\n간단한 소개"),
                 )
 
-            When("기술 스택을 변경하면") {
-                val newTechStack = TechStack(listOf("Kotlin", "Spring Boot", "PostgreSQL"))
-                val updatedProfile = profile.update(techStack = newTechStack)
+            When("README를 변경하면") {
+                val newReadme = Readme("# 개발자 소개\n상세한 소개 내용입니다.")
+                val updatedProfile = profile.update(readme = newReadme)
 
-                Then("기술 스택이 변경된다") {
-                    updatedProfile.techStack shouldBe newTechStack
-                    updatedProfile.techStack.values shouldBe listOf("Kotlin", "Spring Boot", "PostgreSQL")
+                Then("README가 변경된다") {
+                    updatedProfile.readme shouldBe newReadme
+                    updatedProfile.readme?.value shouldBe "# 개발자 소개\n상세한 소개 내용입니다."
                 }
             }
 
-            When("기술 스택을 빈 목록으로 변경하면") {
-                val emptyTechStack = TechStack(emptyList())
-                val updatedProfile = profile.update(techStack = emptyTechStack)
+            When("README를 null로 변경하면") {
+                val updatedProfile = profile.update(readme = null)
 
-                Then("기술 스택이 빈 목록이 된다") {
-                    updatedProfile.techStack.isEmpty() shouldBe true
+                Then("README가 null이 된다") {
+                    updatedProfile.readme shouldBe null
                 }
             }
         }
