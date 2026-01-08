@@ -44,5 +44,11 @@ application*.properties
 ### Claude Code ###
 .claude/settings.local.json
 
+### Gemini CLI ###
+.gemini/settings.json
+
 ### Temp files ###
 nul
+
+### Local docs ###
+docs/local/
