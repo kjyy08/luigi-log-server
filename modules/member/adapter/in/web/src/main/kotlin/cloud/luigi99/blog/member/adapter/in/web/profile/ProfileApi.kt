@@ -4,6 +4,7 @@ import cloud.luigi99.blog.adapter.web.dto.CommonResponse
 import cloud.luigi99.blog.member.adapter.`in`.web.profile.dto.ProfileResponse
 import cloud.luigi99.blog.member.adapter.`in`.web.profile.dto.UpdateProfileRequest
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.ExampleObject
 import io.swagger.v3.oas.annotations.media.Schema
@@ -14,19 +15,50 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestParam
 
 @Tag(name = "Profile", description = "프로필 관리 API")
 interface ProfileApi {
     @Operation(
         summary = "프로필 조회",
-        description = "사용자의 프로필 정보를 조회합니다.",
-        security = [SecurityRequirement(name = "Bearer Authentication")],
+        description = "사용자명(username)으로 프로필 정보를 조회합니다.",
     )
     @ApiResponses(
         value = [
             ApiResponse(
                 responseCode = "200",
                 description = "프로필 조회 성공",
+                content = [
+                    Content(
+                        schema = Schema(implementation = CommonResponse::class),
+                        examples = [
+                            ExampleObject(
+                                name = "Success",
+                                value = """
+                        {
+                          "success": true,
+                          "data": {
+                            "profileId": "987fcdeb-51a2-43d1-b567-890123456789",
+                            "memberId": "123e4567-e89b-12d3-a456-426614174000",
+                            "nickname": "CodingWizard",
+                            "bio": "안녕하세요, 백엔드 개발자입니다.",
+                            "profileImageUrl": "https://example.com/images/profile.jpg",
+                            "readme": "# Hello World\n\nWelcome to my profile!",
+                            "company": "Luigi Corp",
+                            "location": "Seoul, South Korea",
+                            "jobTitle": "Backend Developer",
+                            "githubUrl": "https://github.com/luigi99",
+                            "contactEmail": "contact@luigi99.cloud",
+                            "websiteUrl": "https://luigi99.cloud"
+                          },
+                          "error": null,
+                          "timestamp": "2025-12-05T10:00:00Z"
+                        }
+                        """,
+                            ),
+                        ],
+                    ),
+                ],
             ),
             ApiResponse(
                 responseCode = "401",
@@ -81,7 +113,8 @@ interface ProfileApi {
         ],
     )
     fun getProfile(
-        @AuthenticationPrincipal memberId: String,
+        @Parameter(description = "조회할 사용자명", required = true, example = "luigi99")
+        @RequestParam username: String,
     ): ResponseEntity<CommonResponse<ProfileResponse>>
 
     @Operation(

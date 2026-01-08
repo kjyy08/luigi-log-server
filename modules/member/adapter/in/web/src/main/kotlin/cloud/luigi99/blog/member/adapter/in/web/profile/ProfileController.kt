@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 private val log = KotlinLogging.logger {}
@@ -27,18 +28,18 @@ class ProfileController(
 ) : ProfileApi {
     @GetMapping
     override fun getProfile(
-        @AuthenticationPrincipal memberId: String,
+        @RequestParam username: String,
     ): ResponseEntity<CommonResponse<ProfileResponse>> {
-        log.info { "Getting profile for member: $memberId" }
+        log.info { "Getting profile for username: $username" }
 
         val response =
             memberQueryFacade.getMemberProfile().execute(
-                GetMemberProfileUseCase.Query(memberId = memberId),
+                GetMemberProfileUseCase.Query(username = username),
             )
 
         val profile =
             response.profile
-                ?: throw ProfileException("Profile not found for member: $memberId")
+                ?: throw ProfileException("Profile not found for username: $username")
 
         return ResponseEntity.ok(
             CommonResponse.success(
@@ -48,8 +49,10 @@ class ProfileController(
                     nickname = profile.nickname,
                     bio = profile.bio,
                     profileImageUrl = profile.profileImageUrl,
+                    readme = profile.readme,
+                    company = profile.company,
+                    location = profile.location,
                     jobTitle = profile.jobTitle,
-                    techStack = profile.techStack,
                     githubUrl = profile.githubUrl,
                     contactEmail = profile.contactEmail,
                     websiteUrl = profile.websiteUrl,
@@ -72,8 +75,10 @@ class ProfileController(
                     nickname = request.nickname,
                     bio = request.bio,
                     profileImageUrl = request.profileImageUrl,
+                    readme = request.readme,
+                    company = request.company,
+                    location = request.location,
                     jobTitle = request.jobTitle,
-                    techStack = request.techStack,
                     githubUrl = request.githubUrl,
                     contactEmail = request.contactEmail,
                     websiteUrl = request.websiteUrl,
@@ -88,8 +93,10 @@ class ProfileController(
                     nickname = response.nickname,
                     bio = response.bio,
                     profileImageUrl = response.profileImageUrl,
+                    readme = response.readme,
+                    company = response.company,
+                    location = response.location,
                     jobTitle = response.jobTitle,
-                    techStack = response.techStack,
                     githubUrl = response.githubUrl,
                     contactEmail = response.contactEmail,
                     websiteUrl = response.websiteUrl,

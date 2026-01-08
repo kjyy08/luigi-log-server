@@ -13,10 +13,14 @@ data class ProfileResponse(
     val bio: String?,
     @field:Schema(description = "프로필 이미지 URL", example = "https://example.com/images/profile.jpg")
     val profileImageUrl: String?,
+    @field:Schema(description = "프로필 Readme (Markdown)", example = "# Hello World\\n\\nWelcome to my profile!")
+    val readme: String?,
+    @field:Schema(description = "소속 회사", example = "Luigi Corp")
+    val company: String?,
+    @field:Schema(description = "거주지", example = "Seoul, South Korea")
+    val location: String?,
     @field:Schema(description = "직업/직무", example = "Backend Developer")
     val jobTitle: String?,
-    @field:Schema(description = "기술 스택", example = "[\"Kotlin\", \"Spring Boot\", \"JPA\"]")
-    val techStack: List<String>,
     @field:Schema(description = "GitHub URL", example = "https://github.com/luigi99")
     val githubUrl: String?,
     @field:Schema(description = "연락처 이메일", example = "contact@luigi99.cloud")
