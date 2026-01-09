@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RequestParam
 interface CommentApi {
     @Operation(
         summary = "댓글 작성",
-        description = "게시글에 새로운 댓글을 작성합니다.",
+        description = "게시글에 새로운 댓글을 작성합니다. 로그인한 회원만 작성 가능합니다.",
         security = [SecurityRequirement(name = "Bearer Authentication")],
     )
     @ApiResponses(
@@ -151,7 +151,7 @@ interface CommentApi {
 
     @Operation(
         summary = "댓글 수정",
-        description = "작성한 댓글의 내용을 수정합니다.",
+        description = "작성한 댓글의 내용을 수정합니다. 작성자 본인만 수정 가능합니다.",
         security = [SecurityRequirement(name = "Bearer Authentication")],
     )
     @ApiResponses(
@@ -300,7 +300,7 @@ interface CommentApi {
 
     @Operation(
         summary = "댓글 삭제",
-        description = "작성한 댓글을 삭제합니다.",
+        description = "작성한 댓글을 삭제합니다. 작성자 본인만 삭제 가능합니다.",
         security = [SecurityRequirement(name = "Bearer Authentication")],
     )
     @ApiResponses(
