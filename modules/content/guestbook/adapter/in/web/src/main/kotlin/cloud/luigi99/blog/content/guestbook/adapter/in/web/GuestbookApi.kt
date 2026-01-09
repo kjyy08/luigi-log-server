@@ -6,6 +6,9 @@ import cloud.luigi99.blog.content.guestbook.adapter.`in`.web.dto.GuestbookRespon
 import cloud.luigi99.blog.content.guestbook.adapter.`in`.web.dto.ModifyGuestbookRequest
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.ExampleObject
+import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
@@ -29,8 +32,64 @@ interface GuestbookApi {
     )
     @ApiResponses(
         value = [
-            ApiResponse(responseCode = "201", description = "방명록 작성 성공"),
-            ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+            ApiResponse(
+                responseCode = "201",
+                description = "방명록 작성 성공",
+                content = [
+                    Content(
+                        schema = Schema(implementation = CommonResponse::class),
+                        examples = [
+                            ExampleObject(
+                                name = "CreateGuestbookSuccess",
+                                value = """
+                                {
+                                  "success": true,
+                                  "data": {
+                                    "guestbookId": "a1b2c3d4-e5f6-7890-a1b2-c3d4e5f67890",
+                                    "author": {
+                                      "memberId": "123e4567-e89b-12d3-a456-426614174000",
+                                      "nickname": "Luigi",
+                                      "profileImageUrl": "https://example.com/profile.jpg",
+                                      "username": "luigi99"
+                                    },
+                                    "content": "안녕하세요! 블로그 잘 보고 있습니다.",
+                                    "createdAt": "2024-01-09T12:00:00",
+                                    "updatedAt": "2024-01-09T12:00:00"
+                                  },
+                                  "error": null,
+                                  "timestamp": "2024-01-09T12:00:00"
+                                }
+                                """,
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "인증되지 않은 사용자",
+                content = [
+                    Content(
+                        schema = Schema(implementation = CommonResponse::class),
+                        examples = [
+                            ExampleObject(
+                                name = "Unauthorized",
+                                value = """
+                                {
+                                  "success": false,
+                                  "data": null,
+                                  "error": {
+                                    "code": "AUTH_001",
+                                    "message": "인증에 실패했습니다."
+                                  },
+                                  "timestamp": "2024-01-09T12:00:00"
+                                }
+                                """,
+                            ),
+                        ],
+                    ),
+                ],
+            ),
         ],
     )
     fun createGuestbook(
@@ -45,10 +104,114 @@ interface GuestbookApi {
     )
     @ApiResponses(
         value = [
-            ApiResponse(responseCode = "200", description = "방명록 수정 성공"),
-            ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
-            ApiResponse(responseCode = "403", description = "수정 권한 없음"),
-            ApiResponse(responseCode = "404", description = "방명록을 찾을 수 없음"),
+            ApiResponse(
+                responseCode = "200",
+                description = "방명록 수정 성공",
+                content = [
+                    Content(
+                        schema = Schema(implementation = CommonResponse::class),
+                        examples = [
+                            ExampleObject(
+                                name = "ModifyGuestbookSuccess",
+                                value = """
+                                {
+                                  "success": true,
+                                  "data": {
+                                    "guestbookId": "a1b2c3d4-e5f6-7890-a1b2-c3d4e5f67890",
+                                    "author": {
+                                      "memberId": "123e4567-e89b-12d3-a456-426614174000",
+                                      "nickname": "Luigi",
+                                      "profileImageUrl": "https://example.com/profile.jpg",
+                                      "username": "luigi99"
+                                    },
+                                    "content": "수정된 방명록 내용입니다.",
+                                    "createdAt": "2024-01-09T12:00:00",
+                                    "updatedAt": "2024-01-09T12:05:00"
+                                  },
+                                  "error": null,
+                                  "timestamp": "2024-01-09T12:05:00"
+                                }
+                                """,
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "인증되지 않은 사용자",
+                content = [
+                    Content(
+                        schema = Schema(implementation = CommonResponse::class),
+                        examples = [
+                            ExampleObject(
+                                name = "Unauthorized",
+                                value = """
+                                {
+                                  "success": false,
+                                  "data": null,
+                                  "error": {
+                                    "code": "AUTH_001",
+                                    "message": "인증에 실패했습니다."
+                                  },
+                                  "timestamp": "2024-01-09T12:00:00"
+                                }
+                                """,
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+            ApiResponse(
+                responseCode = "403",
+                description = "수정 권한 없음",
+                content = [
+                    Content(
+                        schema = Schema(implementation = CommonResponse::class),
+                        examples = [
+                            ExampleObject(
+                                name = "Forbidden",
+                                value = """
+                                {
+                                  "success": false,
+                                  "data": null,
+                                  "error": {
+                                    "code": "GUESTBOOK_002",
+                                    "message": "방명록에 대한 권한이 없습니다."
+                                  },
+                                  "timestamp": "2024-01-09T12:00:00"
+                                }
+                                """,
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+            ApiResponse(
+                responseCode = "404",
+                description = "방명록을 찾을 수 없음",
+                content = [
+                    Content(
+                        schema = Schema(implementation = CommonResponse::class),
+                        examples = [
+                            ExampleObject(
+                                name = "GuestbookNotFound",
+                                value = """
+                                {
+                                  "success": false,
+                                  "data": null,
+                                  "error": {
+                                    "code": "GUESTBOOK_001",
+                                    "message": "방명록을 찾을 수 없습니다."
+                                  },
+                                  "timestamp": "2024-01-09T12:00:00"
+                                }
+                                """,
+                            ),
+                        ],
+                    ),
+                ],
+            ),
         ],
     )
     fun modifyGuestbook(
@@ -64,10 +227,85 @@ interface GuestbookApi {
     )
     @ApiResponses(
         value = [
-            ApiResponse(responseCode = "204", description = "방명록 삭제 성공"),
-            ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
-            ApiResponse(responseCode = "403", description = "삭제 권한 없음"),
-            ApiResponse(responseCode = "404", description = "방명록을 찾을 수 없음"),
+            ApiResponse(
+                responseCode = "204",
+                description = "방명록 삭제 성공",
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "인증되지 않은 사용자",
+                content = [
+                    Content(
+                        schema = Schema(implementation = CommonResponse::class),
+                        examples = [
+                            ExampleObject(
+                                name = "Unauthorized",
+                                value = """
+                                {
+                                  "success": false,
+                                  "data": null,
+                                  "error": {
+                                    "code": "AUTH_001",
+                                    "message": "인증에 실패했습니다."
+                                  },
+                                  "timestamp": "2024-01-09T12:00:00"
+                                }
+                                """,
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+            ApiResponse(
+                responseCode = "403",
+                description = "삭제 권한 없음",
+                content = [
+                    Content(
+                        schema = Schema(implementation = CommonResponse::class),
+                        examples = [
+                            ExampleObject(
+                                name = "Forbidden",
+                                value = """
+                                {
+                                  "success": false,
+                                  "data": null,
+                                  "error": {
+                                    "code": "GUESTBOOK_002",
+                                    "message": "방명록에 대한 권한이 없습니다."
+                                  },
+                                  "timestamp": "2024-01-09T12:00:00"
+                                }
+                                """,
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+            ApiResponse(
+                responseCode = "404",
+                description = "방명록을 찾을 수 없음",
+                content = [
+                    Content(
+                        schema = Schema(implementation = CommonResponse::class),
+                        examples = [
+                            ExampleObject(
+                                name = "GuestbookNotFound",
+                                value = """
+                                {
+                                  "success": false,
+                                  "data": null,
+                                  "error": {
+                                    "code": "GUESTBOOK_001",
+                                    "message": "방명록을 찾을 수 없습니다."
+                                  },
+                                  "timestamp": "2024-01-09T12:00:00"
+                                }
+                                """,
+                            ),
+                        ],
+                    ),
+                ],
+            ),
         ],
     )
     fun deleteGuestbook(
@@ -77,11 +315,57 @@ interface GuestbookApi {
 
     @Operation(
         summary = "방명록 목록 조회",
-        description = "모든 방명록 글을 조회합니다. 비회원도 조회 가능합니다.",
+        description = "모든 방명록 글을 조회합니다. 최신순으로 정렬됩니다.",
     )
     @ApiResponses(
         value = [
-            ApiResponse(responseCode = "200", description = "방명록 목록 조회 성공"),
+            ApiResponse(
+                responseCode = "200",
+                description = "방명록 목록 조회 성공",
+                content = [
+                    Content(
+                        schema = Schema(implementation = CommonResponse::class),
+                        examples = [
+                            ExampleObject(
+                                name = "GetGuestbooksSuccess",
+                                value = """
+                                {
+                                  "success": true,
+                                  "data": [
+                                    {
+                                      "guestbookId": "a1b2c3d4-e5f6-7890-a1b2-c3d4e5f67890",
+                                      "author": {
+                                        "memberId": "123e4567-e89b-12d3-a456-426614174000",
+                                        "nickname": "Luigi",
+                                        "profileImageUrl": "https://example.com/profile.jpg",
+                                        "username": "luigi99"
+                                      },
+                                      "content": "방명록 내용 1",
+                                      "createdAt": "2024-01-09T12:00:00",
+                                      "updatedAt": "2024-01-09T12:00:00"
+                                    },
+                                    {
+                                      "guestbookId": "b1b2c3d4-e5f6-7890-a1b2-c3d4e5f67891",
+                                      "author": {
+                                        "memberId": "223e4567-e89b-12d3-a456-426614174001",
+                                        "nickname": "Guest",
+                                        "profileImageUrl": null,
+                                        "username": "guest123"
+                                      },
+                                      "content": "두 번째 방명록 글입니다.",
+                                      "createdAt": "2024-01-09T11:00:00",
+                                      "updatedAt": "2024-01-09T11:00:00"
+                                    }
+                                  ],
+                                  "error": null,
+                                  "timestamp": "2024-01-09T12:00:00"
+                                }
+                                """,
+                            ),
+                        ],
+                    ),
+                ],
+            ),
         ],
     )
     fun getGuestbooks(): ResponseEntity<CommonResponse<List<GuestbookResponse>>>
@@ -92,8 +376,64 @@ interface GuestbookApi {
     )
     @ApiResponses(
         value = [
-            ApiResponse(responseCode = "200", description = "방명록 조회 성공"),
-            ApiResponse(responseCode = "404", description = "방명록을 찾을 수 없음"),
+            ApiResponse(
+                responseCode = "200",
+                description = "방명록 조회 성공",
+                content = [
+                    Content(
+                        schema = Schema(implementation = CommonResponse::class),
+                        examples = [
+                            ExampleObject(
+                                name = "GetGuestbookSuccess",
+                                value = """
+                                {
+                                  "success": true,
+                                  "data": {
+                                    "guestbookId": "a1b2c3d4-e5f6-7890-a1b2-c3d4e5f67890",
+                                    "author": {
+                                      "memberId": "123e4567-e89b-12d3-a456-426614174000",
+                                      "nickname": "Luigi",
+                                      "profileImageUrl": "https://example.com/profile.jpg",
+                                      "username": "luigi99"
+                                    },
+                                    "content": "안녕하세요! 블로그 잘 보고 있습니다.",
+                                    "createdAt": "2024-01-09T12:00:00",
+                                    "updatedAt": "2024-01-09T12:00:00"
+                                  },
+                                  "error": null,
+                                  "timestamp": "2024-01-09T12:00:00"
+                                }
+                                """,
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+            ApiResponse(
+                responseCode = "404",
+                description = "방명록을 찾을 수 없음",
+                content = [
+                    Content(
+                        schema = Schema(implementation = CommonResponse::class),
+                        examples = [
+                            ExampleObject(
+                                name = "GuestbookNotFound",
+                                value = """
+                                {
+                                  "success": false,
+                                  "data": null,
+                                  "error": {
+                                    "code": "GUESTBOOK_001",
+                                    "message": "방명록을 찾을 수 없습니다."
+                                  },
+                                  "timestamp": "2024-01-09T12:00:00"
+                                }
+                                """,
+                            ),
+                        ],
+                    ),
+                ],
+            ),
         ],
     )
     fun getGuestbook(
