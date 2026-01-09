@@ -27,6 +27,12 @@ include("modules:content:post:adapter:in:web")
 include("modules:content:post:adapter:out:persistence:jpa")
 include("modules:content:post:adapter:out:client:member")
 
+include("modules:content:comment:domain")
+include("modules:content:comment:application")
+include("modules:content:comment:adapter:in:web")
+include("modules:content:comment:adapter:out:persistence:jpa")
+include("modules:content:comment:adapter:out:client:member")
+
 include("modules:media:domain")
 include("modules:media:application")
 include("modules:media:adapter:in:web")

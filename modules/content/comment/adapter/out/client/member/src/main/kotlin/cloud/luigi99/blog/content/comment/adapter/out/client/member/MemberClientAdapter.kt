@@ -1,11 +1,16 @@
-﻿package cloud.luigi99.blog.content.post.adapter.out.client.member
+package cloud.luigi99.blog.content.comment.adapter.out.client.member
 
-import cloud.luigi99.blog.content.post.application.post.port.out.MemberClient
+import cloud.luigi99.blog.content.comment.application.port.out.MemberClient
 import cloud.luigi99.blog.member.application.member.port.`in`.query.GetMembersProfileUseCase
 import cloud.luigi99.blog.member.application.member.port.`in`.query.MemberQueryFacade
 import org.springframework.stereotype.Component
 
-@Component("postMemberClientAdapter")
+/**
+ * 회원 정보 조회 어댑터
+ *
+ * MemberQueryFacade를 사용하여 회원 정보를 조회합니다.
+ */
+@Component("commentMemberClientAdapter")
 class MemberClientAdapter(private val memberQueryFacade: MemberQueryFacade) : MemberClient {
     override fun getAuthor(memberId: String): MemberClient.Author {
         val response =
