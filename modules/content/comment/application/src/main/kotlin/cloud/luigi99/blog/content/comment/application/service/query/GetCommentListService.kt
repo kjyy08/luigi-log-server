@@ -3,7 +3,7 @@ package cloud.luigi99.blog.content.comment.application.service.query
 import cloud.luigi99.blog.content.comment.application.port.`in`.query.GetCommentListUseCase
 import cloud.luigi99.blog.content.comment.application.port.out.CommentRepository
 import cloud.luigi99.blog.content.comment.application.port.out.MemberClient
-import cloud.luigi99.blog.content.post.domain.post.vo.PostId
+import cloud.luigi99.blog.content.post.domain.vo.PostId
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional

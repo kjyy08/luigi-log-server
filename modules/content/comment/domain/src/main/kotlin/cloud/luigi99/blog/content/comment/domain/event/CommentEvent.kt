@@ -2,7 +2,7 @@ package cloud.luigi99.blog.content.comment.domain.event
 
 import cloud.luigi99.blog.common.domain.event.DomainEvent
 import cloud.luigi99.blog.content.comment.domain.vo.CommentId
-import cloud.luigi99.blog.content.post.domain.post.vo.PostId
+import cloud.luigi99.blog.content.post.domain.vo.PostId
 import cloud.luigi99.blog.member.domain.member.vo.MemberId
 
 /**
