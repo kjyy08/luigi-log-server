@@ -37,6 +37,7 @@ include("modules:content:guestbook:domain")
 include("modules:content:guestbook:application")
 include("modules:content:guestbook:adapter:in:web")
 include("modules:content:guestbook:adapter:out:persistence:jpa")
+include("modules:content:guestbook:adapter:out:client:member")
 
 include("modules:media:domain")
 include("modules:media:application")
