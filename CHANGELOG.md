@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/kjyy08/luigi-log-server/compare/v1.0.0...v1.0.1) (2026-01-09)
+
+
+### Bug Fixes
+
+* 댓글 API 설명문 개선 ([#76](https://github.com/kjyy08/luigi-log-server/issues/76)) ([8466971](https://github.com/kjyy08/luigi-log-server/commit/8466971e1a40c278e9481233a975ef39a0a96eff))
+
 # 1.0.0 (2026-01-09)
 
 
