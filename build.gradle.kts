@@ -1,7 +1,7 @@
-allprojects {
-    group = "cloud.luigi99"
-    description = "Luigi Log Server"
+group = "cloud.luigi99"
+description = "Luigi Blog Server"
 
+allprojects {
     repositories {
         mavenCentral()
     }
