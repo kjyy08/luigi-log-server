@@ -5,7 +5,7 @@ import cloud.luigi99.blog.content.comment.application.port.out.CommentRepository
 import cloud.luigi99.blog.content.comment.application.port.out.MemberClient
 import cloud.luigi99.blog.content.comment.domain.model.Comment
 import cloud.luigi99.blog.content.comment.domain.vo.CommentContent
-import cloud.luigi99.blog.content.post.domain.post.vo.PostId
+import cloud.luigi99.blog.content.post.domain.vo.PostId
 import cloud.luigi99.blog.member.domain.member.vo.MemberId
 import mu.KotlinLogging
 import org.springframework.stereotype.Service

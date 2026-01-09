@@ -8,7 +8,7 @@ import cloud.luigi99.blog.content.comment.domain.exception.UnauthorizedCommentAc
 import cloud.luigi99.blog.content.comment.domain.model.Comment
 import cloud.luigi99.blog.content.comment.domain.vo.CommentContent
 import cloud.luigi99.blog.content.comment.domain.vo.CommentId
-import cloud.luigi99.blog.content.post.domain.post.vo.PostId
+import cloud.luigi99.blog.content.post.domain.vo.PostId
 import cloud.luigi99.blog.member.domain.member.vo.MemberId
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
@@ -47,7 +47,7 @@ class UpdateCommentServiceTest :
 
             val comment =
                 Comment.from(
-                    commentId = commentId,
+                    entityId = commentId,
                     postId = PostId.generate(),
                     authorId = authorId,
                     content = CommentContent(content),
