@@ -33,6 +33,11 @@ include("modules:content:comment:adapter:in:web")
 include("modules:content:comment:adapter:out:persistence:jpa")
 include("modules:content:comment:adapter:out:client:member")
 
+include("modules:content:guestbook:domain")
+include("modules:content:guestbook:application")
+include("modules:content:guestbook:adapter:in:web")
+include("modules:content:guestbook:adapter:out:persistence:jpa")
+
 include("modules:media:domain")
 include("modules:media:application")
 include("modules:media:adapter:in:web")
