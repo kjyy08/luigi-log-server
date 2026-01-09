@@ -1,4 +1,4 @@
-package cloud.luigi99.blog.content.guestbook.application.adapter
+package cloud.luigi99.blog.content.guestbook.adapter.out.client.member
 
 import cloud.luigi99.blog.content.guestbook.application.port.out.MemberQueryPort
 import cloud.luigi99.blog.member.application.member.port.`in`.query.GetMembersProfileUseCase
