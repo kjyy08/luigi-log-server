@@ -5,7 +5,7 @@ import cloud.luigi99.blog.member.application.member.port.`in`.query.GetMembersPr
 import cloud.luigi99.blog.member.application.member.port.`in`.query.MemberQueryFacade
 import org.springframework.stereotype.Component
 
-@Component
+@Component("postMemberClientAdapter")
 class MemberClientAdapter(private val memberQueryFacade: MemberQueryFacade) : MemberClient {
     override fun getAuthor(memberId: String): MemberClient.Author {
         val response =
