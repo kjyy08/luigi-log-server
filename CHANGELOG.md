@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/kjyy08/luigi-log-server/compare/v1.2.0...v1.2.1) (2026-01-09)
+
+
+### Bug Fixes
+
+* CORS 설정에 와일드카드 서브도메인 지원 추가 ([b16d9cb](https://github.com/kjyy08/luigi-log-server/commit/b16d9cb51d82f42c8a8105cdf2ed75fb20fb9c04))
+
 # [1.2.0](https://github.com/kjyy08/luigi-log-server/compare/v1.1.0...v1.2.0) (2026-01-09)
 
 
