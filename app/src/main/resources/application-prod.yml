@@ -12,6 +12,13 @@ spring:
   jpa:
     show-sql: false
 
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 3000ms
+
   security:
     oauth2:
       client:
@@ -23,7 +30,8 @@ spring:
 
 jwt:
   secret: ${JWT_SECRET}
-  expiration: 3600000
+  access-token-expiration: 86400000
+  refresh-token-expiration: 2592000000
 
 logging:
   level:
