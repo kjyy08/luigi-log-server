@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/kjyy08/luigi-log-server/compare/v1.1.0...v1.2.0) (2026-01-09)
+
+
+### Features
+
+* CORS 허용 도메인 업데이트 ([183ede9](https://github.com/kjyy08/luigi-log-server/commit/183ede91330916d47586c1d308c1960a9ec7a3e4))
+
 # [1.1.0](https://github.com/kjyy08/luigi-log-server/compare/v1.0.1...v1.1.0) (2026-01-09)
 
 
