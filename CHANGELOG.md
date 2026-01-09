@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/kjyy08/luigi-log-server/compare/v1.0.1...v1.1.0) (2026-01-09)
+
+
+### Features
+
+* Prod 환경 설정 수정 ([151c971](https://github.com/kjyy08/luigi-log-server/commit/151c971d623620802253954c0491167f5fc8affa))
+
 ## [1.0.1](https://github.com/kjyy08/luigi-log-server/compare/v1.0.0...v1.0.1) (2026-01-09)
 
 
