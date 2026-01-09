@@ -33,4 +33,8 @@ enum class ErrorCode(val code: String, val message: String, val status: Int) {
     // Media
     FILE_UPLOAD_FAILED("MEDIA_001", "파일 업로드에 실패했습니다.", 500),
     INVALID_FILE_TYPE("MEDIA_002", "지원하지 않는 파일 형식입니다.", 400),
+
+    // Guestbook
+    GUESTBOOK_NOT_FOUND("GUESTBOOK_001", "방명록을 찾을 수 없습니다.", 404),
+    UNAUTHORIZED_GUESTBOOK_ACCESS("GUESTBOOK_002", "방명록에 대한 권한이 없습니다.", 403),
 }
