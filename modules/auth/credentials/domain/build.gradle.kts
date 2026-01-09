@@ -1,6 +1,5 @@
 plugins {
     conventions
-    `java-library`
 }
 
 dependencies {
