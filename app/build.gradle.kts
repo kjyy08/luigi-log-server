@@ -28,6 +28,12 @@ dependencies {
     implementation(project(":modules:content:post:adapter:out:persistence:jpa"))
     implementation(project(":modules:content:post:adapter:out:client:member"))
 
+    implementation(project(":modules:content:comment:domain"))
+    implementation(project(":modules:content:comment:application"))
+    implementation(project(":modules:content:comment:adapter:in:web"))
+    implementation(project(":modules:content:comment:adapter:out:persistence:jpa"))
+    implementation(project(":modules:content:comment:adapter:out:client:member"))
+
     implementation(project(":modules:media:domain"))
     implementation(project(":modules:media:application"))
     implementation(project(":modules:media:adapter:in:web"))
