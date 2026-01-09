@@ -1,5 +1,6 @@
 package cloud.luigi99.blog.content.comment.application.service.command
 
+import cloud.luigi99.blog.common.domain.event.EventManager
 import cloud.luigi99.blog.content.comment.application.port.`in`.command.UpdateCommentUseCase
 import cloud.luigi99.blog.content.comment.application.port.out.CommentRepository
 import cloud.luigi99.blog.content.comment.application.port.out.MemberClient
@@ -23,8 +24,8 @@ import java.time.LocalDateTime
 class UpdateCommentServiceTest :
     BehaviorSpec({
         beforeTest {
-            mockkObject(cloud.luigi99.blog.common.domain.event.EventManager)
-            every { cloud.luigi99.blog.common.domain.event.EventManager.eventContextManager } returns
+            mockkObject(EventManager)
+            every { EventManager.eventContextManager } returns
                 mockk(relaxed = true)
         }
 
@@ -35,8 +36,10 @@ class UpdateCommentServiceTest :
 
             val commentId = CommentId.generate()
             val authorId = MemberId.generate()
+            val postId = PostId.generate()
             val content = "기존 댓글 내용"
             val newContent = "수정된 댓글 내용"
+            val now = LocalDateTime.now()
 
             val command =
                 UpdateCommentUseCase.Command(
@@ -45,19 +48,21 @@ class UpdateCommentServiceTest :
                     content = newContent,
                 )
 
-            val comment =
+            val existingComment =
                 Comment.from(
                     entityId = commentId,
-                    postId = PostId.generate(),
+                    postId = postId,
                     authorId = authorId,
                     content = CommentContent(content),
-                    createdAt = LocalDateTime.now(),
-                    updatedAt = LocalDateTime.now(),
+                    createdAt = now,
+                    updatedAt = now,
                 )
 
             When("정상적으로 댓글 수정을 요청하면") {
-                every { commentRepository.findById(commentId) } returns comment
-                every { commentRepository.save(any()) } returns comment
+                every { commentRepository.findById(commentId) } returns existingComment
+                every { commentRepository.save(any()) } answers {
+                    firstArg<Comment>()
+                }
                 every { memberClient.getAuthor(authorId.value.toString()) } returns
                     MemberClient.Author(
                         memberId = authorId.value.toString(),
@@ -94,7 +99,7 @@ class UpdateCommentServiceTest :
                 val otherAuthorId = MemberId.generate()
                 val unauthorizedCommand = command.copy(authorId = otherAuthorId.value.toString())
 
-                every { commentRepository.findById(commentId) } returns comment
+                every { commentRepository.findById(commentId) } returns existingComment
 
                 Then("UnauthorizedCommentAccessException이 발생한다") {
                     shouldThrow<UnauthorizedCommentAccessException> {
