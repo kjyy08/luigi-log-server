@@ -9,7 +9,7 @@ interface GetMembersProfileUseCase {
 
     data class MemberProfile(
         val memberId: String,
-        val email: String,
+        val email: String?,
         val username: String,
         val profile: ProfileResponse?,
     )

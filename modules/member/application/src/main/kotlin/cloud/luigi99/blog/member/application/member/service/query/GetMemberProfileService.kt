@@ -43,7 +43,7 @@ class GetMemberProfileService(private val memberRepository: MemberRepository) : 
             memberId =
                 member.entityId.value
                     .toString(),
-            email = member.email.value,
+            email = member.email?.value,
             username = member.username.value,
             profile = profileResponse,
         )
