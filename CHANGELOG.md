@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/kjyy08/luigi-log-server/compare/v1.2.1...v1.3.0) (2026-01-12)
+
+
+### Features
+
+* OAuth 로그인 시 이메일 nullable 지원 ([#77](https://github.com/kjyy08/luigi-log-server/issues/77)) ([bac2946](https://github.com/kjyy08/luigi-log-server/commit/bac2946637886fafcd2f4d2c9739d5fad98484c4))
+
 ## [1.2.1](https://github.com/kjyy08/luigi-log-server/compare/v1.2.0...v1.2.1) (2026-01-09)
 
 
