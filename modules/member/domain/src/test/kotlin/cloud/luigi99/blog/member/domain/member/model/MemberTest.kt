@@ -268,4 +268,24 @@ class MemberTest :
                 }
             }
         }
+
+        Given("GitHub OAuth 로그인 시 이메일을 비공개로 설정한 사용자가") {
+            val username = Username("github_user")
+
+            When("회원 가입을 시도하면") {
+                val member = Member.register(email = null, username = username)
+
+                Then("이메일 없이도 정상적으로 회원이 생성된다") {
+                    member.email shouldBe null
+                }
+
+                Then("회원 고유 식별자가 부여된다") {
+                    member.entityId shouldNotBe null
+                }
+
+                Then("사용자 이름으로 회원을 식별할 수 있다") {
+                    member.username shouldBe username
+                }
+            }
+        }
     })

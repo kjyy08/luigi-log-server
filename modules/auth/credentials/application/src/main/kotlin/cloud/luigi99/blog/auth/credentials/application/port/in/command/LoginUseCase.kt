@@ -6,7 +6,7 @@ interface LoginUseCase {
     fun execute(command: Command): Response
 
     data class Command(
-        val email: String,
+        val email: String?,
         val username: String,
         val provider: String,
         val providerId: String,
@@ -15,7 +15,7 @@ interface LoginUseCase {
 
     data class Response(
         val memberId: String,
-        val email: String,
+        val email: String?,
         val username: String,
         val role: Role,
         val profileImgUrl: String?,

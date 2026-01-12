@@ -129,4 +129,43 @@ class GetCurrentMemberServiceTest :
                 }
             }
         }
+
+        Given("이메일 없이 가입한 OAuth 회원이") {
+            val memberRepository = mockk<MemberRepository>()
+            val service = GetCurrentMemberService(memberRepository)
+
+            val memberId = MemberId.generate()
+            val member =
+                Member.from(
+                    entityId = memberId,
+                    email = null,
+                    username = Username("github_user"),
+                    profile = null,
+                    createdAt = null,
+                    updatedAt = null,
+                )
+
+            When("내 정보를 조회하면") {
+                val query =
+                    GetCurrentMemberUseCase.Query(
+                        memberId = memberId.toString(),
+                    )
+
+                every { memberRepository.findById(memberId) } returns member
+
+                val response = service.execute(query)
+
+                Then("이메일은 비어있는 상태로 조회된다") {
+                    response.email shouldBe null
+                }
+
+                Then("회원 식별자로 본인 확인이 가능하다") {
+                    response.memberId shouldBe memberId.toString()
+                }
+
+                Then("사용자 이름으로 본인 확인이 가능하다") {
+                    response.username shouldBe "github_user"
+                }
+            }
+        }
     })

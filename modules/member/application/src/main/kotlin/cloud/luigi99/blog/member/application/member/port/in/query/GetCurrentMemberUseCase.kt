@@ -5,5 +5,5 @@ interface GetCurrentMemberUseCase {
 
     data class Query(val memberId: String)
 
-    data class Response(val memberId: String, val email: String, val username: String)
+    data class Response(val memberId: String, val email: String?, val username: String)
 }

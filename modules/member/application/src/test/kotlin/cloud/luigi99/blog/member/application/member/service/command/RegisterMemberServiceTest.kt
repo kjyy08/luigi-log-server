@@ -185,7 +185,7 @@ class RegisterMemberServiceTest :
 
                 Then("도메인 Email 값 객체가 생성된다") {
                     val member = memberSlot.captured
-                    member.email.value shouldBe "domain@example.com"
+                    member.email?.value shouldBe "domain@example.com"
                 }
 
                 Then("도메인 Username 값 객체가 생성된다") {
@@ -202,6 +202,36 @@ class RegisterMemberServiceTest :
                     val member = memberSlot.captured
                     member.profile shouldNotBe null
                     member.profile?.entityId shouldNotBe null
+                }
+            }
+        }
+
+        Given("OAuth 로그인 시 이메일을 비공개로 설정한 사용자가") {
+            val memberRepository = mockk<MemberRepository>()
+            val service = RegisterMemberService(memberRepository)
+
+            When("회원 가입을 요청하면") {
+                val command =
+                    RegisterMemberUseCase.Command(
+                        email = null,
+                        username = "github_user",
+                        profileImgUrl = "https://example.com/avatar.jpg",
+                    )
+
+                every { memberRepository.save(any()) } answers { firstArg() }
+
+                val response = service.execute(command)
+
+                Then("이메일 없이도 회원 가입이 완료된다") {
+                    response.email shouldBe null
+                }
+
+                Then("회원 고유 식별자가 발급된다") {
+                    response.memberId shouldNotBe null
+                }
+
+                Then("사용자명으로 회원을 식별할 수 있다") {
+                    response.username shouldBe "github_user"
                 }
             }
         }

@@ -26,7 +26,7 @@ class RegisterMemberService(private val memberRepository: MemberRepository) : Re
     override fun execute(command: RegisterMemberUseCase.Command): RegisterMemberUseCase.Response {
         log.info { "Registering new member with email: ${command.email}" }
 
-        val email = Email(command.email)
+        val email = command.email?.let { Email(it) }
         val username = Username(command.username)
 
         // 회원 생성
@@ -54,7 +54,7 @@ class RegisterMemberService(private val memberRepository: MemberRepository) : Re
             memberId =
                 savedMember.entityId.value
                     .toString(),
-            email = savedMember.email.value,
+            email = savedMember.email?.value,
             username = savedMember.username.value,
             profileImgUrl =
                 savedMember.profile

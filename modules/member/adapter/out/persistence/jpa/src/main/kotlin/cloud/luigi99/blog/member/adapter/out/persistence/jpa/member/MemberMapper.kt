@@ -10,7 +10,7 @@ object MemberMapper {
     fun toDomain(entity: MemberJpaEntity): Member =
         Member.from(
             entityId = MemberId(entity.id),
-            email = Email(entity.email),
+            email = entity.email?.let { Email(it) },
             username = Username(entity.username),
             profile = entity.profile?.let { ProfileMapper.toDomain(it) },
             createdAt = entity.createdAt,
@@ -22,7 +22,7 @@ object MemberMapper {
             MemberJpaEntity
                 .from(
                     entityId = member.entityId.value,
-                    email = member.email.value,
+                    email = member.email?.value,
                     username = member.username.value,
                 ).apply {
                     createdAt = member.createdAt
