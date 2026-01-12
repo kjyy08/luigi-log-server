@@ -20,9 +20,9 @@ class MemberJpaEntity private constructor(
     @Id
     @Column(name = "id")
     val id: UUID,
-    @Column(name = "email", nullable = false, unique = true)
-    val email: String,
-    @Column(name = "username", nullable = false, length = 100)
+    @Column(name = "email", nullable = true)
+    val email: String?,
+    @Column(name = "username", nullable = false, length = 100, unique = true)
     val username: String,
     @OneToOne(cascade = [CascadeType.ALL], orphanRemoval = true)
     @JoinColumn(name = "profile_id")
@@ -32,7 +32,7 @@ class MemberJpaEntity private constructor(
         get() = MemberId(id)
 
     companion object {
-        fun from(entityId: UUID, email: String, username: String): MemberJpaEntity =
+        fun from(entityId: UUID, email: String?, username: String): MemberJpaEntity =
             MemberJpaEntity(
                 id = entityId,
                 email = email,

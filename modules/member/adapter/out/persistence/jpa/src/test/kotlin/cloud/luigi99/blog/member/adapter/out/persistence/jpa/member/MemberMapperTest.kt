@@ -92,7 +92,7 @@ class MemberMapperTest :
 
                 Then("모든 필드가 정확하게 매핑되어야 한다") {
                     domain.entityId.value shouldBe entityId
-                    domain.email.value shouldBe "stored@example.com"
+                    domain.email?.value shouldBe "stored@example.com"
                     domain.username.value shouldBe "storeduser"
                     domain.profile shouldBe null
                     domain.createdAt shouldBe LocalDateTime.of(2025, 1, 1, 12, 0)
@@ -161,6 +161,55 @@ class MemberMapperTest :
                     entity2.email shouldBe "user2@example.com"
 
                     entity1.id shouldNotBe entity2.id
+                }
+            }
+        }
+
+        Given("이메일 없이 가입한 OAuth 회원 정보가") {
+            val memberId = MemberId.generate()
+            val member =
+                Member.from(
+                    entityId = memberId,
+                    email = null,
+                    username = Username("github_user"),
+                    profile = null,
+                    createdAt = null,
+                    updatedAt = null,
+                )
+
+            When("데이터베이스에 저장되면") {
+                val entity = MemberMapper.toEntity(member)
+
+                Then("이메일 컬럼은 비어있는 상태로 저장된다") {
+                    entity.email shouldBe null
+                }
+
+                Then("회원 식별 정보는 정상적으로 저장된다") {
+                    entity.id shouldBe memberId.value
+                    entity.username shouldBe "github_user"
+                }
+            }
+        }
+
+        Given("데이터베이스에 이메일 없이 저장된 OAuth 회원 정보가") {
+            val entityId = UUID.randomUUID()
+            val jpaEntity =
+                MemberJpaEntity.from(
+                    entityId = entityId,
+                    email = null,
+                    username = "github_user",
+                )
+
+            When("애플리케이션에서 조회되면") {
+                val domain = MemberMapper.toDomain(jpaEntity)
+
+                Then("이메일은 비어있는 상태로 복원된다") {
+                    domain.email shouldBe null
+                }
+
+                Then("회원 식별 정보는 정상적으로 복원된다") {
+                    domain.entityId.value shouldBe entityId
+                    domain.username.value shouldBe "github_user"
                 }
             }
         }
