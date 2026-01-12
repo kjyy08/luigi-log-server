@@ -23,7 +23,7 @@ import java.time.LocalDateTime
  */
 class Member private constructor(
     override val entityId: MemberId,
-    val email: Email,
+    val email: Email?,
     val username: Username,
     val profile: Profile?,
 ) : AggregateRoot<MemberId>() {
@@ -36,7 +36,7 @@ class Member private constructor(
          * @param profile 프로필 (선택)
          * @return 생성된 회원 엔티티
          */
-        fun register(email: Email, username: Username, profile: Profile? = null): Member {
+        fun register(email: Email?, username: Username, profile: Profile? = null): Member {
             val member =
                 Member(
                     entityId = MemberId.generate(),
@@ -54,7 +54,7 @@ class Member private constructor(
          */
         fun from(
             entityId: MemberId,
-            email: Email,
+            email: Email?,
             username: Username,
             profile: Profile?,
             createdAt: LocalDateTime?,
