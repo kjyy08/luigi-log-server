@@ -2,6 +2,7 @@
 
 import cloud.luigi99.blog.content.post.application.port.`in`.query.GetPostByIdUseCase
 import cloud.luigi99.blog.content.post.application.port.`in`.query.GetPostBySlugUseCase
+import cloud.luigi99.blog.content.post.application.port.`in`.query.GetPostContributionsUseCase
 import cloud.luigi99.blog.content.post.application.port.`in`.query.GetPostsUseCase
 import cloud.luigi99.blog.content.post.application.port.`in`.query.PostQueryFacade
 import org.springframework.stereotype.Service
@@ -16,10 +17,13 @@ class PostQueryService(
     private val getPostBySlugUseCase: GetPostBySlugUseCase,
     private val getPostByIdUseCase: GetPostByIdUseCase,
     private val getPostsUseCase: GetPostsUseCase,
+    private val getPostContributionsUseCase: GetPostContributionsUseCase,
 ) : PostQueryFacade {
     override fun getPostBySlug(): GetPostBySlugUseCase = getPostBySlugUseCase
 
     override fun getPostById(): GetPostByIdUseCase = getPostByIdUseCase
 
     override fun getPosts(): GetPostsUseCase = getPostsUseCase
+
+    override fun getPostContributions(): GetPostContributionsUseCase = getPostContributionsUseCase
 }

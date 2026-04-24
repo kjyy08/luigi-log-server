@@ -47,6 +47,8 @@ interface GetPostBySlugUseCase {
         val type: String,
         val status: String,
         val tags: Set<String>,
+        val viewCount: Long,
+        val commentCount: Long,
         val createdAt: LocalDateTime?,
         val updatedAt: LocalDateTime?,
     )

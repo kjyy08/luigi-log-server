@@ -1,6 +1,8 @@
 ﻿package cloud.luigi99.blog.content.post.application.service.query
 
 import cloud.luigi99.blog.common.domain.event.EventManager
+import cloud.luigi99.blog.common.exception.BusinessException
+import cloud.luigi99.blog.common.exception.ErrorCode
 import cloud.luigi99.blog.content.post.application.port.`in`.query.GetPostsUseCase
 import cloud.luigi99.blog.content.post.application.port.out.MemberClient
 import cloud.luigi99.blog.content.post.application.port.out.PostRepository
@@ -11,6 +13,7 @@ import cloud.luigi99.blog.content.post.domain.vo.PostStatus
 import cloud.luigi99.blog.content.post.domain.vo.Slug
 import cloud.luigi99.blog.content.post.domain.vo.Title
 import cloud.luigi99.blog.member.domain.member.vo.MemberId
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.every
@@ -55,6 +58,9 @@ class GetPostsServiceTest :
                     )
 
                 every { postRepository.findAll() } returns posts
+                every { postRepository.search(null, null, null, 20, null) } returns
+                    PostRepository.PostListResult(posts, false)
+                every { postRepository.countCommentsByPostIds(any()) } returns emptyMap()
                 every { memberClient.getAuthors(any()) } returns emptyMap()
 
                 val response = service.execute(query)
@@ -92,6 +98,9 @@ class GetPostsServiceTest :
                     )
 
                 every { postRepository.findAllByStatus(PostStatus.PUBLISHED) } returns publishedPosts
+                every { postRepository.search(PostStatus.PUBLISHED, null, null, 20, null) } returns
+                    PostRepository.PostListResult(publishedPosts, false)
+                every { postRepository.countCommentsByPostIds(any()) } returns emptyMap()
                 every { memberClient.getAuthors(any()) } returns emptyMap()
 
                 val response = service.execute(query)
@@ -122,12 +131,50 @@ class GetPostsServiceTest :
                     )
 
                 every { postRepository.findAllByContentType(ContentType.PORTFOLIO) } returns portfolioPosts
+                every { postRepository.search(null, ContentType.PORTFOLIO, null, 20, null) } returns
+                    PostRepository.PostListResult(portfolioPosts, false)
+                every { postRepository.countCommentsByPostIds(any()) } returns emptyMap()
                 every { memberClient.getAuthors(any()) } returns emptyMap()
 
                 val response = service.execute(query)
 
                 Then("PORTFOLIO 글만 반환된다") {
                     response.posts.size shouldBe 1
+                }
+            }
+        }
+        Given("잘못된 목록 조회 파라미터로 글 목록을 조회할 때") {
+            val postRepository = mockk<PostRepository>(relaxed = true)
+            val memberClient = mockk<MemberClient>(relaxed = true)
+            val service = GetPostsService(postRepository, memberClient)
+
+            When("존재하지 않는 status 값이면") {
+                Then("INVALID_INPUT BusinessException이 발생한다") {
+                    val exception =
+                        shouldThrow<BusinessException> {
+                            service.execute(GetPostsUseCase.Query(status = "INVALID"))
+                        }
+                    exception.errorCode shouldBe ErrorCode.INVALID_INPUT
+                }
+            }
+
+            When("존재하지 않는 type 값이면") {
+                Then("INVALID_INPUT BusinessException이 발생한다") {
+                    val exception =
+                        shouldThrow<BusinessException> {
+                            service.execute(GetPostsUseCase.Query(type = "INVALID"))
+                        }
+                    exception.errorCode shouldBe ErrorCode.INVALID_INPUT
+                }
+            }
+
+            When("디코딩할 수 없는 cursor 값이면") {
+                Then("INVALID_INPUT BusinessException이 발생한다") {
+                    val exception =
+                        shouldThrow<BusinessException> {
+                            service.execute(GetPostsUseCase.Query(cursor = "not-a-valid-cursor"))
+                        }
+                    exception.errorCode shouldBe ErrorCode.INVALID_INPUT
                 }
             }
         }

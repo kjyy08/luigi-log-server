@@ -339,6 +339,32 @@ class PostTest :
             }
         }
 
+        Given("조회수가 있는 Post가 주어졌을 때") {
+            val post =
+                Post.from(
+                    entityId = PostId.generate(),
+                    memberId = MemberId.generate(),
+                    title = Title("조회수 테스트"),
+                    slug = Slug("view-count-test"),
+                    body = Body("내용"),
+                    type = ContentType.BLOG,
+                    status = PostStatus.PUBLISHED,
+                    tags = emptySet(),
+                    viewCount = 41,
+                    createdAt = LocalDateTime.now(),
+                    updatedAt = LocalDateTime.now(),
+                )
+
+            When("조회수를 증가시키면") {
+                val viewed = post.incrementViewCount()
+
+                Then("조회수가 1 증가하고 현재 인스턴스가 반환된다") {
+                    viewed shouldBeSameInstanceAs post
+                    viewed.viewCount shouldBe 42
+                }
+            }
+        }
+
         Given("작성자가 게시글을 삭제하려는 상황에서") {
             val post =
                 Post.create(

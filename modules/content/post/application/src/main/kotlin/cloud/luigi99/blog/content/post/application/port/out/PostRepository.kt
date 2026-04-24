@@ -7,6 +7,8 @@ import cloud.luigi99.blog.content.post.domain.vo.PostId
 import cloud.luigi99.blog.content.post.domain.vo.PostStatus
 import cloud.luigi99.blog.content.post.domain.vo.Slug
 import cloud.luigi99.blog.member.domain.member.vo.MemberId
+import java.time.LocalDate
+import java.time.LocalDateTime
 
 /**
  * Post Repository Port
@@ -79,4 +81,24 @@ interface PostRepository : Repository<Post, PostId> {
      * @return Post 목록
      */
     fun findAll(): List<Post>
+
+    fun search(
+        status: PostStatus?,
+        type: ContentType?,
+        q: String?,
+        limit: Int,
+        cursor: PostCursor?,
+    ): PostListResult
+
+    fun countCommentsByPostIds(postIds: Collection<PostId>): Map<PostId, Long>
+
+    fun contributions(from: LocalDate, to: LocalDate, type: ContentType?): List<PostContribution>
+
+    fun incrementViewCount(postId: PostId): Int
+
+    data class PostCursor(val createdAt: LocalDateTime, val postId: PostId)
+
+    data class PostListResult(val posts: List<Post>, val hasNext: Boolean)
+
+    data class PostContribution(val date: LocalDate, val count: Int)
 }

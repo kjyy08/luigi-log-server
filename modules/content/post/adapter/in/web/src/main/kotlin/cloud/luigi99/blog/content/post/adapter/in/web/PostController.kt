@@ -3,6 +3,9 @@
 import cloud.luigi99.blog.adapter.web.dto.CommonResponse
 import cloud.luigi99.blog.content.post.adapter.`in`.web.dto.AuthorResponse
 import cloud.luigi99.blog.content.post.adapter.`in`.web.dto.CreatePostRequest
+import cloud.luigi99.blog.content.post.adapter.`in`.web.dto.PageInfoResponse
+import cloud.luigi99.blog.content.post.adapter.`in`.web.dto.PostContributionDayResponse
+import cloud.luigi99.blog.content.post.adapter.`in`.web.dto.PostContributionsResponse
 import cloud.luigi99.blog.content.post.adapter.`in`.web.dto.PostListResponse
 import cloud.luigi99.blog.content.post.adapter.`in`.web.dto.PostResponse
 import cloud.luigi99.blog.content.post.adapter.`in`.web.dto.PostSummaryResponse
@@ -13,6 +16,7 @@ import cloud.luigi99.blog.content.post.application.port.`in`.command.PostCommand
 import cloud.luigi99.blog.content.post.application.port.`in`.command.UpdatePostUseCase
 import cloud.luigi99.blog.content.post.application.port.`in`.query.GetPostByIdUseCase
 import cloud.luigi99.blog.content.post.application.port.`in`.query.GetPostBySlugUseCase
+import cloud.luigi99.blog.content.post.application.port.`in`.query.GetPostContributionsUseCase
 import cloud.luigi99.blog.content.post.application.port.`in`.query.GetPostsUseCase
 import cloud.luigi99.blog.content.post.application.port.`in`.query.PostQueryFacade
 import mu.KotlinLogging
@@ -29,6 +33,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.time.LocalDate
 
 private val log = KotlinLogging.logger {}
 
@@ -157,6 +162,8 @@ class PostController(private val postQueryFacade: PostQueryFacade, private val p
                     type = response.type,
                     status = response.status,
                     tags = response.tags,
+                    viewCount = response.viewCount,
+                    commentCount = response.commentCount,
                     createdAt = response.createdAt,
                     updatedAt = response.updatedAt,
                 ),
@@ -191,6 +198,8 @@ class PostController(private val postQueryFacade: PostQueryFacade, private val p
                     type = response.type,
                     status = response.status,
                     tags = response.tags,
+                    viewCount = response.viewCount,
+                    commentCount = response.commentCount,
                     createdAt = response.createdAt,
                     updatedAt = response.updatedAt,
                 ),
@@ -202,10 +211,13 @@ class PostController(private val postQueryFacade: PostQueryFacade, private val p
     override fun getPosts(
         @RequestParam(required = false) status: String?,
         @RequestParam(required = false) type: String?,
+        @RequestParam(required = false) q: String?,
+        @RequestParam(required = false) limit: Int?,
+        @RequestParam(required = false) cursor: String?,
     ): ResponseEntity<CommonResponse<PostListResponse>> {
         log.info { "Listing posts with filters - status: $status, type: $type" }
 
-        val query = GetPostsUseCase.Query(status = status, type = type)
+        val query = GetPostsUseCase.Query(status = status, type = type, q = q, limit = limit, cursor = cursor)
         val response = postQueryFacade.getPosts().execute(query)
 
         val summaries =
@@ -224,6 +236,8 @@ class PostController(private val postQueryFacade: PostQueryFacade, private val p
                     type = post.type,
                     status = post.status,
                     tags = post.tags,
+                    viewCount = post.viewCount,
+                    commentCount = post.commentCount,
                     createdAt = post.createdAt,
                 )
             }
@@ -233,6 +247,35 @@ class PostController(private val postQueryFacade: PostQueryFacade, private val p
                 PostListResponse(
                     posts = summaries,
                     total = summaries.size,
+                    pageInfo =
+                        PageInfoResponse(
+                            response.pageInfo.limit,
+                            response.pageInfo.hasNext,
+                            response.pageInfo.nextCursor,
+                        ),
+                ),
+            ),
+        )
+    }
+
+    @GetMapping("/contributions")
+    override fun getPostContributions(
+        @RequestParam(required = false) from: LocalDate?,
+        @RequestParam(required = false) to: LocalDate?,
+        @RequestParam(required = false) type: String?,
+    ): ResponseEntity<CommonResponse<PostContributionsResponse>> {
+        val response =
+            postQueryFacade
+                .getPostContributions()
+                .execute(GetPostContributionsUseCase.Query(from = from, to = to, type = type))
+
+        return ResponseEntity.ok(
+            CommonResponse.success(
+                PostContributionsResponse(
+                    from = response.from,
+                    to = response.to,
+                    totalCount = response.totalCount,
+                    days = response.days.map { PostContributionDayResponse(it.date, it.count) },
                 ),
             ),
         )

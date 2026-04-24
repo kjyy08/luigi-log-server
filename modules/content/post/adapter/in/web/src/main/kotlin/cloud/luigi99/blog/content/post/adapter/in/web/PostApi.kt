@@ -2,6 +2,7 @@
 
 import cloud.luigi99.blog.adapter.web.dto.CommonResponse
 import cloud.luigi99.blog.content.post.adapter.`in`.web.dto.CreatePostRequest
+import cloud.luigi99.blog.content.post.adapter.`in`.web.dto.PostContributionsResponse
 import cloud.luigi99.blog.content.post.adapter.`in`.web.dto.PostListResponse
 import cloud.luigi99.blog.content.post.adapter.`in`.web.dto.PostResponse
 import cloud.luigi99.blog.content.post.adapter.`in`.web.dto.UpdatePostRequest
@@ -19,6 +20,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
+import java.time.LocalDate
 
 /**
  * Post API 인터페이스
@@ -452,7 +454,17 @@ interface PostApi {
     fun getPosts(
         @Parameter(description = "상태 필터 (DRAFT, PUBLISHED, ARCHIVED)") @RequestParam(required = false) status: String?,
         @Parameter(description = "타입 필터 (BLOG, PORTFOLIO)") @RequestParam(required = false) type: String?,
+        @Parameter(description = "검색어 (title/body/tags)") @RequestParam(required = false) q: String?,
+        @Parameter(description = "페이지 크기 (기본 20, 최대 50)") @RequestParam(required = false) limit: Int?,
+        @Parameter(description = "커서") @RequestParam(required = false) cursor: String?,
     ): ResponseEntity<CommonResponse<PostListResponse>>
+
+    @Operation(summary = "게시글 잔디", description = "PUBLISHED 글을 created_at 기준 날짜별 count로 집계합니다.")
+    fun getPostContributions(
+        @Parameter(description = "시작일") @RequestParam(required = false) from: LocalDate?,
+        @Parameter(description = "종료일") @RequestParam(required = false) to: LocalDate?,
+        @Parameter(description = "타입 필터 (BLOG, PORTFOLIO)") @RequestParam(required = false) type: String?,
+    ): ResponseEntity<CommonResponse<PostContributionsResponse>>
 
     @Operation(
         summary = "블로그 글 삭제",

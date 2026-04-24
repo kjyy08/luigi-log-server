@@ -240,6 +240,8 @@ class PostControllerTest :
                         type = "BLOG",
                         status = "PUBLISHED",
                         tags = setOf("Tag1"),
+                        viewCount = 0,
+                        commentCount = 0,
                         createdAt = LocalDateTime.now(),
                         updatedAt = LocalDateTime.now(),
                     )
@@ -287,6 +289,8 @@ class PostControllerTest :
                         type = "BLOG",
                         status = "PUBLISHED",
                         tags = setOf("Tag1"),
+                        viewCount = 0,
+                        commentCount = 0,
                         createdAt = LocalDateTime.now(),
                         updatedAt = LocalDateTime.now(),
                     )

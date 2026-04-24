@@ -17,6 +17,7 @@ import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
+import io.mockk.verify
 
 /**
  * GetPostBySlugService 테스트
@@ -51,6 +52,8 @@ class GetPostBySlugServiceTest :
                 // MemberClient 호출 모킹 제거
                 // findByUsernameAndSlug 모킹 추가
                 every { postRepository.findByUsernameAndSlug("testuser", Slug("test-post")) } returns post
+                every { postRepository.incrementViewCount(post.entityId) } returns 1
+                every { postRepository.countCommentsByPostIds(any()) } returns emptyMap()
                 every { memberClient.getAuthor(any()) } returns
                     MemberClient.Author(
                         memberId = memberId.value.toString(),
@@ -71,6 +74,12 @@ class GetPostBySlugServiceTest :
 
                 Then("본문이 반환된다") {
                     response.body shouldBe "테스트 내용"
+                }
+
+                Then("조회수는 full aggregate save 없이 atomic increment로 증가한다") {
+                    response.viewCount shouldBe 1
+                    verify(exactly = 1) { postRepository.incrementViewCount(post.entityId) }
+                    verify(exactly = 0) { postRepository.save(any()) }
                 }
             }
         }

@@ -20,4 +20,6 @@ interface PostQueryFacade {
      * Post 목록 조회 UseCase를 반환합니다.
      */
     fun getPosts(): GetPostsUseCase
+
+    fun getPostContributions(): GetPostContributionsUseCase
 }
