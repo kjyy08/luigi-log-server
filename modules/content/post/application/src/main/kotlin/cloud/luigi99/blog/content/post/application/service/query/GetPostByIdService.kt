@@ -20,7 +20,7 @@ private val log = KotlinLogging.logger {}
 @Service
 class GetPostByIdService(private val postRepository: PostRepository, private val memberClient: MemberClient) :
     GetPostByIdUseCase {
-    @Transactional(readOnly = true)
+    @Transactional
     override fun execute(query: GetPostByIdUseCase.Query): GetPostByIdUseCase.Response {
         log.info { "Getting post by id: ${query.postId}" }
 
@@ -28,6 +28,9 @@ class GetPostByIdService(private val postRepository: PostRepository, private val
         val post =
             postRepository.findById(postId)
                 ?: throw PostNotFoundException("Post ID ${query.postId}를 찾을 수 없습니다")
+        postRepository.incrementViewCount(post.entityId)
+        post.incrementViewCount()
+        val commentCount = postRepository.countCommentsByPostIds(listOf(post.entityId))[post.entityId] ?: 0
 
         val author =
             memberClient.getAuthor(
@@ -52,6 +55,8 @@ class GetPostByIdService(private val postRepository: PostRepository, private val
             type = post.type.name,
             status = post.status.name,
             tags = post.tags,
+            viewCount = post.viewCount,
+            commentCount = commentCount,
             createdAt = post.createdAt,
             updatedAt = post.updatedAt,
         )

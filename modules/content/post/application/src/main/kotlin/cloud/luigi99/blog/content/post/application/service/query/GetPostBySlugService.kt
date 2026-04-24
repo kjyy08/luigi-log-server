@@ -19,7 +19,7 @@ private val log = KotlinLogging.logger {}
 @Service
 class GetPostBySlugService(private val postRepository: PostRepository, private val memberClient: MemberClient) :
     GetPostBySlugUseCase {
-    @Transactional(readOnly = true)
+    @Transactional
     override fun execute(query: GetPostBySlugUseCase.Query): GetPostBySlugUseCase.Response {
         log.info { "Getting post by username: ${query.username}, slug: ${query.slug}" }
 
@@ -29,6 +29,9 @@ class GetPostBySlugService(private val postRepository: PostRepository, private v
                 ?: throw PostNotFoundException(
                     "사용자 '${query.username}'의 Slug '${query.slug}'에 해당하는 Post를 찾을 수 없습니다",
                 )
+        postRepository.incrementViewCount(post.entityId)
+        post.incrementViewCount()
+        val commentCount = postRepository.countCommentsByPostIds(listOf(post.entityId))[post.entityId] ?: 0
 
         val author =
             memberClient.getAuthor(
@@ -53,6 +56,8 @@ class GetPostBySlugService(private val postRepository: PostRepository, private v
             type = post.type.name,
             status = post.status.name,
             tags = post.tags,
+            viewCount = post.viewCount,
+            commentCount = commentCount,
             createdAt = post.createdAt,
             updatedAt = post.updatedAt,
         )

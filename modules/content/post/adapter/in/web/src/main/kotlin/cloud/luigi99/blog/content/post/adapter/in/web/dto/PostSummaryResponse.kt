@@ -21,6 +21,10 @@ data class PostSummaryResponse(
     val status: String,
     @field:Schema(description = "태그 목록", example = "[\"Kotlin\", \"DDD\"]")
     val tags: Set<String>,
+    @field:Schema(description = "조회수", example = "42")
+    val viewCount: Long = 0,
+    @field:Schema(description = "댓글 수", example = "3")
+    val commentCount: Long = 0,
     @field:Schema(description = "생성 시간", example = "2025-01-01T12:00:00")
     val createdAt: LocalDateTime?,
 )

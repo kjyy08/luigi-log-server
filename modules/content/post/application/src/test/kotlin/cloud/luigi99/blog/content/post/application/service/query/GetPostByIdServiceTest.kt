@@ -18,6 +18,7 @@ import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
+import io.mockk.verify
 import java.util.UUID
 
 /**
@@ -37,9 +38,6 @@ class GetPostByIdServiceTest :
             val service = GetPostByIdService(postRepository, memberClient)
 
             When("존재하는 Post ID로 조회하면") {
-                val postId = PostId.generate()
-                val query = GetPostByIdUseCase.Query(postId = postId.value.toString())
-
                 val post =
                     Post.create(
                         memberId = MemberId.generate(),
@@ -48,8 +46,13 @@ class GetPostByIdServiceTest :
                         body = Body("테스트 내용"),
                         type = ContentType.BLOG,
                     )
+                val postId = post.entityId
+                val query = GetPostByIdUseCase.Query(postId = postId.value.toString())
 
                 every { postRepository.findById(postId) } returns post
+
+                every { postRepository.incrementViewCount(postId) } returns 1
+                every { postRepository.countCommentsByPostIds(any()) } returns emptyMap()
                 every { memberClient.getAuthor(any()) } returns
                     MemberClient.Author(
                         memberId =
@@ -68,6 +71,12 @@ class GetPostByIdServiceTest :
 
                 Then("본문이 반환된다") {
                     response.body shouldBe "테스트 내용"
+                }
+
+                Then("조회수는 full aggregate save 없이 atomic increment로 증가한다") {
+                    response.viewCount shouldBe 1
+                    verify(exactly = 1) { postRepository.incrementViewCount(postId) }
+                    verify(exactly = 0) { postRepository.save(any()) }
                 }
             }
         }

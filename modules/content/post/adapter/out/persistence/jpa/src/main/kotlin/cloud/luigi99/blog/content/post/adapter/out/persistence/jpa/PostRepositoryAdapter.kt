@@ -11,6 +11,7 @@ import cloud.luigi99.blog.content.post.domain.vo.Slug
 import cloud.luigi99.blog.member.domain.member.vo.MemberId
 import mu.KotlinLogging
 import org.springframework.stereotype.Repository
+import java.time.LocalDate
 
 private val log = KotlinLogging.logger {}
 
@@ -124,6 +125,43 @@ class PostRepositoryAdapter(
         log.debug { "Finding all posts" }
         return jpaRepository.findAll().map { PostMapper.toDomain(it) }
     }
+
+    override fun search(
+        status: PostStatus?,
+        type: ContentType?,
+        q: String?,
+        limit: Int,
+        cursor: PostRepository.PostCursor?,
+    ): PostRepository.PostListResult {
+        val rows =
+            jpaRepository.search(
+                status = status?.name,
+                type = type?.name,
+                q = q?.trim()?.takeIf { it.isNotEmpty() },
+                cursorCreatedAt = cursor?.createdAt,
+                cursorPostId = cursor?.postId?.value,
+                limit = limit + 1,
+            )
+        return PostRepository.PostListResult(rows.take(limit).map { PostMapper.toDomain(it) }, rows.size > limit)
+    }
+
+    override fun countCommentsByPostIds(postIds: Collection<PostId>): Map<PostId, Long> {
+        if (postIds.isEmpty()) return emptyMap()
+        return jpaRepository
+            .countCommentsByPostIds(postIds.map { it.value })
+            .associate { PostId(it.getPostId()) to it.getCount() }
+    }
+
+    override fun contributions(
+        from: LocalDate,
+        to: LocalDate,
+        type: ContentType?,
+    ): List<PostRepository.PostContribution> =
+        jpaRepository
+            .contributions(from.atStartOfDay(), to.plusDays(1).atStartOfDay(), type?.name)
+            .map { PostRepository.PostContribution(it.getDate(), it.getCount().toInt()) }
+
+    override fun incrementViewCount(postId: PostId): Int = jpaRepository.incrementViewCount(postId.value)
 
     /**
      * ID로 Post를 삭제합니다.

@@ -22,14 +22,22 @@ interface GetPostsUseCase {
      * @property status 상태 필터 (null이면 전체)
      * @property type 컨텐츠 타입 필터 (null이면 전체)
      */
-    data class Query(val status: String? = null, val type: String? = null)
+    data class Query(
+        val status: String? = null,
+        val type: String? = null,
+        val q: String? = null,
+        val limit: Int? = null,
+        val cursor: String? = null,
+    )
 
     /**
      * Post 목록 조회 응답
      *
      * @property posts Post 목록
      */
-    data class Response(val posts: List<PostSummary>)
+    data class Response(val posts: List<PostSummary>, val pageInfo: PageInfo)
+
+    data class PageInfo(val limit: Int, val hasNext: Boolean, val nextCursor: String?)
 
     /**
      * Post 요약 정보
@@ -51,6 +59,8 @@ interface GetPostsUseCase {
         val type: String,
         val status: String,
         val tags: Set<String>,
+        val viewCount: Long,
+        val commentCount: Long,
         val createdAt: LocalDateTime?,
     )
 

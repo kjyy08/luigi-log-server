@@ -209,6 +209,25 @@ class PostRepositoryAdapterTest :
             }
         }
 
+        Given("조회수를 증가시킬 때") {
+            val jpaRepository = mockk<PostJpaRepository>()
+            val eventContextManager = mockk<EventContextManager>()
+            val domainEventPublisher = mockk<DomainEventPublisher>()
+            val adapter = PostRepositoryAdapter(jpaRepository, eventContextManager, domainEventPublisher)
+            val postId = PostId.generate()
+
+            When("조회수 증가를 요청하면") {
+                every { jpaRepository.incrementViewCount(postId.value) } returns 1
+
+                val updatedRows = adapter.incrementViewCount(postId)
+
+                Then("JPA atomic update를 호출하고 업데이트 row 수를 반환한다") {
+                    updatedRows shouldBe 1
+                    verify(exactly = 1) { jpaRepository.incrementViewCount(postId.value) }
+                }
+            }
+        }
+
         Given("상태별로 Post 목록을 조회할 때") {
             val jpaRepository = mockk<PostJpaRepository>()
             val eventContextManager = mockk<EventContextManager>()

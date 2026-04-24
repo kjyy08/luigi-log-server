@@ -26,6 +26,7 @@ object PostMapper {
             type = entity.type,
             status = entity.status,
             tags = entity.tags.toSet(),
+            viewCount = entity.viewCount,
             createdAt = entity.createdAt,
             updatedAt = entity.updatedAt,
         )
@@ -44,6 +45,7 @@ object PostMapper {
                     body = post.body.value,
                     type = post.type,
                     status = post.status,
+                    viewCount = post.viewCount,
                 ).apply {
                     createdAt = post.createdAt
                     updatedAt = post.updatedAt

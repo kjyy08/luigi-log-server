@@ -37,6 +37,7 @@ class Post private constructor(
     val type: ContentType,
     status: PostStatus,
     tags: Set<String>,
+    viewCount: Long,
 ) : AggregateRoot<PostId>() {
     var title: Title = title
         private set
@@ -48,6 +49,9 @@ class Post private constructor(
         private set
 
     var tags: Set<String> = tags.toSet()
+        private set
+
+    var viewCount: Long = viewCount
         private set
 
     companion object {
@@ -80,6 +84,7 @@ class Post private constructor(
                     type = type,
                     status = PostStatus.DRAFT,
                     tags = emptySet(),
+                    viewCount = 0,
                 )
 
             post.registerEvent(PostCreatedEvent(post.entityId, post.slug))
@@ -110,6 +115,7 @@ class Post private constructor(
             type: ContentType,
             status: PostStatus,
             tags: Set<String>,
+            viewCount: Long = 0,
             createdAt: LocalDateTime?,
             updatedAt: LocalDateTime?,
         ): Post {
@@ -123,6 +129,7 @@ class Post private constructor(
                     type = type,
                     status = status,
                     tags = tags,
+                    viewCount = viewCount,
                 )
             post.createdAt = createdAt
             post.updatedAt = updatedAt
@@ -184,6 +191,11 @@ class Post private constructor(
     fun update(newTitle: Title, newBody: Body): Post {
         this.title = newTitle
         this.body = newBody
+        return this
+    }
+
+    fun incrementViewCount(): Post {
+        this.viewCount += 1
         return this
     }
 

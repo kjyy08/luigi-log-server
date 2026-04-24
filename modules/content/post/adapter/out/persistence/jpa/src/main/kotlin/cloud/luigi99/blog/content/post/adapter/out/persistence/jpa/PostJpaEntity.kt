@@ -42,6 +42,8 @@ class PostJpaEntity private constructor(
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 50)
     var status: PostStatus,
+    @Column(name = "view_count", nullable = false)
+    val viewCount: Long = 0,
     @ElementCollection
     @CollectionTable(
         name = "post_tag",
@@ -65,6 +67,7 @@ class PostJpaEntity private constructor(
             body: String,
             type: ContentType,
             status: PostStatus,
+            viewCount: Long = 0,
         ): PostJpaEntity =
             PostJpaEntity(
                 id = entityId,
@@ -74,6 +77,7 @@ class PostJpaEntity private constructor(
                 body = body,
                 type = type,
                 status = status,
+                viewCount = viewCount,
             )
     }
 }

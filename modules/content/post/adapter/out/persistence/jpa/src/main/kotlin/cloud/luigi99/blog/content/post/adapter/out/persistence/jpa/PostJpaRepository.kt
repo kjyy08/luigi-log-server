@@ -3,9 +3,12 @@
 import cloud.luigi99.blog.content.post.domain.vo.ContentType
 import cloud.luigi99.blog.content.post.domain.vo.PostStatus
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
+import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.UUID
 
 /**
@@ -77,4 +80,84 @@ interface PostJpaRepository : JpaRepository<PostJpaEntity, UUID> {
         @Param("username") username: String,
         @Param("slug") slug: String,
     ): PostJpaEntity?
+
+    @Query(
+        """
+        SELECT DISTINCT p.* FROM post p
+        WHERE (:status IS NULL OR p.status = CAST(:status AS varchar))
+          AND (:type IS NULL OR p.type = CAST(:type AS varchar))
+          AND (:q IS NULL OR :q = '' OR lower(p.title) LIKE lower(concat('%', :q, '%'))
+            OR lower(p.body) LIKE lower(concat('%', :q, '%'))
+            OR EXISTS (SELECT 1 FROM post_tag pt WHERE pt.post_id = p.id AND lower(pt.tag_name) LIKE lower(concat('%', :q, '%'))))
+          AND (:cursorCreatedAt IS NULL OR p.created_at < :cursorCreatedAt OR (p.created_at = :cursorCreatedAt AND p.id < :cursorPostId))
+        ORDER BY p.created_at DESC, p.id DESC
+        LIMIT :limit
+        """,
+        nativeQuery = true,
+    )
+    fun search(
+        @Param("status") status: String?,
+        @Param("type") type: String?,
+        @Param("q") q: String?,
+        @Param("cursorCreatedAt") cursorCreatedAt: LocalDateTime?,
+        @Param("cursorPostId") cursorPostId: UUID?,
+        @Param("limit") limit: Int,
+    ): List<PostJpaEntity>
+
+    @Query(
+        """
+        SELECT c.post_id AS postId, COUNT(*) AS count
+        FROM comment c
+        WHERE c.post_id IN (:postIds)
+        GROUP BY c.post_id
+        """,
+        nativeQuery = true,
+    )
+    fun countCommentsByPostIds(
+        @Param("postIds") postIds: Collection<UUID>,
+    ): List<CommentCountRow>
+
+    @Query(
+        """
+        SELECT CAST(p.created_at AS date) AS date, COUNT(*) AS count
+        FROM post p
+        WHERE p.status = 'PUBLISHED'
+          AND p.created_at >= :fromDate
+          AND p.created_at < :toExclusive
+          AND (:type IS NULL OR p.type = CAST(:type AS varchar))
+        GROUP BY CAST(p.created_at AS date)
+        ORDER BY CAST(p.created_at AS date)
+        """,
+        nativeQuery = true,
+    )
+    fun contributions(
+        @Param("fromDate") fromDate: LocalDateTime,
+        @Param("toExclusive") toExclusive: LocalDateTime,
+        @Param("type") type: String?,
+    ): List<ContributionRow>
+
+    @Modifying(clearAutomatically = false, flushAutomatically = false)
+    @Query(
+        """
+        UPDATE post
+        SET view_count = view_count + 1
+        WHERE id = :postId
+        """,
+        nativeQuery = true,
+    )
+    fun incrementViewCount(
+        @Param("postId") postId: UUID,
+    ): Int
+
+    interface CommentCountRow {
+        fun getPostId(): UUID
+
+        fun getCount(): Long
+    }
+
+    interface ContributionRow {
+        fun getDate(): LocalDate
+
+        fun getCount(): Long
+    }
 }
