@@ -16,7 +16,7 @@ import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import io.kotest.matchers.types.shouldNotBeSameInstanceAs
+import io.kotest.matchers.types.shouldBeSameInstanceAs
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
@@ -123,8 +123,9 @@ class PostTest :
                     published.status shouldBe PostStatus.PUBLISHED
                 }
 
-                Then("새로운 인스턴스가 반환된다") {
-                    published shouldNotBeSameInstanceAs post
+                Then("현재 인스턴스가 변경되어 반환된다") {
+                    published shouldBeSameInstanceAs post
+                    post.status shouldBe PostStatus.PUBLISHED
                 }
             }
         }
@@ -148,8 +149,9 @@ class PostTest :
                     archived.status shouldBe PostStatus.ARCHIVED
                 }
 
-                Then("새로운 인스턴스가 반환된다") {
-                    archived shouldNotBeSameInstanceAs post
+                Then("현재 인스턴스가 변경되어 반환된다") {
+                    archived shouldBeSameInstanceAs post
+                    post.status shouldBe PostStatus.ARCHIVED
                 }
             }
         }
@@ -176,8 +178,10 @@ class PostTest :
                     updated.body shouldBe newBody
                 }
 
-                Then("새로운 인스턴스가 반환된다") {
-                    updated shouldNotBeSameInstanceAs post
+                Then("현재 인스턴스가 변경되어 반환된다") {
+                    updated shouldBeSameInstanceAs post
+                    post.title shouldBe newTitle
+                    post.body shouldBe newBody
                 }
 
                 Then("slug와 타입은 유지된다") {
@@ -204,8 +208,8 @@ class PostTest :
                     withTag.tags shouldContain "kotlin"
                 }
 
-                Then("새로운 인스턴스가 반환된다") {
-                    withTag shouldNotBeSameInstanceAs post
+                Then("현재 인스턴스가 변경되어 반환된다") {
+                    withTag shouldBeSameInstanceAs post
                 }
             }
 
@@ -266,13 +270,24 @@ class PostTest :
                     removed.tags shouldContain "spring"
                 }
 
-                Then("새로운 인스턴스가 반환된다") {
-                    removed shouldNotBeSameInstanceAs post
+                Then("현재 인스턴스가 변경되어 반환된다") {
+                    removed shouldBeSameInstanceAs post
                 }
             }
 
             When("존재하지 않는 태그를 제거하면") {
-                val removed = post.removeTag("java")
+                val postWithTags =
+                    Post
+                        .create(
+                            MemberId.generate(),
+                            Title("존재하지 않는 태그 제거 테스트"),
+                            Slug("remove-missing-tag-test"),
+                            Body("내용"),
+                            ContentType.BLOG,
+                        ).addTag("kotlin")
+                        .addTag("spring")
+
+                val removed = postWithTags.removeTag("java")
 
                 Then("변경 없이 반환된다") {
                     removed.tags shouldHaveSize 2
@@ -338,8 +353,8 @@ class PostTest :
             When("삭제를 수행하면") {
                 val deleted = post.delete()
 
-                Then("기존 객체와 다른 새로운 인스턴스가 반환된다") {
-                    deleted shouldNotBeSameInstanceAs post
+                Then("현재 인스턴스에 삭제 이벤트가 등록되어 반환된다") {
+                    deleted shouldBeSameInstanceAs post
                 }
             }
         }

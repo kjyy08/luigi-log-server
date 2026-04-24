@@ -14,17 +14,47 @@ import java.time.LocalDateTime
 
 class Profile private constructor(
     override val entityId: ProfileId,
-    val nickname: Nickname,
-    val bio: Bio?,
-    val profileImageUrl: Url?,
-    val readme: Readme?,
-    val company: Company?,
-    val location: Location?,
-    val jobTitle: JobTitle?,
-    val githubUrl: Url?,
-    val contactEmail: ContactEmail?,
-    val websiteUrl: Url?,
+    nickname: Nickname,
+    bio: Bio?,
+    profileImageUrl: Url?,
+    readme: Readme?,
+    company: Company?,
+    location: Location?,
+    jobTitle: JobTitle?,
+    githubUrl: Url?,
+    contactEmail: ContactEmail?,
+    websiteUrl: Url?,
 ) : DomainEntity<ProfileId>() {
+    var nickname: Nickname = nickname
+        private set
+
+    var bio: Bio? = bio
+        private set
+
+    var profileImageUrl: Url? = profileImageUrl
+        private set
+
+    var readme: Readme? = readme
+        private set
+
+    var company: Company? = company
+        private set
+
+    var location: Location? = location
+        private set
+
+    var jobTitle: JobTitle? = jobTitle
+        private set
+
+    var githubUrl: Url? = githubUrl
+        private set
+
+    var contactEmail: ContactEmail? = contactEmail
+        private set
+
+    var websiteUrl: Url? = websiteUrl
+        private set
+
     companion object {
         fun create(
             nickname: Nickname,
@@ -99,22 +129,16 @@ class Profile private constructor(
         contactEmail: ContactEmail? = this.contactEmail,
         websiteUrl: Url? = this.websiteUrl,
     ): Profile {
-        val updated =
-            Profile(
-                entityId = this.entityId,
-                nickname = nickname,
-                bio = bio,
-                profileImageUrl = profileImageUrl,
-                readme = readme,
-                company = company,
-                location = location,
-                jobTitle = jobTitle,
-                githubUrl = githubUrl,
-                contactEmail = contactEmail,
-                websiteUrl = websiteUrl,
-            )
-        updated.createdAt = this.createdAt
-        updated.updatedAt = this.updatedAt
-        return updated
+        this.nickname = nickname
+        this.bio = bio
+        this.profileImageUrl = profileImageUrl
+        this.readme = readme
+        this.company = company
+        this.location = location
+        this.jobTitle = jobTitle
+        this.githubUrl = githubUrl
+        this.contactEmail = contactEmail
+        this.websiteUrl = websiteUrl
+        return this
     }
 }

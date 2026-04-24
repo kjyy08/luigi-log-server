@@ -9,6 +9,7 @@ import cloud.luigi99.blog.member.domain.profile.vo.Nickname
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import io.kotest.matchers.types.shouldBeSameInstanceAs
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
@@ -168,7 +169,7 @@ class MemberTest :
             }
         }
 
-        Given("회원의 불변성을 테스트할 때") {
+        Given("회원 업데이트가 현재 인스턴스를 변경하는지 테스트할 때") {
             val originalMember =
                 Member.register(
                     Email("user@example.com"),
@@ -181,12 +182,13 @@ class MemberTest :
             When("사용자 이름을 변경하면") {
                 val updatedMember = originalMember.updateUsername(Username("jane_doe"))
 
-                Then("원본 회원 객체는 변경되지 않는다") {
-                    originalMember.username shouldBe originalUsername
-                    originalMember.username.value shouldBe "john_doe"
+                Then("원본 회원 객체 자체가 변경된다") {
+                    originalMember.username shouldNotBe originalUsername
+                    originalMember.username.value shouldBe "jane_doe"
                 }
 
-                Then("새로운 회원 객체가 반환된다") {
+                Then("현재 회원 객체가 반환된다") {
+                    updatedMember shouldBeSameInstanceAs originalMember
                     updatedMember.username.value shouldBe "jane_doe"
                 }
 

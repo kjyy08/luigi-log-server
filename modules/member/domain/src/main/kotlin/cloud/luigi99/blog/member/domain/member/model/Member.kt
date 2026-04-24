@@ -24,9 +24,15 @@ import java.time.LocalDateTime
 class Member private constructor(
     override val entityId: MemberId,
     val email: Email?,
-    val username: Username,
-    val profile: Profile?,
+    username: Username,
+    profile: Profile?,
 ) : AggregateRoot<MemberId>() {
+    var username: Username = username
+        private set
+
+    var profile: Profile? = profile
+        private set
+
     companion object {
         /**
          * 신규 회원을 등록합니다.
@@ -80,18 +86,9 @@ class Member private constructor(
      * @return 변경된 회원 엔티티
      */
     fun updateUsername(newUsername: Username): Member {
-        val updated =
-            Member(
-                entityId = entityId,
-                email = email,
-                username = newUsername,
-                profile = profile,
-            )
-        updated.createdAt = createdAt
-        updated.updatedAt = updatedAt
-
-        updated.registerEvent(MemberUsernameUpdatedEvent(updated.entityId, updated.username.value))
-        return updated
+        this.username = newUsername
+        registerEvent(MemberUsernameUpdatedEvent(entityId, username.value))
+        return this
     }
 
     /**
@@ -101,18 +98,9 @@ class Member private constructor(
      * @return 변경된 회원 엔티티
      */
     fun updateProfile(newProfile: Profile): Member {
-        val updated =
-            Member(
-                entityId = entityId,
-                email = email,
-                username = username,
-                profile = newProfile,
-            )
-        updated.createdAt = createdAt
-        updated.updatedAt = updatedAt
-
-        updated.registerEvent(MemberProfileUpdatedEvent(updated.entityId))
-        return updated
+        this.profile = newProfile
+        registerEvent(MemberProfileUpdatedEvent(entityId))
+        return this
     }
 
     /**

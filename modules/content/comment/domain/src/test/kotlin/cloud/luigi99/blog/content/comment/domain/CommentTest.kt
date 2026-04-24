@@ -10,6 +10,7 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import io.kotest.matchers.types.shouldBeSameInstanceAs
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
@@ -53,11 +54,13 @@ class CommentTest :
             When("새로운 내용으로 수정을 요청하면") {
                 val updatedComment = originalComment.updateContent(newContent, authorId)
 
-                Then("원본 댓글은 변경되지 않고 보존된다") {
-                    originalComment.content shouldBe originalContent
+                Then("원본 댓글 객체 자체가 변경된다") {
+                    originalComment.content shouldNotBe originalContent
+                    originalComment.content shouldBe newContent
                 }
 
-                Then("수정된 내용을 가진 새로운 댓글 객체가 반환된다") {
+                Then("수정된 내용을 가진 현재 댓글 객체가 반환된다") {
+                    updatedComment shouldBeSameInstanceAs originalComment
                     updatedComment.content shouldBe newContent
                 }
 
