@@ -69,41 +69,15 @@ cd /home/luigi/.hermes/profiles/boksili/home/workspace/kjyy08/luigi-log/server
 - client/API 계약 변경이 있으면 `../client` 영향도 같이 본다.
 - env, DB, Redis, 이미지/포트 변경은 `../gitops` 영향도 같이 본다.
 
-## 명령
+## 명령/검증 원칙
 
-```bash
-# 주의: gradlew 실행권한(mode)은 임의로 바꾸지 않는다.
-# 실행권한이 없는 repo 상태면 chmod 대신 bash ./gradlew ... 형태로 실행한다.
-
-# 전체 테스트
-bash ./gradlew test
-
-# 전체 검증
-bash ./gradlew check
-
-# 전체 빌드
-bash ./gradlew clean build
-
-# 실행 JAR 검증
-bash ./gradlew :app:bootJar
-
-# 로컬 실행
-bash ./gradlew :app:bootRun
-
-# 스타일
-bash ./gradlew ktlintCheck
-bash ./gradlew ktlintFormat
-
-# 커버리지
-bash ./gradlew koverHtmlReport
-bash ./gradlew koverVerify
-```
-
-CI 스타일 검증이 필요하면 아래 조합을 우선한다.
-
-```bash
-bash ./gradlew test check :app:bootJar --parallel --build-cache --continue --stacktrace
-```
+- 이 repo에서 서브에이전트는 로컬 Gradle 명령을 실행하지 않는다.
+- `./gradlew`, `bash ./gradlew`, `gradle`, `ktlint`, `bootRun`, `test`, `check`, `build`, `bootJar`, `kover*` 등 Gradle 기반 로컬 검증/실행은 금지한다.
+- 백엔드 검증은 branch push 후 GitHub PR CI 결과로 확인한다.
+- 로컬에서는 가벼운 git/file 확인만 수행한다.
+  - 예: `git status --short`, `git diff --check`, `git diff --stat`, 파일 내용 조회
+- `gradlew` 실행권한(mode)은 임의로 바꾸지 않는다. `chmod +x gradlew` 금지.
+- 사용자가 명시적으로 특정 Gradle 명령 실행을 승인한 경우에만 예외로 실행한다.
 
 ## 아키텍처 규칙
 
@@ -132,18 +106,19 @@ bash ./gradlew test check :app:bootJar --parallel --build-cache --continue --sta
 - domain 값 객체/엔티티 변경: 해당 `domain/src/test` 추가 또는 수정
 - use case/service 변경: 해당 `application/src/test` 추가 또는 수정
 - controller/mapper/repository adapter 변경: 해당 adapter module 테스트 추가 또는 수정
-- DB/entity 변경: mapper + JPA mapping + Flyway migration + `:app:bootJar` 확인
+- DB/entity 변경: mapper + JPA mapping + Flyway migration 정합성을 보고 PR CI에서 bootJar/build 결과를 확인한다.
 - auth/token 변경: Redis/JWT 설정명과 profile별 `application*.yml` 불일치 여부 확인
 
 최소 검증 기준:
 
 ```txt
-작은 로직 변경: ./gradlew test
-빌드/설정/모듈 변경: ./gradlew clean build
-API/DB/env 영향 변경: ./gradlew check && ./gradlew :app:bootJar
+기본: 로컬 Gradle 미실행, PR CI 결과 확인
+작은 로직 변경: 관련 테스트 추가/수정 후 PR CI로 확인
+빌드/설정/모듈 변경: PR CI의 build/test 결과로 확인
+API/DB/env 영향 변경: PR CI와 리뷰에서 migration/config 영향 확인
 ```
 
-실행 불가하면 “미실행”으로 넘기지 말고, 왜 못 했는지 로그 핵심을 남긴다.
+로컬에서 Gradle을 실행하지 못한 것을 단순 누락으로 처리하지 말고, 보고에는 “로컬 Gradle 미실행(리소스 보호 정책), PR CI로 확인”이라고 명시한다.
 
 ## 런타임/설정 주의
 
@@ -201,8 +176,8 @@ Discord에서는 표 대신 아래처럼 보고한다.
 - ...
 
 검증:
-- ./gradlew test: PASS/FAIL/미실행(사유)
-- ./gradlew :app:bootJar: PASS/FAIL/미실행(사유)
+- 로컬 Gradle: 미실행(리소스 보호 정책)
+- GitHub PR CI: PASS/FAIL/대기
 
 영향:
 - client: 있음/없음
