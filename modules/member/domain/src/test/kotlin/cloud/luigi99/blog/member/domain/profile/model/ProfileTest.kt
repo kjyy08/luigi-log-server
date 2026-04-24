@@ -12,6 +12,7 @@ import cloud.luigi99.blog.member.domain.profile.vo.Url
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import io.kotest.matchers.types.shouldBeSameInstanceAs
 import java.time.LocalDateTime
 
 class ProfileTest :
@@ -191,7 +192,7 @@ class ProfileTest :
             }
         }
 
-        Given("프로필의 불변성 테스트") {
+        Given("프로필 업데이트가 현재 인스턴스를 변경하는지 테스트") {
             val originalProfile =
                 Profile.create(
                     nickname = Nickname("개발자"),
@@ -206,12 +207,14 @@ class ProfileTest :
                         nickname = Nickname("새 닉네임"),
                     )
 
-                Then("원본 프로필 객체는 변경되지 않는다") {
-                    originalProfile.nickname shouldBe originalNickname
+                Then("원본 프로필 객체 자체가 변경된다") {
+                    originalProfile.nickname shouldNotBe originalNickname
                     originalProfile.bio shouldBe originalBio
+                    originalProfile.nickname.value shouldBe "새 닉네임"
                 }
 
-                Then("새로운 프로필 객체가 반환된다") {
+                Then("현재 프로필 객체가 반환된다") {
+                    updatedProfile shouldBeSameInstanceAs originalProfile
                     updatedProfile.nickname.value shouldBe "새 닉네임"
                 }
 

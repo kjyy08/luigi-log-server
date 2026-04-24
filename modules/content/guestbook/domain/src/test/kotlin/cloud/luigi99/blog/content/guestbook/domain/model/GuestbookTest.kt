@@ -7,6 +7,7 @@ import cloud.luigi99.blog.member.domain.member.vo.MemberId
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import io.kotest.matchers.types.shouldBeSameInstanceAs
 import io.mockk.every
 import io.mockk.mockkObject
 import java.time.LocalDateTime
@@ -49,11 +50,13 @@ class GuestbookTest :
                 val newContent = GuestbookContent("수정된 내용입니다.")
                 val updatedGuestbook = guestbook.updateContent(newContent)
 
-                Then("원본 방명록은 변경되지 않고 보존된다") {
-                    guestbook.content shouldBe originalContent
+                Then("원본 방명록 객체 자체가 변경된다") {
+                    guestbook.content shouldNotBe originalContent
+                    guestbook.content shouldBe newContent
                 }
 
-                Then("수정된 내용을 가진 새 인스턴스가 반환된다") {
+                Then("수정된 내용을 가진 현재 인스턴스가 반환된다") {
+                    updatedGuestbook shouldBeSameInstanceAs guestbook
                     updatedGuestbook.content shouldBe newContent
                 }
 

@@ -31,13 +31,25 @@ import java.time.LocalDateTime
 class Post private constructor(
     override val entityId: PostId,
     val memberId: MemberId,
-    val title: Title,
+    title: Title,
     val slug: Slug,
-    val body: Body,
+    body: Body,
     val type: ContentType,
-    val status: PostStatus,
-    val tags: Set<String>,
+    status: PostStatus,
+    tags: Set<String>,
 ) : AggregateRoot<PostId>() {
+    var title: Title = title
+        private set
+
+    var body: Body = body
+        private set
+
+    var status: PostStatus = status
+        private set
+
+    var tags: Set<String> = tags.toSet()
+        private set
+
     companion object {
         /**
          * 새로운 Post를 생성합니다.
@@ -134,22 +146,9 @@ class Post private constructor(
      * @return 발행된 Post
      */
     fun publish(): Post {
-        val published =
-            Post(
-                entityId = entityId,
-                memberId = memberId,
-                title = title,
-                slug = slug,
-                body = body,
-                type = type,
-                status = PostStatus.PUBLISHED,
-                tags = tags,
-            )
-        published.createdAt = createdAt
-        published.updatedAt = updatedAt
-
-        published.registerEvent(PostPublishedEvent(published.entityId, published.slug))
-        return published
+        this.status = PostStatus.PUBLISHED
+        registerEvent(PostPublishedEvent(entityId, slug))
+        return this
     }
 
     /**
@@ -160,22 +159,9 @@ class Post private constructor(
      * @return 아카이빙된 Post
      */
     fun archive(): Post {
-        val archived =
-            Post(
-                entityId = entityId,
-                memberId = memberId,
-                title = title,
-                slug = slug,
-                body = body,
-                type = type,
-                status = PostStatus.ARCHIVED,
-                tags = tags,
-            )
-        archived.createdAt = createdAt
-        archived.updatedAt = updatedAt
-
-        archived.registerEvent(PostArchivedEvent(archived.entityId, archived.slug))
-        return archived
+        this.status = PostStatus.ARCHIVED
+        registerEvent(PostArchivedEvent(entityId, slug))
+        return this
     }
 
     /**
@@ -184,22 +170,8 @@ class Post private constructor(
      * @return 삭제 이벤트가 등록된 Post
      */
     fun delete(): Post {
-        val deleted =
-            Post(
-                entityId = entityId,
-                memberId = memberId,
-                title = title,
-                slug = slug,
-                body = body,
-                type = type,
-                status = status,
-                tags = tags,
-            )
-        deleted.createdAt = createdAt
-        deleted.updatedAt = updatedAt
-
-        deleted.registerEvent(PostDeletedEvent(deleted.entityId, deleted.memberId))
-        return deleted
+        registerEvent(PostDeletedEvent(entityId, memberId))
+        return this
     }
 
     /**
@@ -210,20 +182,9 @@ class Post private constructor(
      * @return 수정된 Post
      */
     fun update(newTitle: Title, newBody: Body): Post {
-        val updated =
-            Post(
-                entityId = entityId,
-                memberId = memberId,
-                title = newTitle,
-                slug = slug,
-                body = newBody,
-                type = type,
-                status = status,
-                tags = tags,
-            )
-        updated.createdAt = createdAt
-        updated.updatedAt = updatedAt
-        return updated
+        this.title = newTitle
+        this.body = newBody
+        return this
     }
 
     /**
@@ -238,22 +199,8 @@ class Post private constructor(
         require(tagName.isNotBlank()) { "Tag name cannot be blank" }
         require(tagName.length <= 50) { "Tag name must not exceed 50 characters" }
 
-        val newTags = tags + tagName
-
-        val withTag =
-            Post(
-                entityId = entityId,
-                memberId = memberId,
-                title = title,
-                slug = slug,
-                body = body,
-                type = type,
-                status = status,
-                tags = newTags,
-            )
-        withTag.createdAt = createdAt
-        withTag.updatedAt = updatedAt
-        return withTag
+        this.tags = tags + tagName
+        return this
     }
 
     /**
@@ -263,21 +210,7 @@ class Post private constructor(
      * @return 태그가 제거된 Post
      */
     fun removeTag(tagName: String): Post {
-        val newTags = tags - tagName
-
-        val withoutTag =
-            Post(
-                entityId = entityId,
-                memberId = memberId,
-                title = title,
-                slug = slug,
-                body = body,
-                type = type,
-                status = status,
-                tags = newTags,
-            )
-        withoutTag.createdAt = createdAt
-        withoutTag.updatedAt = updatedAt
-        return withoutTag
+        this.tags = tags - tagName
+        return this
     }
 }

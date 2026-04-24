@@ -20,8 +20,11 @@ class Comment private constructor(
     override val entityId: CommentId,
     val postId: PostId,
     val authorId: MemberId,
-    val content: CommentContent,
+    content: CommentContent,
 ) : AggregateRoot<CommentId>() {
+    var content: CommentContent = content
+        private set
+
     companion object {
         /**
          * 새로운 댓글을 생성합니다.
@@ -65,11 +68,9 @@ class Comment private constructor(
         if (!verifyAuthor(requesterId)) {
             throw UnauthorizedCommentAccessException("Only the author can update this comment")
         }
-        val updated = Comment(entityId, postId, authorId, newContent)
-        updated.createdAt = createdAt
-        updated.updatedAt = updatedAt
-        updated.registerEvent(CommentUpdatedEvent(entityId, postId, authorId))
-        return updated
+        this.content = newContent
+        registerEvent(CommentUpdatedEvent(entityId, postId, authorId))
+        return this
     }
 
     /**

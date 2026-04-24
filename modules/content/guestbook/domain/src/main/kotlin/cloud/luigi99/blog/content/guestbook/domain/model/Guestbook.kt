@@ -15,8 +15,11 @@ import java.time.LocalDateTime
 class Guestbook private constructor(
     override val entityId: GuestbookId,
     val authorId: MemberId,
-    val content: GuestbookContent,
+    content: GuestbookContent,
 ) : AggregateRoot<GuestbookId>() {
+    var content: GuestbookContent = content
+        private set
+
     companion object {
         /**
          * 새 방명록을 생성합니다.
@@ -53,10 +56,8 @@ class Guestbook private constructor(
      * 방명록 내용을 수정합니다.
      */
     fun updateContent(newContent: GuestbookContent): Guestbook {
-        val updated = Guestbook(entityId, authorId, newContent)
-        updated.createdAt = createdAt
-        updated.updatedAt = updatedAt
-        return updated
+        this.content = newContent
+        return this
     }
 
     /**
