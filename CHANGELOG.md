@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/kjyy08/luigi-log-server/compare/v1.4.0...v1.4.1) (2026-04-24)
+
+
+### Bug Fixes
+
+* **post:** avoid null binding in post search query ([#80](https://github.com/kjyy08/luigi-log-server/issues/80)) ([45dffe2](https://github.com/kjyy08/luigi-log-server/commit/45dffe212c254415b8ec9f50557a6d12013c43b4))
+
 # [1.4.0](https://github.com/kjyy08/luigi-log-server/compare/v1.3.1...v1.4.0) (2026-04-24)
 
 
