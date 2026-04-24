@@ -209,6 +209,87 @@ class PostRepositoryAdapterTest :
             }
         }
 
+        Given("게시글 목록을 cursor pagination으로 검색할 때") {
+            val jpaRepository = mockk<PostJpaRepository>()
+            val eventContextManager = mockk<EventContextManager>()
+            val domainEventPublisher = mockk<DomainEventPublisher>()
+            val adapter = PostRepositoryAdapter(jpaRepository, eventContextManager, domainEventPublisher)
+
+            When("필터와 커서가 모두 없으면") {
+                every {
+                    jpaRepository.search(
+                        status = null,
+                        type = null,
+                        q = null,
+                        cursorCreatedAt = null,
+                        cursorPostId = null,
+                        statusFilterEnabled = false,
+                        typeFilterEnabled = false,
+                        qFilterEnabled = false,
+                        cursorFilterEnabled = false,
+                        limit = 7,
+                    )
+                } returns emptyList()
+
+                val result = adapter.search(null, null, null, 6, null)
+
+                Then("nullable 파라미터 IS NULL 조건 대신 명시적 필터 플래그를 비활성화한다") {
+                    result.posts shouldBe emptyList()
+                    result.hasNext shouldBe false
+                    verify(exactly = 1) {
+                        jpaRepository.search(
+                            status = null,
+                            type = null,
+                            q = null,
+                            cursorCreatedAt = null,
+                            cursorPostId = null,
+                            statusFilterEnabled = false,
+                            typeFilterEnabled = false,
+                            qFilterEnabled = false,
+                            cursorFilterEnabled = false,
+                            limit = 7,
+                        )
+                    }
+                }
+            }
+
+            When("상태 필터만 있으면") {
+                every {
+                    jpaRepository.search(
+                        status = PostStatus.PUBLISHED.name,
+                        type = null,
+                        q = null,
+                        cursorCreatedAt = null,
+                        cursorPostId = null,
+                        statusFilterEnabled = true,
+                        typeFilterEnabled = false,
+                        qFilterEnabled = false,
+                        cursorFilterEnabled = false,
+                        limit = 2,
+                    )
+                } returns emptyList()
+
+                adapter.search(PostStatus.PUBLISHED, null, null, 1, null)
+
+                Then("상태 필터만 활성화하고 나머지 nullable 필터는 비활성화한다") {
+                    verify(exactly = 1) {
+                        jpaRepository.search(
+                            status = PostStatus.PUBLISHED.name,
+                            type = null,
+                            q = null,
+                            cursorCreatedAt = null,
+                            cursorPostId = null,
+                            statusFilterEnabled = true,
+                            typeFilterEnabled = false,
+                            qFilterEnabled = false,
+                            cursorFilterEnabled = false,
+                            limit = 2,
+                        )
+                    }
+                }
+            }
+        }
+
         Given("조회수를 증가시킬 때") {
             val jpaRepository = mockk<PostJpaRepository>()
             val eventContextManager = mockk<EventContextManager>()

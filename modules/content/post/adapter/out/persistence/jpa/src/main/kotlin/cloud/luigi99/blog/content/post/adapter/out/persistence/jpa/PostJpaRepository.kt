@@ -84,12 +84,20 @@ interface PostJpaRepository : JpaRepository<PostJpaEntity, UUID> {
     @Query(
         """
         SELECT DISTINCT p.* FROM post p
-        WHERE (:status IS NULL OR p.status = CAST(:status AS varchar))
-          AND (:type IS NULL OR p.type = CAST(:type AS varchar))
-          AND (:q IS NULL OR :q = '' OR lower(p.title) LIKE lower(concat('%', :q, '%'))
-            OR lower(p.body) LIKE lower(concat('%', :q, '%'))
-            OR EXISTS (SELECT 1 FROM post_tag pt WHERE pt.post_id = p.id AND lower(pt.tag_name) LIKE lower(concat('%', :q, '%'))))
-          AND (:cursorCreatedAt IS NULL OR p.created_at < :cursorCreatedAt OR (p.created_at = :cursorCreatedAt AND p.id < :cursorPostId))
+        WHERE (:statusFilterEnabled = false OR p.status = CAST(:status AS varchar))
+          AND (:typeFilterEnabled = false OR p.type = CAST(:type AS varchar))
+          AND (:qFilterEnabled = false OR lower(p.title) LIKE lower(concat('%', CAST(:q AS varchar), '%'))
+            OR lower(p.body) LIKE lower(concat('%', CAST(:q AS varchar), '%'))
+            OR EXISTS (
+                SELECT 1 FROM post_tag pt
+                WHERE pt.post_id = p.id
+                  AND lower(pt.tag_name) LIKE lower(concat('%', CAST(:q AS varchar), '%'))
+            ))
+          AND (
+            :cursorFilterEnabled = false
+            OR p.created_at < :cursorCreatedAt
+            OR (p.created_at = :cursorCreatedAt AND p.id < :cursorPostId)
+          )
         ORDER BY p.created_at DESC, p.id DESC
         LIMIT :limit
         """,
@@ -101,6 +109,10 @@ interface PostJpaRepository : JpaRepository<PostJpaEntity, UUID> {
         @Param("q") q: String?,
         @Param("cursorCreatedAt") cursorCreatedAt: LocalDateTime?,
         @Param("cursorPostId") cursorPostId: UUID?,
+        @Param("statusFilterEnabled") statusFilterEnabled: Boolean,
+        @Param("typeFilterEnabled") typeFilterEnabled: Boolean,
+        @Param("qFilterEnabled") qFilterEnabled: Boolean,
+        @Param("cursorFilterEnabled") cursorFilterEnabled: Boolean,
         @Param("limit") limit: Int,
     ): List<PostJpaEntity>
 
