@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/kjyy08/luigi-log-server/compare/v1.3.1...v1.4.0) (2026-04-24)
+
+
+### Features
+
+* **post:** add post discovery APIs ([#79](https://github.com/kjyy08/luigi-log-server/issues/79)) ([0bc175f](https://github.com/kjyy08/luigi-log-server/commit/0bc175fd8f301963fe1ba202cdf3a46e35ecef60))
+
 ## [1.3.1](https://github.com/kjyy08/luigi-log-server/compare/v1.3.0...v1.3.1) (2026-04-24)
 
 
