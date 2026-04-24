@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/kjyy08/luigi-log-server/compare/v1.3.0...v1.3.1) (2026-04-24)
+
+
+### Bug Fixes
+
+* mutate domain models in place ([1132b96](https://github.com/kjyy08/luigi-log-server/commit/1132b968d087dd3a633a01c8a174c5aae8985216))
+
 # [1.3.0](https://github.com/kjyy08/luigi-log-server/compare/v1.2.1...v1.3.0) (2026-01-12)
 
 
