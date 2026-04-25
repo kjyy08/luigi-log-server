@@ -23,6 +23,7 @@ import jakarta.servlet.http.HttpServletRequest
 import mu.KotlinLogging
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.core.context.SecurityContextHolder
@@ -49,7 +50,7 @@ private val log = KotlinLogging.logger {}
 @RequestMapping("/api/v1/posts")
 class PostController(private val postQueryFacade: PostQueryFacade, private val postCommandFacade: PostCommandFacade) :
     PostApi {
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('SCOPE_post:create')")
     @PostMapping
     override fun createPost(
         @AuthenticationPrincipal memberId: String,
@@ -93,7 +94,7 @@ class PostController(private val postQueryFacade: PostQueryFacade, private val p
         )
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('SCOPE_post:update') or hasAuthority('SCOPE_post:publish')")
     @PutMapping("/{postId}")
     override fun updatePost(
         @AuthenticationPrincipal memberId: String,
@@ -101,8 +102,11 @@ class PostController(private val postQueryFacade: PostQueryFacade, private val p
         @RequestBody request: UpdatePostRequest,
     ): ResponseEntity<CommonResponse<PostResponse>> {
         log.info {
-            "Updating post: $postId (title=${request.title != null}, body=${request.body != null}, status=${request.status})"
+            "Updating post: $postId " +
+                "(title=${request.title != null}, body=${request.body != null}, status=${request.status})"
         }
+
+        requireUpdateScopes(request)
 
         val command =
             UpdatePostUseCase.Command(
@@ -298,6 +302,35 @@ class PostController(private val postQueryFacade: PostQueryFacade, private val p
         postCommandFacade.deletePost().execute(command)
 
         return ResponseEntity.noContent().build()
+    }
+
+    private fun requireUpdateScopes(request: UpdatePostRequest) {
+        val authentication = SecurityContextHolder.getContext().authentication
+        val authorities =
+            authentication
+                ?.authorities
+                .orEmpty()
+                .mapNotNull { it.authority }
+                .toSet()
+
+        if (authorities.none { it.startsWith("SCOPE_") }) {
+            return
+        }
+
+        val missingScopes = mutableListOf<String>()
+        val changesContent = request.title != null || request.body != null
+        val changesStatus = request.status != null
+
+        if (changesContent && "SCOPE_post:update" !in authorities) {
+            missingScopes += "post:update"
+        }
+        if (changesStatus && "SCOPE_post:publish" !in authorities) {
+            missingScopes += "post:publish"
+        }
+
+        if (missingScopes.isNotEmpty()) {
+            throw AccessDeniedException("Missing required API key scope(s): ${missingScopes.joinToString()}")
+        }
     }
 
     private fun createVisitorKey(request: HttpServletRequest): String {

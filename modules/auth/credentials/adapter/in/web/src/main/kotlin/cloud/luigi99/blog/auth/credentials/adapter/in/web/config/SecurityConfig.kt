@@ -1,6 +1,7 @@
 package cloud.luigi99.blog.auth.credentials.adapter.`in`.web.config
 
 import cloud.luigi99.blog.auth.credentials.adapter.`in`.web.oauth2.OAuth2AuthenticationSuccessHandler
+import cloud.luigi99.blog.auth.credentials.adapter.`in`.web.security.ApiKeyAuthenticationFilter
 import cloud.luigi99.blog.auth.credentials.adapter.`in`.web.security.CustomAccessDeniedHandler
 import cloud.luigi99.blog.auth.credentials.adapter.`in`.web.security.CustomAuthenticationEntryPoint
 import cloud.luigi99.blog.auth.credentials.adapter.`in`.web.security.JwtAuthenticationFilter
@@ -24,6 +25,7 @@ class SecurityConfig {
     fun securityFilterChain(
         http: HttpSecurity,
         jwtAuthenticationFilter: JwtAuthenticationFilter,
+        apiKeyAuthenticationFilter: ApiKeyAuthenticationFilter,
         oauth2SuccessHandler: OAuth2AuthenticationSuccessHandler,
         customAuthenticationEntryPoint: CustomAuthenticationEntryPoint,
         customAccessDeniedHandler: CustomAccessDeniedHandler,
@@ -38,7 +40,8 @@ class SecurityConfig {
                 exceptions
                     .authenticationEntryPoint(customAuthenticationEntryPoint)
                     .accessDeniedHandler(customAccessDeniedHandler)
-            }.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
+            }.addFilterBefore(apiKeyAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
             .authorizeHttpRequests { auth ->
                 auth
                     .requestMatchers(

@@ -9,6 +9,7 @@ import cloud.luigi99.blog.content.post.application.port.`in`.command.UpdatePostU
 import cloud.luigi99.blog.content.post.application.port.`in`.query.GetPostByIdUseCase
 import cloud.luigi99.blog.content.post.application.port.`in`.query.GetPostBySlugUseCase
 import cloud.luigi99.blog.content.post.application.port.`in`.query.PostQueryFacade
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -18,6 +19,10 @@ import io.mockk.just
 import io.mockk.mockk
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpStatus
+import org.springframework.security.access.AccessDeniedException
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.authority.SimpleGrantedAuthority
+import org.springframework.security.core.context.SecurityContextHolder
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -32,6 +37,14 @@ class PostControllerTest :
         val postQueryFacade = mockk<PostQueryFacade>()
         val postCommandFacade = mockk<PostCommandFacade>()
         val controller = PostController(postQueryFacade, postCommandFacade)
+
+        beforeEach {
+            setAuthentication(authorities = listOf("ROLE_ADMIN"))
+        }
+
+        afterEach {
+            SecurityContextHolder.clearContext()
+        }
 
         Given("블로그 글을 생성할 때") {
             val createPostUseCase = mockk<CreatePostUseCase>()
@@ -111,13 +124,17 @@ class PostControllerTest :
 
                 every { updatePostUseCase.execute(any()) } returns expectedResponse
 
-                val response = controller.updatePost("member-id", postId, request)
-
                 Then("200 OK 응답이 반환되어야 한다") {
+                    setAuthentication(authorities = listOf("ROLE_ADMIN"))
+                    val response = controller.updatePost("member-id", postId, request)
+
                     response.statusCode shouldBe HttpStatus.OK
                 }
 
                 Then("제목만 변경된 글이 반환되어야 한다") {
+                    setAuthentication(authorities = listOf("ROLE_ADMIN"))
+                    val response = controller.updatePost("member-id", postId, request)
+
                     response.body shouldNotBe null
                     response.body?.success shouldBe true
                     response.body
@@ -154,13 +171,17 @@ class PostControllerTest :
 
                 every { updatePostUseCase.execute(any()) } returns expectedResponse
 
-                val response = controller.updatePost("member-id", postId, request)
-
                 Then("200 OK 응답이 반환되어야 한다") {
+                    setAuthentication(authorities = listOf("ROLE_ADMIN"))
+                    val response = controller.updatePost("member-id", postId, request)
+
                     response.statusCode shouldBe HttpStatus.OK
                 }
 
                 Then("상태만 PUBLISHED로 변경된 글이 반환되어야 한다") {
+                    setAuthentication(authorities = listOf("ROLE_ADMIN"))
+                    val response = controller.updatePost("member-id", postId, request)
+
                     response.body shouldNotBe null
                     response.body?.success shouldBe true
                     response.body
@@ -202,13 +223,17 @@ class PostControllerTest :
 
                 every { updatePostUseCase.execute(any()) } returns expectedResponse
 
-                val response = controller.updatePost("member-id", postId, request)
-
                 Then("200 OK 응답이 반환되어야 한다") {
+                    setAuthentication(authorities = listOf("ROLE_ADMIN"))
+                    val response = controller.updatePost("member-id", postId, request)
+
                     response.statusCode shouldBe HttpStatus.OK
                 }
 
                 Then("모든 필드가 변경된 글이 반환되어야 한다") {
+                    setAuthentication(authorities = listOf("ROLE_ADMIN"))
+                    val response = controller.updatePost("member-id", postId, request)
+
                     response.body shouldNotBe null
                     response.body?.success shouldBe true
                     response.body
@@ -220,6 +245,97 @@ class PostControllerTest :
                     response.body
                         ?.data
                         ?.status shouldBe "PUBLISHED"
+                }
+            }
+        }
+
+        Given("API key 권한으로 글을 수정할 때") {
+            val updatePostUseCase = mockk<UpdatePostUseCase>()
+            every { postCommandFacade.updatePost() } returns updatePostUseCase
+
+            When("post:update scope만 가진 API key가 status를 PUBLISHED로 변경하면") {
+                val postId = UUID.randomUUID().toString()
+                val request = UpdatePostRequest(title = null, body = null, status = "PUBLISHED")
+                Then("접근이 거부되고 수정 UseCase는 실행되지 않아야 한다") {
+                    setAuthentication(authorities = listOf("SCOPE_post:update"))
+
+                    shouldThrow<AccessDeniedException> {
+                        controller.updatePost("member-id", postId, request)
+                    }
+                }
+            }
+
+            When("post:update scope만 가진 API key가 status를 ARCHIVED로 변경하면") {
+                val postId = UUID.randomUUID().toString()
+                val request = UpdatePostRequest(title = null, body = null, status = "ARCHIVED")
+                Then("접근이 거부되고 수정 UseCase는 실행되지 않아야 한다") {
+                    setAuthentication(authorities = listOf("SCOPE_post:update"))
+
+                    shouldThrow<AccessDeniedException> {
+                        controller.updatePost("member-id", postId, request)
+                    }
+                }
+            }
+
+            When("post:publish scope만 가진 API key가 title을 변경하면") {
+                val postId = UUID.randomUUID().toString()
+                val request = UpdatePostRequest(title = "수정된 제목", body = null, status = null)
+                Then("접근이 거부되고 수정 UseCase는 실행되지 않아야 한다") {
+                    setAuthentication(authorities = listOf("SCOPE_post:publish"))
+
+                    shouldThrow<AccessDeniedException> {
+                        controller.updatePost("member-id", postId, request)
+                    }
+                }
+            }
+
+            When("post:publish scope만 가진 API key가 body를 변경하면") {
+                val postId = UUID.randomUUID().toString()
+                val request = UpdatePostRequest(title = null, body = "수정된 본문", status = null)
+                Then("접근이 거부되고 수정 UseCase는 실행되지 않아야 한다") {
+                    setAuthentication(authorities = listOf("SCOPE_post:publish"))
+
+                    shouldThrow<AccessDeniedException> {
+                        controller.updatePost("member-id", postId, request)
+                    }
+                }
+            }
+
+            When("title과 status를 같이 바꾸면서 한 scope만 있으면") {
+                val postId = UUID.randomUUID().toString()
+                val request = UpdatePostRequest(title = "수정된 제목", body = null, status = "PUBLISHED")
+                Then("두 scope 중 누락된 권한 때문에 접근이 거부되어야 한다") {
+                    setAuthentication(authorities = listOf("SCOPE_post:update"))
+
+                    shouldThrow<AccessDeniedException> {
+                        controller.updatePost("member-id", postId, request)
+                    }
+                }
+            }
+
+            When("title과 status를 같이 바꾸면서 두 scope를 모두 가지면") {
+                val postId = UUID.randomUUID().toString()
+                val request = UpdatePostRequest(title = "수정된 제목", body = null, status = "PUBLISHED")
+                val expectedResponse =
+                    UpdatePostUseCase.Response(
+                        postId = postId,
+                        author = UpdatePostUseCase.AuthorInfo("member-id", "Luigi", null, "test-user"),
+                        title = "수정된 제목",
+                        slug = "original-slug",
+                        body = "원본 본문",
+                        type = "BLOG",
+                        status = "PUBLISHED",
+                        tags = emptySet(),
+                        createdAt = LocalDateTime.now(),
+                        updatedAt = LocalDateTime.now(),
+                    )
+                every { updatePostUseCase.execute(any()) } returns expectedResponse
+
+                Then("수정 요청이 허용되어야 한다") {
+                    setAuthentication(authorities = listOf("SCOPE_post:update", "SCOPE_post:publish"))
+                    val response = controller.updatePost("member-id", postId, request)
+
+                    response.statusCode shouldBe HttpStatus.OK
                 }
             }
         }
@@ -341,6 +457,15 @@ class PostControllerTest :
             }
         }
     })
+
+private fun setAuthentication(principal: String = "member-id", authorities: List<String>) {
+    SecurityContextHolder.getContext().authentication =
+        UsernamePasswordAuthenticationToken(
+            principal,
+            null,
+            authorities.map { SimpleGrantedAuthority(it) },
+        )
+}
 
 private fun mockVisitorRequest(): HttpServletRequest {
     val request = mockk<HttpServletRequest>()
