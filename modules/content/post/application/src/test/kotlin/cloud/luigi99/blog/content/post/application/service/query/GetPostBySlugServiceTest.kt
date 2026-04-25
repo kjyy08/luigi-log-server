@@ -180,8 +180,7 @@ private fun publishedSlugPost(memberId: MemberId): Post =
             slug = Slug("test-post"),
             body = Body("테스트 내용"),
             type = ContentType.BLOG,
-        )
-        .publish()
+        ).publish()
 
 private fun authorOfSlugPost(post: Post): MemberClient.Author =
     MemberClient.Author(
