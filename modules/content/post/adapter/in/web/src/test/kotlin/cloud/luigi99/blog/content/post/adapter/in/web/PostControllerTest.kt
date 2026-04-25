@@ -16,6 +16,7 @@ import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpStatus
 import java.time.LocalDateTime
 import java.util.UUID
@@ -247,8 +248,9 @@ class PostControllerTest :
                     )
 
                 every { getPostByIdUseCase.execute(any()) } returns expectedResponse
+                val request = mockVisitorRequest()
 
-                val response = controller.getPostById(postId)
+                val response = controller.getPostById(postId, request)
 
                 Then("200 OK 응답이 반환되어야 한다") {
                     response.statusCode shouldBe HttpStatus.OK
@@ -296,8 +298,9 @@ class PostControllerTest :
                     )
 
                 every { getPostBySlugUseCase.execute(any()) } returns expectedResponse
+                val request = mockVisitorRequest()
 
-                val response = controller.getPostByUsernameAndSlug(username, slug)
+                val response = controller.getPostByUsernameAndSlug(username, slug, request)
 
                 Then("200 OK 응답이 반환되어야 한다") {
                     response.statusCode shouldBe HttpStatus.OK
@@ -338,3 +341,13 @@ class PostControllerTest :
             }
         }
     })
+
+private fun mockVisitorRequest(): HttpServletRequest {
+    val request = mockk<HttpServletRequest>()
+    every { request.getHeader("X-Forwarded-For") } returns null
+    every { request.getHeader("X-Real-IP") } returns null
+    every { request.getHeader("User-Agent") } returns "test-agent"
+    every { request.getHeader("Accept-Language") } returns "ko-KR"
+    every { request.remoteAddr } returns "127.0.0.1"
+    return request
+}

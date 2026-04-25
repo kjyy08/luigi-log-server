@@ -3,7 +3,10 @@
 import cloud.luigi99.blog.content.post.application.port.`in`.query.GetPostBySlugUseCase
 import cloud.luigi99.blog.content.post.application.port.out.MemberClient
 import cloud.luigi99.blog.content.post.application.port.out.PostRepository
+import cloud.luigi99.blog.content.post.application.port.out.PostViewCountDeduplicationPort
 import cloud.luigi99.blog.content.post.domain.exception.PostNotFoundException
+import cloud.luigi99.blog.content.post.domain.vo.PostId
+import cloud.luigi99.blog.content.post.domain.vo.PostStatus
 import cloud.luigi99.blog.content.post.domain.vo.Slug
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
@@ -17,7 +20,11 @@ private val log = KotlinLogging.logger {}
  * 사용자 이름과 URL slug를 사용하여 Post를 조회합니다.
  */
 @Service
-class GetPostBySlugService(private val postRepository: PostRepository, private val memberClient: MemberClient) :
+class GetPostBySlugService(
+    private val postRepository: PostRepository,
+    private val memberClient: MemberClient,
+    private val postViewCountDeduplicationPort: PostViewCountDeduplicationPort,
+) :
     GetPostBySlugUseCase {
     @Transactional
     override fun execute(query: GetPostBySlugUseCase.Query): GetPostBySlugUseCase.Response {
@@ -29,8 +36,12 @@ class GetPostBySlugService(private val postRepository: PostRepository, private v
                 ?: throw PostNotFoundException(
                     "사용자 '${query.username}'의 Slug '${query.slug}'에 해당하는 Post를 찾을 수 없습니다",
                 )
-        postRepository.incrementViewCount(post.entityId)
-        post.incrementViewCount()
+        if (post.status == PostStatus.PUBLISHED && isUniqueView(post.entityId, query.visitorKey)) {
+            val updatedRows = postRepository.incrementViewCount(post.entityId)
+            if (updatedRows > 0) {
+                post.incrementViewCount()
+            }
+        }
         val commentCount = postRepository.countCommentsByPostIds(listOf(post.entityId))[post.entityId] ?: 0
 
         val author =
@@ -62,4 +73,9 @@ class GetPostBySlugService(private val postRepository: PostRepository, private v
             updatedAt = post.updatedAt,
         )
     }
+
+    private fun isUniqueView(postId: PostId, visitorKey: String): Boolean =
+        runCatching { postViewCountDeduplicationPort.isUniqueView(postId, visitorKey) }
+            .onFailure { e -> log.warn(e) { "Failed to deduplicate post view count. postId=$postId" } }
+            .getOrDefault(false)
 }

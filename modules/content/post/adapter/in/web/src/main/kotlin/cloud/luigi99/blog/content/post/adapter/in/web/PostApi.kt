@@ -6,6 +6,7 @@ import cloud.luigi99.blog.content.post.adapter.`in`.web.dto.PostContributionsRes
 import cloud.luigi99.blog.content.post.adapter.`in`.web.dto.PostListResponse
 import cloud.luigi99.blog.content.post.adapter.`in`.web.dto.PostResponse
 import cloud.luigi99.blog.content.post.adapter.`in`.web.dto.UpdatePostRequest
+import jakarta.servlet.http.HttpServletRequest
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
@@ -324,6 +325,8 @@ interface PostApi {
     )
     fun getPostById(
         @Parameter(description = "Post ID") @PathVariable postId: String,
+        @Parameter(hidden = true)
+        request: HttpServletRequest,
     ): ResponseEntity<CommonResponse<PostResponse>>
 
     @Operation(
@@ -400,6 +403,8 @@ interface PostApi {
     fun getPostByUsernameAndSlug(
         @Parameter(description = "사용자 이름") @PathVariable username: String,
         @Parameter(description = "URL Slug") @PathVariable slug: String,
+        @Parameter(hidden = true)
+        request: HttpServletRequest,
     ): ResponseEntity<CommonResponse<PostResponse>>
 
     @Operation(

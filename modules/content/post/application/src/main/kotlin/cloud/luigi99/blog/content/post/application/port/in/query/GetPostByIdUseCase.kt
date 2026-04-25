@@ -21,7 +21,7 @@ interface GetPostByIdUseCase {
      *
      * @property postId Post ID
      */
-    data class Query(val postId: String)
+    data class Query(val postId: String, val visitorKey: String)
 
     /**
      * Post 조회 응답
