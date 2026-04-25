@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/kjyy08/luigi-log-server/compare/v1.4.1...v1.5.0) (2026-04-25)
+
+
+### Features
+
+* **post:** 조회수 중복 증가 방지 ([7dc3384](https://github.com/kjyy08/luigi-log-server/commit/7dc3384f71918dcd07329c1534e338895d99dedd))
+
 ## [1.4.1](https://github.com/kjyy08/luigi-log-server/compare/v1.4.0...v1.4.1) (2026-04-24)
 
 
