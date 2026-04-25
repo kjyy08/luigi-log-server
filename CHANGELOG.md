@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/kjyy08/luigi-log-server/compare/v1.5.0...v1.6.0) (2026-04-25)
+
+
+### Features
+
+* **auth:** Hermes skill API key 발행 MVP 추가 ([7d9a38e](https://github.com/kjyy08/luigi-log-server/commit/7d9a38ebe33491de46cc79e2912a38e189498171))
+
 # [1.5.0](https://github.com/kjyy08/luigi-log-server/compare/v1.4.1...v1.5.0) (2026-04-25)
 
 
