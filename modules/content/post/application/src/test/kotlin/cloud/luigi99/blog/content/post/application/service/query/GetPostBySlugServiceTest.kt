@@ -1,9 +1,10 @@
-﻿package cloud.luigi99.blog.content.post.application.service.query
+package cloud.luigi99.blog.content.post.application.service.query
 
 import cloud.luigi99.blog.common.domain.event.EventManager
 import cloud.luigi99.blog.content.post.application.port.`in`.query.GetPostBySlugUseCase
 import cloud.luigi99.blog.content.post.application.port.out.MemberClient
 import cloud.luigi99.blog.content.post.application.port.out.PostRepository
+import cloud.luigi99.blog.content.post.application.port.out.PostViewCountDeduplicationPort
 import cloud.luigi99.blog.content.post.domain.exception.PostNotFoundException
 import cloud.luigi99.blog.content.post.domain.model.Post
 import cloud.luigi99.blog.content.post.domain.vo.Body
@@ -24,59 +25,38 @@ import io.mockk.verify
  */
 class GetPostBySlugServiceTest :
     BehaviorSpec({
-
         beforeTest {
             mockkObject(EventManager)
             every { EventManager.eventContextManager } returns mockk(relaxed = true)
         }
 
-        Given("Username과 Slug로 글을 조회할 때") {
+        Given("Username과 Slug로 발행 글을 조회할 때") {
             val postRepository = mockk<PostRepository>()
             val memberClient = mockk<MemberClient>()
-            // MemberClient 제거됨
-            val service = GetPostBySlugService(postRepository, memberClient)
+            val deduplicationPort = mockk<PostViewCountDeduplicationPort>()
+            val service = GetPostBySlugService(postRepository, memberClient, deduplicationPort)
+            val memberId = MemberId.generate()
+            val post = publishedSlugPost(memberId)
+            val query =
+                GetPostBySlugUseCase.Query(
+                    username = "testuser",
+                    slug = "test-post",
+                    visitorKey = "visitor-key",
+                )
 
-            When("존재하는 Username과 Slug로 조회하면") {
-                val memberId = MemberId.generate()
-                val query = GetPostBySlugUseCase.Query(username = "testuser", slug = "test-post")
+            every { postRepository.findByUsernameAndSlug("testuser", Slug("test-post")) } returns post
+            every { postRepository.countCommentsByPostIds(any()) } returns emptyMap()
+            every { memberClient.getAuthor(any()) } returns authorOfSlugPost(post)
 
-                val post =
-                    Post.create(
-                        memberId = memberId,
-                        title = Title("테스트 글"),
-                        slug = Slug("test-post"),
-                        body = Body("테스트 내용"),
-                        type = ContentType.BLOG,
-                    )
-
-                // MemberClient 호출 모킹 제거
-                // findByUsernameAndSlug 모킹 추가
-                every { postRepository.findByUsernameAndSlug("testuser", Slug("test-post")) } returns post
+            When("Redis dedupe가 최초 조회로 판단하면") {
+                every { deduplicationPort.isUniqueView(post.entityId, "visitor-key") } returns true
                 every { postRepository.incrementViewCount(post.entityId) } returns 1
-                every { postRepository.countCommentsByPostIds(any()) } returns emptyMap()
-                every { memberClient.getAuthor(any()) } returns
-                    MemberClient.Author(
-                        memberId = memberId.value.toString(),
-                        nickname = "TestUser",
-                        profileImageUrl = null,
-                        username = "test_user",
-                    )
 
                 val response = service.execute(query)
 
-                Then("제목이 반환된다") {
+                Then("조회수를 atomic increment하고 응답 조회수를 1 보정한다") {
                     response.title shouldBe "테스트 글"
-                }
-
-                Then("Slug가 반환된다") {
                     response.slug shouldBe "test-post"
-                }
-
-                Then("본문이 반환된다") {
-                    response.body shouldBe "테스트 내용"
-                }
-
-                Then("조회수는 full aggregate save 없이 atomic increment로 증가한다") {
                     response.viewCount shouldBe 1
                     verify(exactly = 1) { postRepository.incrementViewCount(post.entityId) }
                     verify(exactly = 0) { postRepository.save(any()) }
@@ -84,13 +64,78 @@ class GetPostBySlugServiceTest :
             }
         }
 
+        Given("Username과 Slug로 발행 글을 중복 조회할 때") {
+            val postRepository = mockk<PostRepository>()
+            val memberClient = mockk<MemberClient>()
+            val deduplicationPort = mockk<PostViewCountDeduplicationPort>()
+            val service = GetPostBySlugService(postRepository, memberClient, deduplicationPort)
+            val post = publishedSlugPost(MemberId.generate())
+            val query =
+                GetPostBySlugUseCase.Query(
+                    username = "testuser",
+                    slug = "test-post",
+                    visitorKey = "visitor-key",
+                )
+
+            every { postRepository.findByUsernameAndSlug("testuser", Slug("test-post")) } returns post
+            every { deduplicationPort.isUniqueView(post.entityId, "visitor-key") } returns false
+            every { postRepository.countCommentsByPostIds(any()) } returns emptyMap()
+            every { memberClient.getAuthor(any()) } returns authorOfSlugPost(post)
+
+            When("Redis dedupe가 중복 조회로 판단하면") {
+                val response = service.execute(query)
+
+                Then("조회수를 증가하지 않고 기존 DB 조회수를 반환한다") {
+                    response.viewCount shouldBe 0
+                    verify(exactly = 0) { postRepository.incrementViewCount(any()) }
+                }
+            }
+        }
+
+        Given("조회수 dedupe 저장소 장애가 발생할 때") {
+            val postRepository = mockk<PostRepository>()
+            val memberClient = mockk<MemberClient>()
+            val deduplicationPort = mockk<PostViewCountDeduplicationPort>()
+            val service = GetPostBySlugService(postRepository, memberClient, deduplicationPort)
+            val post = publishedSlugPost(MemberId.generate())
+            val query =
+                GetPostBySlugUseCase.Query(
+                    username = "testuser",
+                    slug = "test-post",
+                    visitorKey = "visitor-key",
+                )
+
+            every { postRepository.findByUsernameAndSlug("testuser", Slug("test-post")) } returns post
+            every {
+                deduplicationPort.isUniqueView(post.entityId, "visitor-key")
+            } throws IllegalStateException("redis down")
+            every { postRepository.countCommentsByPostIds(any()) } returns emptyMap()
+            every { memberClient.getAuthor(any()) } returns authorOfSlugPost(post)
+
+            When("상세 글을 조회하면") {
+                val response = service.execute(query)
+
+                Then("조회는 성공하고 조회수 증가는 skip한다") {
+                    response.body shouldBe "테스트 내용"
+                    response.viewCount shouldBe 0
+                    verify(exactly = 0) { postRepository.incrementViewCount(any()) }
+                }
+            }
+        }
+
         Given("존재하지 않는 Username으로 조회할 때") {
             val postRepository = mockk<PostRepository>()
             val memberClient = mockk<MemberClient>()
-            val service = GetPostBySlugService(postRepository, memberClient)
+            val deduplicationPort = mockk<PostViewCountDeduplicationPort>()
+            val service = GetPostBySlugService(postRepository, memberClient, deduplicationPort)
 
             When("존재하지 않는 Username으로 조회하면") {
-                val query = GetPostBySlugUseCase.Query(username = "nonexistent", slug = "test-post")
+                val query =
+                    GetPostBySlugUseCase.Query(
+                        username = "nonexistent",
+                        slug = "test-post",
+                        visitorKey = "visitor-key",
+                    )
 
                 every { postRepository.findByUsernameAndSlug("nonexistent", Slug("test-post")) } returns null
 
@@ -105,10 +150,16 @@ class GetPostBySlugServiceTest :
         Given("존재하지 않는 Slug로 조회할 때") {
             val postRepository = mockk<PostRepository>()
             val memberClient = mockk<MemberClient>()
-            val service = GetPostBySlugService(postRepository, memberClient)
+            val deduplicationPort = mockk<PostViewCountDeduplicationPort>()
+            val service = GetPostBySlugService(postRepository, memberClient, deduplicationPort)
 
             When("존재하는 Username이지만 없는 Slug로 조회하면") {
-                val query = GetPostBySlugUseCase.Query(username = "testuser", slug = "non-existent")
+                val query =
+                    GetPostBySlugUseCase.Query(
+                        username = "testuser",
+                        slug = "non-existent",
+                        visitorKey = "visitor-key",
+                    )
 
                 every { postRepository.findByUsernameAndSlug("testuser", Slug("non-existent")) } returns null
 
@@ -120,3 +171,23 @@ class GetPostBySlugServiceTest :
             }
         }
     })
+
+private fun publishedSlugPost(memberId: MemberId): Post =
+    Post
+        .create(
+            memberId = memberId,
+            title = Title("테스트 글"),
+            slug = Slug("test-post"),
+            body = Body("테스트 내용"),
+            type = ContentType.BLOG,
+        ).publish()
+
+private fun authorOfSlugPost(post: Post): MemberClient.Author =
+    MemberClient.Author(
+        memberId =
+            post.memberId.value
+                .toString(),
+        nickname = "TestUser",
+        profileImageUrl = null,
+        username = "test_user",
+    )

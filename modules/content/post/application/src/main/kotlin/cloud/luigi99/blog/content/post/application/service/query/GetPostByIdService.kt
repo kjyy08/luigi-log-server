@@ -3,8 +3,10 @@
 import cloud.luigi99.blog.content.post.application.port.`in`.query.GetPostByIdUseCase
 import cloud.luigi99.blog.content.post.application.port.out.MemberClient
 import cloud.luigi99.blog.content.post.application.port.out.PostRepository
+import cloud.luigi99.blog.content.post.application.port.out.PostViewCountDeduplicationPort
 import cloud.luigi99.blog.content.post.domain.exception.PostNotFoundException
 import cloud.luigi99.blog.content.post.domain.vo.PostId
+import cloud.luigi99.blog.content.post.domain.vo.PostStatus
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -18,8 +20,11 @@ private val log = KotlinLogging.logger {}
  * Post ID를 사용하여 Post를 조회합니다.
  */
 @Service
-class GetPostByIdService(private val postRepository: PostRepository, private val memberClient: MemberClient) :
-    GetPostByIdUseCase {
+class GetPostByIdService(
+    private val postRepository: PostRepository,
+    private val memberClient: MemberClient,
+    private val postViewCountDeduplicationPort: PostViewCountDeduplicationPort,
+) : GetPostByIdUseCase {
     @Transactional
     override fun execute(query: GetPostByIdUseCase.Query): GetPostByIdUseCase.Response {
         log.info { "Getting post by id: ${query.postId}" }
@@ -28,8 +33,12 @@ class GetPostByIdService(private val postRepository: PostRepository, private val
         val post =
             postRepository.findById(postId)
                 ?: throw PostNotFoundException("Post ID ${query.postId}를 찾을 수 없습니다")
-        postRepository.incrementViewCount(post.entityId)
-        post.incrementViewCount()
+        if (post.status == PostStatus.PUBLISHED && isUniqueView(post.entityId, query.visitorKey)) {
+            val updatedRows = postRepository.incrementViewCount(post.entityId)
+            if (updatedRows > 0) {
+                post.incrementViewCount()
+            }
+        }
         val commentCount = postRepository.countCommentsByPostIds(listOf(post.entityId))[post.entityId] ?: 0
 
         val author =
@@ -61,4 +70,9 @@ class GetPostByIdService(private val postRepository: PostRepository, private val
             updatedAt = post.updatedAt,
         )
     }
+
+    private fun isUniqueView(postId: PostId, visitorKey: String): Boolean =
+        runCatching { postViewCountDeduplicationPort.isUniqueView(postId, visitorKey) }
+            .onFailure { e -> log.warn(e) { "Failed to deduplicate post view count. postId=$postId" } }
+            .getOrDefault(false)
 }

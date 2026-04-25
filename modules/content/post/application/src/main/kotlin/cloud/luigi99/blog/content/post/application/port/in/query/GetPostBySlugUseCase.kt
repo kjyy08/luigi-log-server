@@ -22,7 +22,7 @@ interface GetPostBySlugUseCase {
      * @property username 사용자 이름
      * @property slug URL slug
      */
-    data class Query(val username: String, val slug: String)
+    data class Query(val username: String, val slug: String, val visitorKey: String)
 
     /**
      * Post 조회 응답

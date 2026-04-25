@@ -19,11 +19,13 @@ import cloud.luigi99.blog.content.post.application.port.`in`.query.GetPostBySlug
 import cloud.luigi99.blog.content.post.application.port.`in`.query.GetPostContributionsUseCase
 import cloud.luigi99.blog.content.post.application.port.`in`.query.GetPostsUseCase
 import cloud.luigi99.blog.content.post.application.port.`in`.query.PostQueryFacade
+import jakarta.servlet.http.HttpServletRequest
 import mu.KotlinLogging
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -33,6 +35,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.security.MessageDigest
 import java.time.LocalDate
 
 private val log = KotlinLogging.logger {}
@@ -139,10 +142,11 @@ class PostController(private val postQueryFacade: PostQueryFacade, private val p
     @GetMapping("/{postId}")
     override fun getPostById(
         @PathVariable postId: String,
+        request: HttpServletRequest,
     ): ResponseEntity<CommonResponse<PostResponse>> {
         log.info { "Getting post by ID: $postId" }
 
-        val query = GetPostByIdUseCase.Query(postId = postId)
+        val query = GetPostByIdUseCase.Query(postId = postId, visitorKey = createVisitorKey(request))
         val response = postQueryFacade.getPostById().execute(query)
 
         return ResponseEntity.ok(
@@ -175,10 +179,11 @@ class PostController(private val postQueryFacade: PostQueryFacade, private val p
     override fun getPostByUsernameAndSlug(
         @PathVariable username: String,
         @PathVariable slug: String,
+        request: HttpServletRequest,
     ): ResponseEntity<CommonResponse<PostResponse>> {
         log.info { "Getting post by username: $username, slug: $slug" }
 
-        val query = GetPostBySlugUseCase.Query(username = username, slug = slug)
+        val query = GetPostBySlugUseCase.Query(username = username, slug = slug, visitorKey = createVisitorKey(request))
         val response = postQueryFacade.getPostBySlug().execute(query)
 
         return ResponseEntity.ok(
@@ -294,4 +299,38 @@ class PostController(private val postQueryFacade: PostQueryFacade, private val p
 
         return ResponseEntity.noContent().build()
     }
+
+    private fun createVisitorKey(request: HttpServletRequest): String {
+        val authentication = SecurityContextHolder.getContext().authentication
+        val principal = authentication?.principal
+
+        if (authentication?.isAuthenticated == true &&
+            principal is String &&
+            principal.isNotBlank() &&
+            principal != "anonymousUser"
+        ) {
+            return "member:$principal"
+        }
+
+        val ip =
+            request
+                .getHeader("X-Forwarded-For")
+                ?.split(",")
+                ?.firstOrNull()
+                ?.trim()
+                ?.takeIf { it.isNotBlank() }
+                ?: request.getHeader("X-Real-IP")
+                ?: request.remoteAddr.orEmpty()
+        val userAgent = request.getHeader("User-Agent").orEmpty()
+        val acceptLanguage = request.getHeader("Accept-Language").orEmpty()
+        val fingerprint = "$ip|$userAgent|$acceptLanguage"
+
+        return "anonymous:${sha256(fingerprint)}"
+    }
+
+    private fun sha256(value: String): String =
+        MessageDigest
+            .getInstance("SHA-256")
+            .digest(value.toByteArray())
+            .joinToString("") { byte -> "%02x".format(byte) }
 }

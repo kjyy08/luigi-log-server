@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.PathVariable
@@ -324,6 +325,8 @@ interface PostApi {
     )
     fun getPostById(
         @Parameter(description = "Post ID") @PathVariable postId: String,
+        @Parameter(hidden = true)
+        request: HttpServletRequest,
     ): ResponseEntity<CommonResponse<PostResponse>>
 
     @Operation(
@@ -400,6 +403,8 @@ interface PostApi {
     fun getPostByUsernameAndSlug(
         @Parameter(description = "사용자 이름") @PathVariable username: String,
         @Parameter(description = "URL Slug") @PathVariable slug: String,
+        @Parameter(hidden = true)
+        request: HttpServletRequest,
     ): ResponseEntity<CommonResponse<PostResponse>>
 
     @Operation(

@@ -25,6 +25,7 @@ include("modules:content:post:domain")
 include("modules:content:post:application")
 include("modules:content:post:adapter:in:web")
 include("modules:content:post:adapter:out:persistence:jpa")
+include("modules:content:post:adapter:out:persistence:redis")
 include("modules:content:post:adapter:out:client:member")
 
 include("modules:content:comment:domain")
