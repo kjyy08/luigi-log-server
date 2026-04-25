@@ -36,7 +36,7 @@ class MediaController(
     private val mediaCommandFacade: MediaCommandFacade,
     private val mediaQueryFacade: MediaQueryFacade,
 ) : MediaApi {
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('SCOPE_media:upload')")
     @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     override fun uploadFile(
         @RequestPart("file") file: MultipartFile,
