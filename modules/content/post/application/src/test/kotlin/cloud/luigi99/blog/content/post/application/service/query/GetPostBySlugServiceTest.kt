@@ -173,14 +173,14 @@ class GetPostBySlugServiceTest :
     })
 
 private fun publishedSlugPost(memberId: MemberId): Post =
-    Post.create(
-        memberId = memberId,
-        title = Title("테스트 글"),
-        slug = Slug("test-post"),
-        body = Body("테스트 내용"),
-        type = ContentType.BLOG,
-    )
-        .publish()
+    Post
+        .create(
+            memberId = memberId,
+            title = Title("테스트 글"),
+            slug = Slug("test-post"),
+            body = Body("테스트 내용"),
+            type = ContentType.BLOG,
+        ).publish()
 
 private fun authorOfSlugPost(post: Post): MemberClient.Author =
     MemberClient.Author(
