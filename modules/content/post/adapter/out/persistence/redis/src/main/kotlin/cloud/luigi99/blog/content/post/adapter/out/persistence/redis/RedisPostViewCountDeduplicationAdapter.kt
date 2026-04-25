@@ -13,7 +13,8 @@ import java.time.Duration
 @Component
 class RedisPostViewCountDeduplicationAdapter(
     private val redisTemplate: StringRedisTemplate,
-) : PostViewCountDeduplicationPort {
+) :
+    PostViewCountDeduplicationPort {
     override fun isUniqueView(postId: PostId, visitorKey: String): Boolean {
         val key = "post:view:dedupe:${postId.value}:${sha256(visitorKey)}"
 
@@ -23,7 +24,8 @@ class RedisPostViewCountDeduplicationAdapter(
     }
 
     private fun sha256(value: String): String =
-        MessageDigest.getInstance("SHA-256")
+        MessageDigest
+            .getInstance("SHA-256")
             .digest(value.toByteArray())
             .joinToString("") { byte -> "%02x".format(byte) }
 

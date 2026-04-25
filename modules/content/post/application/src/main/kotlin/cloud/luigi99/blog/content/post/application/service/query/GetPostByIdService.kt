@@ -24,8 +24,7 @@ class GetPostByIdService(
     private val postRepository: PostRepository,
     private val memberClient: MemberClient,
     private val postViewCountDeduplicationPort: PostViewCountDeduplicationPort,
-) :
-    GetPostByIdUseCase {
+) : GetPostByIdUseCase {
     @Transactional
     override fun execute(query: GetPostByIdUseCase.Query): GetPostByIdUseCase.Response {
         log.info { "Getting post by id: ${query.postId}" }

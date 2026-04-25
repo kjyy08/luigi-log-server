@@ -136,11 +136,14 @@ private fun publishedPost(): Post =
         slug = Slug("test-post"),
         body = Body("테스트 내용"),
         type = ContentType.BLOG,
-    ).publish()
+    )
+        .publish()
 
 private fun authorOf(post: Post): MemberClient.Author =
     MemberClient.Author(
-        memberId = post.memberId.value.toString(),
+        memberId =
+            post.memberId.value
+                .toString(),
         nickname = "TestUser",
         profileImageUrl = null,
         username = "test_user",

@@ -304,12 +304,17 @@ class PostController(private val postQueryFacade: PostQueryFacade, private val p
         val authentication = SecurityContextHolder.getContext().authentication
         val principal = authentication?.principal
 
-        if (authentication?.isAuthenticated == true && principal is String && principal.isNotBlank() && principal != "anonymousUser") {
+        if (authentication?.isAuthenticated == true &&
+            principal is String &&
+            principal.isNotBlank() &&
+            principal != "anonymousUser"
+        ) {
             return "member:$principal"
         }
 
         val ip =
-            request.getHeader("X-Forwarded-For")
+            request
+                .getHeader("X-Forwarded-For")
                 ?.split(",")
                 ?.firstOrNull()
                 ?.trim()
@@ -324,7 +329,8 @@ class PostController(private val postQueryFacade: PostQueryFacade, private val p
     }
 
     private fun sha256(value: String): String =
-        MessageDigest.getInstance("SHA-256")
+        MessageDigest
+            .getInstance("SHA-256")
             .digest(value.toByteArray())
             .joinToString("") { byte -> "%02x".format(byte) }
 }

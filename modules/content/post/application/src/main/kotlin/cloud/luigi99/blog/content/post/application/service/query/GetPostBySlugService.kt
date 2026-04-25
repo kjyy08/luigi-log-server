@@ -24,8 +24,7 @@ class GetPostBySlugService(
     private val postRepository: PostRepository,
     private val memberClient: MemberClient,
     private val postViewCountDeduplicationPort: PostViewCountDeduplicationPort,
-) :
-    GetPostBySlugUseCase {
+) : GetPostBySlugUseCase {
     @Transactional
     override fun execute(query: GetPostBySlugUseCase.Query): GetPostBySlugUseCase.Response {
         log.info { "Getting post by username: ${query.username}, slug: ${query.slug}" }

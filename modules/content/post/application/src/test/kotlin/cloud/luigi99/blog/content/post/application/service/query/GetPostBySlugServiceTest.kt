@@ -37,7 +37,12 @@ class GetPostBySlugServiceTest :
             val service = GetPostBySlugService(postRepository, memberClient, deduplicationPort)
             val memberId = MemberId.generate()
             val post = publishedSlugPost(memberId)
-            val query = GetPostBySlugUseCase.Query(username = "testuser", slug = "test-post", visitorKey = "visitor-key")
+            val query =
+                GetPostBySlugUseCase.Query(
+                    username = "testuser",
+                    slug = "test-post",
+                    visitorKey = "visitor-key",
+                )
 
             every { postRepository.findByUsernameAndSlug("testuser", Slug("test-post")) } returns post
             every { postRepository.countCommentsByPostIds(any()) } returns emptyMap()
@@ -65,7 +70,12 @@ class GetPostBySlugServiceTest :
             val deduplicationPort = mockk<PostViewCountDeduplicationPort>()
             val service = GetPostBySlugService(postRepository, memberClient, deduplicationPort)
             val post = publishedSlugPost(MemberId.generate())
-            val query = GetPostBySlugUseCase.Query(username = "testuser", slug = "test-post", visitorKey = "visitor-key")
+            val query =
+                GetPostBySlugUseCase.Query(
+                    username = "testuser",
+                    slug = "test-post",
+                    visitorKey = "visitor-key",
+                )
 
             every { postRepository.findByUsernameAndSlug("testuser", Slug("test-post")) } returns post
             every { deduplicationPort.isUniqueView(post.entityId, "visitor-key") } returns false
@@ -88,10 +98,17 @@ class GetPostBySlugServiceTest :
             val deduplicationPort = mockk<PostViewCountDeduplicationPort>()
             val service = GetPostBySlugService(postRepository, memberClient, deduplicationPort)
             val post = publishedSlugPost(MemberId.generate())
-            val query = GetPostBySlugUseCase.Query(username = "testuser", slug = "test-post", visitorKey = "visitor-key")
+            val query =
+                GetPostBySlugUseCase.Query(
+                    username = "testuser",
+                    slug = "test-post",
+                    visitorKey = "visitor-key",
+                )
 
             every { postRepository.findByUsernameAndSlug("testuser", Slug("test-post")) } returns post
-            every { deduplicationPort.isUniqueView(post.entityId, "visitor-key") } throws IllegalStateException("redis down")
+            every {
+                deduplicationPort.isUniqueView(post.entityId, "visitor-key")
+            } throws IllegalStateException("redis down")
             every { postRepository.countCommentsByPostIds(any()) } returns emptyMap()
             every { memberClient.getAuthor(any()) } returns authorOfSlugPost(post)
 
@@ -113,7 +130,12 @@ class GetPostBySlugServiceTest :
             val service = GetPostBySlugService(postRepository, memberClient, deduplicationPort)
 
             When("존재하지 않는 Username으로 조회하면") {
-                val query = GetPostBySlugUseCase.Query(username = "nonexistent", slug = "test-post", visitorKey = "visitor-key")
+                val query =
+                    GetPostBySlugUseCase.Query(
+                        username = "nonexistent",
+                        slug = "test-post",
+                        visitorKey = "visitor-key",
+                    )
 
                 every { postRepository.findByUsernameAndSlug("nonexistent", Slug("test-post")) } returns null
 
@@ -132,7 +154,12 @@ class GetPostBySlugServiceTest :
             val service = GetPostBySlugService(postRepository, memberClient, deduplicationPort)
 
             When("존재하는 Username이지만 없는 Slug로 조회하면") {
-                val query = GetPostBySlugUseCase.Query(username = "testuser", slug = "non-existent", visitorKey = "visitor-key")
+                val query =
+                    GetPostBySlugUseCase.Query(
+                        username = "testuser",
+                        slug = "non-existent",
+                        visitorKey = "visitor-key",
+                    )
 
                 every { postRepository.findByUsernameAndSlug("testuser", Slug("non-existent")) } returns null
 
@@ -152,11 +179,14 @@ private fun publishedSlugPost(memberId: MemberId): Post =
         slug = Slug("test-post"),
         body = Body("테스트 내용"),
         type = ContentType.BLOG,
-    ).publish()
+    )
+        .publish()
 
 private fun authorOfSlugPost(post: Post): MemberClient.Author =
     MemberClient.Author(
-        memberId = post.memberId.value.toString(),
+        memberId =
+            post.memberId.value
+                .toString(),
         nickname = "TestUser",
         profileImageUrl = null,
         username = "test_user",

@@ -6,7 +6,6 @@ import cloud.luigi99.blog.content.post.adapter.`in`.web.dto.PostContributionsRes
 import cloud.luigi99.blog.content.post.adapter.`in`.web.dto.PostListResponse
 import cloud.luigi99.blog.content.post.adapter.`in`.web.dto.PostResponse
 import cloud.luigi99.blog.content.post.adapter.`in`.web.dto.UpdatePostRequest
-import jakarta.servlet.http.HttpServletRequest
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
@@ -16,6 +15,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.PathVariable
