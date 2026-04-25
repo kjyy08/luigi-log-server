@@ -1,3 +1,10 @@
+## [1.6.1](https://github.com/kjyy08/luigi-log-server/compare/v1.6.0...v1.6.1) (2026-04-25)
+
+
+### Bug Fixes
+
+* **web:** 접근 거부 예외 응답 처리 추가 ([a323850](https://github.com/kjyy08/luigi-log-server/commit/a32385014afdae3530edf5d7106a437fb32bd4fa))
+
 # [1.6.0](https://github.com/kjyy08/luigi-log-server/compare/v1.5.0...v1.6.0) (2026-04-25)
 
 
