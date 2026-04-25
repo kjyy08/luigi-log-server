@@ -23,6 +23,7 @@ import jakarta.servlet.http.HttpServletRequest
 import mu.KotlinLogging
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.core.context.SecurityContextHolder
@@ -104,6 +105,8 @@ class PostController(private val postQueryFacade: PostQueryFacade, private val p
             "Updating post: $postId " +
                 "(title=${request.title != null}, body=${request.body != null}, status=${request.status})"
         }
+
+        requireUpdateScopes(request)
 
         val command =
             UpdatePostUseCase.Command(
@@ -299,6 +302,30 @@ class PostController(private val postQueryFacade: PostQueryFacade, private val p
         postCommandFacade.deletePost().execute(command)
 
         return ResponseEntity.noContent().build()
+    }
+
+    private fun requireUpdateScopes(request: UpdatePostRequest) {
+        val authentication = SecurityContextHolder.getContext().authentication
+        val authorities = authentication?.authorities.orEmpty().map { it.authority }.toSet()
+
+        if ("ROLE_ADMIN" in authorities) {
+            return
+        }
+
+        val missingScopes = mutableListOf<String>()
+        val changesContent = request.title != null || request.body != null
+        val changesStatus = request.status != null
+
+        if (changesContent && "SCOPE_post:update" !in authorities) {
+            missingScopes += "post:update"
+        }
+        if (changesStatus && "SCOPE_post:publish" !in authorities) {
+            missingScopes += "post:publish"
+        }
+
+        if (missingScopes.isNotEmpty()) {
+            throw AccessDeniedException("Missing required API key scope(s): ${missingScopes.joinToString()}")
+        }
     }
 
     private fun createVisitorKey(request: HttpServletRequest): String {
