@@ -11,9 +11,8 @@ import java.time.Duration
  * Redis SET NX EX 기반 게시글 조회수 중복 방지 어댑터.
  */
 @Component
-class RedisPostViewCountDeduplicationAdapter(
-    private val redisTemplate: StringRedisTemplate,
-) : PostViewCountDeduplicationPort {
+class RedisPostViewCountDeduplicationAdapter(private val redisTemplate: StringRedisTemplate) :
+    PostViewCountDeduplicationPort {
     override fun isUniqueView(postId: PostId, visitorKey: String): Boolean {
         val key = "post:view:dedupe:${postId.value}:${sha256(visitorKey)}"
 

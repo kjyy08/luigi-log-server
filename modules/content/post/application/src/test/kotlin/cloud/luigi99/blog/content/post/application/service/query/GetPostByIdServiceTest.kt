@@ -130,13 +130,15 @@ class GetPostByIdServiceTest :
     })
 
 private fun publishedPost(): Post =
-    Post.create(
-        memberId = MemberId.generate(),
-        title = Title("테스트 글"),
-        slug = Slug("test-post"),
-        body = Body("테스트 내용"),
-        type = ContentType.BLOG,
-    ).publish()
+    Post
+        .create(
+            memberId = MemberId.generate(),
+            title = Title("테스트 글"),
+            slug = Slug("test-post"),
+            body = Body("테스트 내용"),
+            type = ContentType.BLOG,
+        )
+        .publish()
 
 private fun authorOf(post: Post): MemberClient.Author =
     MemberClient.Author(
