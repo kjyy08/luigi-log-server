@@ -7,6 +7,7 @@ import mu.KotlinLogging
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.authorization.AuthorizationDeniedException
 import org.springframework.web.bind.MissingRequestHeaderException
 import org.springframework.web.bind.annotation.ExceptionHandler
@@ -24,8 +25,8 @@ class GlobalExceptionHandler {
             .body(CommonResponse.error(e.errorCode.code, e.message))
     }
 
-    @ExceptionHandler(AuthorizationDeniedException::class)
-    fun handleAuthorizationDeniedException(e: AuthorizationDeniedException): ResponseEntity<CommonResponse<Unit>> {
+    @ExceptionHandler(AuthorizationDeniedException::class, AccessDeniedException::class)
+    fun handleAuthorizationDeniedException(e: Exception): ResponseEntity<CommonResponse<Unit>> {
         log.warn { "Access denied: ${e.message}" }
         return ResponseEntity
             .status(HttpStatus.FORBIDDEN)
