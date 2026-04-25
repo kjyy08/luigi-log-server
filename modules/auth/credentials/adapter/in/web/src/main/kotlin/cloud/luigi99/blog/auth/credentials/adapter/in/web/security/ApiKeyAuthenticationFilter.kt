@@ -13,9 +13,7 @@ import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
 
 @Component
-class ApiKeyAuthenticationFilter(
-    private val apiKeyQueryFacade: ApiKeyQueryFacade,
-) : OncePerRequestFilter() {
+class ApiKeyAuthenticationFilter(private val apiKeyQueryFacade: ApiKeyQueryFacade) : OncePerRequestFilter() {
     override fun doFilterInternal(
         request: HttpServletRequest,
         response: HttpServletResponse,

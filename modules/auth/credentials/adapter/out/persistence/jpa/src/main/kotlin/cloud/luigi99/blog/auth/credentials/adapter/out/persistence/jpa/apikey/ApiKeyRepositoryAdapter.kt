@@ -8,11 +8,13 @@ import java.util.UUID
 
 @Repository
 class ApiKeyRepositoryAdapter(private val jpaRepository: ApiKeyJpaRepository) : ApiKeyRepository {
-    override fun save(apiKey: ApiKey): ApiKey =
-        ApiKeyMapper.toDomain(jpaRepository.save(ApiKeyMapper.toEntity(apiKey)))
+    override fun save(apiKey: ApiKey): ApiKey = ApiKeyMapper.toDomain(jpaRepository.save(ApiKeyMapper.toEntity(apiKey)))
 
     override fun findById(apiKeyId: UUID): ApiKey? =
-        jpaRepository.findById(apiKeyId).map(ApiKeyMapper::toDomain).orElse(null)
+        jpaRepository
+            .findById(apiKeyId)
+            .map(ApiKeyMapper::toDomain)
+            .orElse(null)
 
     override fun findByOwnerMemberId(ownerMemberId: MemberId): List<ApiKey> =
         jpaRepository

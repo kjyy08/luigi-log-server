@@ -27,15 +27,9 @@ interface ListApiKeysUseCase {
 interface AuthenticateApiKeyUseCase {
     fun execute(query: Query): Response?
 
-    data class Query(
-        val secretKey: String,
-        val path: String?,
-    )
+    data class Query(val secretKey: String, val path: String?)
 
-    data class Response(
-        val ownerMemberId: String,
-        val authorities: List<String>,
-    )
+    data class Response(val ownerMemberId: String, val authorities: List<String>)
 }
 
 interface ApiKeyQueryFacade {

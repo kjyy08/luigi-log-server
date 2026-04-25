@@ -11,7 +11,8 @@ enum class ApiKeyScope(val value: String) {
         get() = "SCOPE_$value"
 
     companion object {
-        fun from(value: String): ApiKeyScope = entries.firstOrNull { it.value == value }
-            ?: throw IllegalArgumentException("Unsupported API key scope: $value")
+        fun from(value: String): ApiKeyScope =
+            entries.firstOrNull { it.value == value }
+                ?: throw IllegalArgumentException("Unsupported API key scope: $value")
     }
 }

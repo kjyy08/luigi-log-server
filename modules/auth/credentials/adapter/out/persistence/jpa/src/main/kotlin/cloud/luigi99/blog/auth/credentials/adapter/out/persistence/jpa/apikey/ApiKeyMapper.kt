@@ -27,7 +27,12 @@ object ApiKeyMapper {
             name = entity.name,
             prefix = entity.prefix,
             keyHash = entity.keyHash,
-            scopes = entity.scopes.split(",").filter { it.isNotBlank() }.map { ApiKeyScope.from(it) }.toSet(),
+            scopes =
+                entity.scopes
+                    .split(",")
+                    .filter { it.isNotBlank() }
+                    .map { ApiKeyScope.from(it) }
+                    .toSet(),
             status = entity.status,
             expiresAt = entity.expiresAt,
             lastUsedAt = entity.lastUsedAt,

@@ -50,7 +50,10 @@ class ApiKeyService(
                 name = command.name.trim(),
                 prefix = secretKey.take(PREFIX_LENGTH),
                 keyHash = sha256(secretKey),
-                scopes = command.scopes.map { ApiKeyScope.from(it) }.toSet(),
+                scopes =
+                    command.scopes
+                        .map { ApiKeyScope.from(it) }
+                        .toSet(),
                 expiresAt = command.expiresAt,
             )
         val saved = apiKeyRepository.save(apiKey)

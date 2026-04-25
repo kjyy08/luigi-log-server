@@ -5,11 +5,7 @@ import cloud.luigi99.blog.auth.credentials.application.port.`in`.query.ListApiKe
 import java.time.LocalDateTime
 import java.util.UUID
 
-data class CreateApiKeyRequest(
-    val name: String,
-    val scopes: Set<String>,
-    val expiresAt: LocalDateTime? = null,
-)
+data class CreateApiKeyRequest(val name: String, val scopes: Set<String>, val expiresAt: LocalDateTime? = null)
 
 data class ApiKeyResponse(
     val id: UUID,
@@ -39,7 +35,10 @@ data class CreateApiKeyResponse(
                 id = response.id,
                 name = response.name,
                 prefix = response.prefix,
-                scopes = response.scopes.map { it.value }.toSet(),
+                scopes =
+                    response.scopes
+                        .map { it.value }
+                        .toSet(),
                 status = response.status.name,
                 expiresAt = response.expiresAt,
                 lastUsedAt = response.lastUsedAt,
@@ -59,7 +58,10 @@ data class ApiKeyListResponse(val apiKeys: List<ApiKeyResponse>) {
                             id = it.id,
                             name = it.name,
                             prefix = it.prefix,
-                            scopes = it.scopes.map { scope -> scope.value }.toSet(),
+                            scopes =
+                                it.scopes
+                                    .map { scope -> scope.value }
+                                    .toSet(),
                             status = it.status.name,
                             expiresAt = it.expiresAt,
                             lastUsedAt = it.lastUsedAt,

@@ -6,9 +6,8 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 @Repository
-class ApiKeyAuditLogRepositoryAdapter(
-    private val jpaRepository: ApiKeyAuditLogJpaRepository,
-) : ApiKeyAuditLogRepository {
+class ApiKeyAuditLogRepositoryAdapter(private val jpaRepository: ApiKeyAuditLogJpaRepository) :
+    ApiKeyAuditLogRepository {
     override fun record(
         action: String,
         apiKeyId: UUID?,

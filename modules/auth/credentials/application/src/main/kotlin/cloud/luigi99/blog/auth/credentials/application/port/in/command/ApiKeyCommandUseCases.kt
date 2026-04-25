@@ -31,10 +31,7 @@ interface CreateApiKeyUseCase {
 interface RevokeApiKeyUseCase {
     fun execute(command: Command)
 
-    data class Command(
-        val ownerMemberId: String,
-        val apiKeyId: UUID,
-    )
+    data class Command(val ownerMemberId: String, val apiKeyId: UUID)
 }
 
 interface ApiKeyCommandFacade {
