@@ -452,10 +452,7 @@ class PostControllerTest :
         }
     })
 
-private fun setAuthentication(
-    principal: String = "member-id",
-    authorities: List<String>,
-) {
+private fun setAuthentication(principal: String = "member-id", authorities: List<String>) {
     SecurityContextHolder.getContext().authentication =
         UsernamePasswordAuthenticationToken(
             principal,

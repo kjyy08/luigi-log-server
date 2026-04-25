@@ -306,9 +306,14 @@ class PostController(private val postQueryFacade: PostQueryFacade, private val p
 
     private fun requireUpdateScopes(request: UpdatePostRequest) {
         val authentication = SecurityContextHolder.getContext().authentication
-        val authorities = authentication?.authorities.orEmpty().map { it.authority }.toSet()
+        val authorities =
+            authentication
+                ?.authorities
+                .orEmpty()
+                .mapNotNull { it.authority }
+                .toSet()
 
-        if ("ROLE_ADMIN" in authorities) {
+        if (authorities.none { it.startsWith("SCOPE_") }) {
             return
         }
 
