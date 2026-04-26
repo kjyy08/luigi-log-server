@@ -6,8 +6,7 @@ import org.springframework.stereotype.Repository
 import java.time.LocalDateTime
 
 @Repository
-class ApiKeyAuditRecorderAdapter(private val jpaRepository: ApiKeyAuditLogJpaRepository) :
-    ApiKeyAuditRecorder {
+class ApiKeyAuditRecorderAdapter(private val jpaRepository: ApiKeyAuditLogJpaRepository) : ApiKeyAuditRecorder {
     override fun record(
         action: String,
         apiKeyId: ApiKeyId?,

@@ -25,7 +25,11 @@ class ApiKeyTest {
 
         val aggregateRoot: AggregateRoot<ApiKeyId> = apiKey
 
-        assertTrue(aggregateRoot.entityId.value.toString().isNotBlank())
+        assertTrue(
+            aggregateRoot.entityId.value
+                .toString()
+                .isNotBlank(),
+        )
     }
 
     @Test
@@ -38,7 +42,7 @@ class ApiKeyTest {
                 prefix = "llk_test_123",
                 keyHash = "hash",
                 scopes = setOf(ApiKeyScope.POST_CREATE),
-                expiresAt = now.plusDays(1),
+                expiresAt = null,
                 now = now,
             )
 
