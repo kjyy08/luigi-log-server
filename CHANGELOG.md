@@ -1,3 +1,10 @@
+## [1.8.1](https://github.com/kjyy08/luigi-log-server/compare/v1.8.0...v1.8.1) (2026-04-26)
+
+
+### Bug Fixes
+
+* **media:** 잘못된 파일 형식 에러 계약 수정 ([#86](https://github.com/kjyy08/luigi-log-server/issues/86)) ([7e9a320](https://github.com/kjyy08/luigi-log-server/commit/7e9a320847785a0cf94d1b630b626a46db27c6ff))
+
 # [1.8.0](https://github.com/kjyy08/luigi-log-server/compare/v1.7.0...v1.8.0) (2026-04-26)
 
 
