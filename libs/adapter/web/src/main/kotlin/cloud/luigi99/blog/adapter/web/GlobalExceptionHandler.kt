@@ -12,6 +12,7 @@ import org.springframework.security.authorization.AuthorizationDeniedException
 import org.springframework.web.bind.MissingRequestHeaderException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.web.multipart.MaxUploadSizeExceededException
 
 private val log = KotlinLogging.logger {}
 
@@ -49,6 +50,14 @@ class GlobalExceptionHandler {
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
             .body(CommonResponse.error(ErrorCode.INVALID_INPUT.code, ErrorCode.INVALID_INPUT.message))
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException::class)
+    fun handleMaxUploadSizeExceededException(e: MaxUploadSizeExceededException): ResponseEntity<CommonResponse<Unit>> {
+        log.warn { "Max upload size exceeded: ${e.message}" }
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(CommonResponse.error(ErrorCode.FILE_SIZE_EXCEEDED.code, ErrorCode.FILE_SIZE_EXCEEDED.message))
     }
 
     @ExceptionHandler(Exception::class)

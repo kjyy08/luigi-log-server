@@ -9,6 +9,8 @@ import cloud.luigi99.blog.media.application.media.port.`in`.command.UploadFileUs
 import cloud.luigi99.blog.media.application.media.port.`in`.query.GetFileListUseCase
 import cloud.luigi99.blog.media.application.media.port.`in`.query.GetFileUseCase
 import cloud.luigi99.blog.media.application.media.port.`in`.query.MediaQueryFacade
+import cloud.luigi99.blog.media.domain.media.exception.FileSizeExceededException
+import cloud.luigi99.blog.media.domain.media.vo.FileSize
 import mu.KotlinLogging
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -42,6 +44,9 @@ class MediaController(
         @RequestPart("file") file: MultipartFile,
     ): ResponseEntity<CommonResponse<FileResponse>> {
         log.info { "Uploading file: ${file.originalFilename}" }
+        if (file.size > FileSize.MAX_BYTES) {
+            throw FileSizeExceededException()
+        }
 
         val response =
             mediaCommandFacade.uploadFile().execute(

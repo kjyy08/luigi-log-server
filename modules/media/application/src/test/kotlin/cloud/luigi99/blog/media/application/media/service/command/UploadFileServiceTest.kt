@@ -4,6 +4,8 @@ import cloud.luigi99.blog.common.domain.event.EventManager
 import cloud.luigi99.blog.media.application.media.port.`in`.command.UploadFileUseCase
 import cloud.luigi99.blog.media.application.media.port.out.MediaFileRepository
 import cloud.luigi99.blog.media.application.media.port.out.StoragePort
+import cloud.luigi99.blog.media.domain.media.exception.FileSizeExceededException
+import cloud.luigi99.blog.media.domain.media.exception.InvalidFileTypeException
 import cloud.luigi99.blog.media.domain.media.model.MediaFile
 import cloud.luigi99.blog.media.domain.media.vo.FileSize
 import cloud.luigi99.blog.media.domain.media.vo.MediaFileId
@@ -33,12 +35,13 @@ class UploadFileServiceTest :
             val storagePort = mockk<StoragePort>()
             val service = UploadFileService(mediaFileRepository, storagePort)
 
+            val pngBytes = byteArrayOf(0x89.toByte(), 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A)
             val command =
                 UploadFileUseCase.Command(
                     originalFileName = "test.png",
                     mimeType = "image/png",
                     fileSize = 1024L,
-                    fileData = ByteArray(1024),
+                    fileData = pngBytes,
                 )
 
             When("파일을 업로드하면") {
@@ -62,7 +65,7 @@ class UploadFileServiceTest :
                 val response = service.execute(command)
 
                 Then("Storage에 업로드가 호출된다") {
-                    verify(exactly = 1) { storagePort.upload(any(), any(), "image/png") }
+                    verify(exactly = 1) { storagePort.upload(any(), pngBytes, "image/png") }
                 }
 
                 Then("Repository의 save가 호출된다") {
@@ -123,6 +126,52 @@ class UploadFileServiceTest :
                             service.execute(command)
                         }
                     exception.message shouldContain "File size must be positive"
+                }
+            }
+        }
+
+        Given("파일 크기가 5MB를 초과하는 이미지가 주어졌을 때") {
+            val mediaFileRepository = mockk<MediaFileRepository>()
+            val storagePort = mockk<StoragePort>()
+            val service = UploadFileService(mediaFileRepository, storagePort)
+
+            val command =
+                UploadFileUseCase.Command(
+                    originalFileName = "large.png",
+                    mimeType = "image/png",
+                    fileSize = 5L * 1024L * 1024L + 1L,
+                    fileData = byteArrayOf(0x89.toByte(), 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A),
+                )
+
+            When("파일을 업로드하려고 하면") {
+                Then("파일 크기 초과 예외가 발생하고 Storage는 호출되지 않는다") {
+                    shouldThrow<FileSizeExceededException> {
+                        service.execute(command)
+                    }
+                    verify(exactly = 0) { storagePort.upload(any(), any(), any()) }
+                }
+            }
+        }
+
+        Given("선언 MIME 타입과 실제 파일 시그니처가 다른 이미지가 주어졌을 때") {
+            val mediaFileRepository = mockk<MediaFileRepository>()
+            val storagePort = mockk<StoragePort>()
+            val service = UploadFileService(mediaFileRepository, storagePort)
+
+            val command =
+                UploadFileUseCase.Command(
+                    originalFileName = "spoofed.png",
+                    mimeType = "image/png",
+                    fileSize = 6L,
+                    fileData = "GIF89a".toByteArray(),
+                )
+
+            When("파일을 업로드하려고 하면") {
+                Then("지원하지 않는 파일 형식 예외가 발생하고 Storage는 호출되지 않는다") {
+                    shouldThrow<InvalidFileTypeException> {
+                        service.execute(command)
+                    }
+                    verify(exactly = 0) { storagePort.upload(any(), any(), any()) }
                 }
             }
         }

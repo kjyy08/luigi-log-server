@@ -54,4 +54,30 @@ class MimeTypeTest :
                 }
             }
         }
+
+        Given("MIME 타입과 파일 시그니처가 일치하는 경우") {
+            val samples =
+                mapOf(
+                    "image/jpeg" to byteArrayOf(0xFF.toByte(), 0xD8.toByte(), 0xFF.toByte(), 0x00),
+                    "image/png" to byteArrayOf(0x89.toByte(), 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A),
+                    "image/gif" to "GIF89a".toByteArray(),
+                    "image/webp" to "RIFFxxxxWEBP".toByteArray(),
+                )
+
+            samples.forEach { (type, bytes) ->
+                When("$type 파일 시그니처를 검증하면") {
+                    Then("검증을 통과한다") {
+                        MimeType.matchesMagicBytes(type, bytes) shouldBe true
+                    }
+                }
+            }
+        }
+
+        Given("MIME 타입과 파일 시그니처가 일치하지 않는 경우") {
+            When("PNG로 선언된 GIF 바이트를 검증하면") {
+                Then("검증에 실패한다") {
+                    MimeType.matchesMagicBytes("image/png", "GIF89a".toByteArray()) shouldBe false
+                }
+            }
+        }
     })
