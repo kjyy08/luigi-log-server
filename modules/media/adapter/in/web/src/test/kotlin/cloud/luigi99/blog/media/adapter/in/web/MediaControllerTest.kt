@@ -1,11 +1,15 @@
 package cloud.luigi99.blog.media.adapter.`in`.web
 
+import cloud.luigi99.blog.adapter.web.GlobalExceptionHandler
+import cloud.luigi99.blog.common.exception.ErrorCode
 import cloud.luigi99.blog.media.application.media.port.`in`.command.DeleteFileUseCase
 import cloud.luigi99.blog.media.application.media.port.`in`.command.MediaCommandFacade
 import cloud.luigi99.blog.media.application.media.port.`in`.command.UploadFileUseCase
 import cloud.luigi99.blog.media.application.media.port.`in`.query.GetFileListUseCase
 import cloud.luigi99.blog.media.application.media.port.`in`.query.GetFileUseCase
 import cloud.luigi99.blog.media.application.media.port.`in`.query.MediaQueryFacade
+import cloud.luigi99.blog.media.domain.media.exception.FileSizeExceededException
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.every
@@ -13,6 +17,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import org.springframework.http.HttpStatus
 import org.springframework.mock.web.MockMultipartFile
+import org.springframework.web.multipart.MaxUploadSizeExceededException
 import java.time.LocalDateTime
 
 /**
@@ -70,6 +75,49 @@ class MediaControllerTest :
                             },
                         )
                     }
+                }
+            }
+        }
+
+        Given("5MB를 초과하는 파일 업로드 요청이 주어졌을 때") {
+            val oversizedCommandFacade = mockk<MediaCommandFacade>()
+            val oversizedController = MediaController(oversizedCommandFacade, mediaQueryFacade)
+            val file =
+                MockMultipartFile(
+                    "file",
+                    "large.png",
+                    "image/png",
+                    ByteArray((5L * 1024L * 1024L + 1L).toInt()),
+                )
+
+            When("파일을 업로드하면") {
+                Then("controller에서 file.bytes 접근 전에 크기 초과 예외가 발생하고 UseCase는 호출되지 않는다") {
+                    shouldThrow<FileSizeExceededException> {
+                        oversizedController.uploadFile(file)
+                    }
+                    verify(exactly = 0) { oversizedCommandFacade.uploadFile() }
+                }
+            }
+        }
+
+        Given("Spring multipart resolver에서 업로드 크기 초과 예외가 발생했을 때") {
+            val exceptionHandler = GlobalExceptionHandler()
+
+            When("MaxUploadSizeExceededException을 처리하면") {
+                val result =
+                    exceptionHandler.handleMaxUploadSizeExceededException(
+                        MaxUploadSizeExceededException(6L * 1024L * 1024L),
+                    )
+
+                Then("MEDIA_003 400 응답이 반환되어야 한다") {
+                    result.statusCode shouldBe HttpStatus.BAD_REQUEST
+                    result.body?.success shouldBe false
+                    result.body
+                        ?.error
+                        ?.code shouldBe ErrorCode.FILE_SIZE_EXCEEDED.code
+                    result.body
+                        ?.error
+                        ?.message shouldBe ErrorCode.FILE_SIZE_EXCEEDED.message
                 }
             }
         }

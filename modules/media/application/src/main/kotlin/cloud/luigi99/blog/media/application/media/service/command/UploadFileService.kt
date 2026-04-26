@@ -3,6 +3,7 @@ package cloud.luigi99.blog.media.application.media.service.command
 import cloud.luigi99.blog.media.application.media.port.`in`.command.UploadFileUseCase
 import cloud.luigi99.blog.media.application.media.port.out.MediaFileRepository
 import cloud.luigi99.blog.media.application.media.port.out.StoragePort
+import cloud.luigi99.blog.media.domain.media.exception.InvalidFileTypeException
 import cloud.luigi99.blog.media.domain.media.model.MediaFile
 import cloud.luigi99.blog.media.domain.media.vo.FileSize
 import cloud.luigi99.blog.media.domain.media.vo.MimeType
@@ -30,6 +31,9 @@ class UploadFileService(private val mediaFileRepository: MediaFileRepository, pr
         val originalFileName = OriginalFileName(command.originalFileName)
         val mimeType = MimeType(command.mimeType)
         val fileSize = FileSize(command.fileSize)
+        if (!MimeType.matchesMagicBytes(mimeType.value, command.fileData)) {
+            throw InvalidFileTypeException()
+        }
         val storageKey = StorageKey.generate(originalFileName.value)
 
         // Storage에 업로드

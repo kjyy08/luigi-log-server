@@ -1,5 +1,6 @@
 package cloud.luigi99.blog.media.domain.media.vo
 
+import cloud.luigi99.blog.media.domain.media.exception.FileSizeExceededException
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
@@ -18,6 +19,32 @@ class FileSizeTest :
 
                 Then("정상적으로 값이 저장된다") {
                     fileSize.bytes shouldBe validSize
+                }
+            }
+        }
+
+        Given("파일 크기가 정확히 5MB인 경우") {
+            val maxSize = 5L * 1024L * 1024L
+
+            When("파일 크기 객체를 생성하면") {
+                val fileSize = FileSize(maxSize)
+
+                Then("정상적으로 값이 저장된다") {
+                    fileSize.bytes shouldBe maxSize
+                }
+            }
+        }
+
+        Given("파일 크기가 5MB를 초과한 경우") {
+            val oversized = 5L * 1024L * 1024L + 1L
+
+            When("객체 생성을 시도하면") {
+                Then("파일 크기 초과 오류가 발생한다") {
+                    val exception =
+                        shouldThrow<FileSizeExceededException> {
+                            FileSize(oversized)
+                        }
+                    exception.message shouldContain "파일 크기가 제한을 초과했습니다."
                 }
             }
         }

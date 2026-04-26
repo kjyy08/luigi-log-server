@@ -20,7 +20,7 @@ import org.springframework.web.multipart.MultipartFile
 interface MediaApi {
     @Operation(
         summary = "파일 업로드",
-        description = "이미지 등 파일을 업로드합니다. 최대 10MB까지 업로드 가능합니다.",
+        description = "이미지 파일을 업로드합니다. 파일 1개당 최대 5MB까지 업로드 가능합니다.",
     )
     @ApiResponses(
         value = [
