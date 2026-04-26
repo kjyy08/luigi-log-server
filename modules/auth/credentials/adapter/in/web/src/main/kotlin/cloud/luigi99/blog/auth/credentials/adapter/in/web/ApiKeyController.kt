@@ -23,14 +23,14 @@ import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
 @RestController
-@RequestMapping("/api/v1/api-keys")
+@RequestMapping("/api/v1/keys")
 class ApiKeyController(
     private val apiKeyCommandFacade: ApiKeyCommandFacade,
     private val apiKeyQueryFacade: ApiKeyQueryFacade,
-) {
+) : ApiKeyApi {
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    fun createApiKey(
+    override fun createApiKey(
         @AuthenticationPrincipal memberId: String,
         @RequestBody request: CreateApiKeyRequest,
     ): ResponseEntity<CommonResponse<CreateApiKeyResponse>> {
@@ -51,7 +51,7 @@ class ApiKeyController(
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
-    fun listApiKeys(
+    override fun listApiKeys(
         @AuthenticationPrincipal memberId: String,
     ): ResponseEntity<CommonResponse<ApiKeyListResponse>> {
         val response =
@@ -64,7 +64,7 @@ class ApiKeyController(
 
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{apiKeyId}")
-    fun revokeApiKey(
+    override fun revokeApiKey(
         @AuthenticationPrincipal memberId: String,
         @PathVariable apiKeyId: UUID,
     ): ResponseEntity<Unit> {
