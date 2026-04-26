@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/kjyy08/luigi-log-server/compare/v1.7.0...v1.8.0) (2026-04-26)
+
+
+### Features
+
+* **media:** 이미지 업로드 5MB 정책 적용 ([#85](https://github.com/kjyy08/luigi-log-server/issues/85)) ([a62ceb8](https://github.com/kjyy08/luigi-log-server/commit/a62ceb8d40a7a7f309898839d3404832f0453d55))
+
 # [1.7.0](https://github.com/kjyy08/luigi-log-server/compare/v1.6.1...v1.7.0) (2026-04-26)
 
 
