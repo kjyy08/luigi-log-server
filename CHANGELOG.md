@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/kjyy08/luigi-log-server/compare/v1.6.1...v1.7.0) (2026-04-26)
+
+
+### Features
+
+* **auth:** API Key 도메인과 keys 엔드포인트 정리 ([1fe0d8c](https://github.com/kjyy08/luigi-log-server/commit/1fe0d8cb246373a509bf2adfd36246daf62121e8))
+
 ## [1.6.1](https://github.com/kjyy08/luigi-log-server/compare/v1.6.0...v1.6.1) (2026-04-25)
 
 
