@@ -6,10 +6,11 @@ import cloud.luigi99.blog.auth.credentials.application.port.`in`.command.RevokeA
 import cloud.luigi99.blog.auth.credentials.application.port.`in`.query.ApiKeyQueryFacade
 import cloud.luigi99.blog.auth.credentials.application.port.`in`.query.AuthenticateApiKeyUseCase
 import cloud.luigi99.blog.auth.credentials.application.port.`in`.query.ListApiKeysUseCase
-import cloud.luigi99.blog.auth.credentials.application.port.out.ApiKeyAuditLogRepository
+import cloud.luigi99.blog.auth.credentials.application.port.out.ApiKeyAuditRecorder
 import cloud.luigi99.blog.auth.credentials.application.port.out.ApiKeyRepository
 import cloud.luigi99.blog.auth.credentials.domain.enums.ApiKeyScope
 import cloud.luigi99.blog.auth.credentials.domain.model.ApiKey
+import cloud.luigi99.blog.auth.credentials.domain.vo.ApiKeyId
 import cloud.luigi99.blog.member.domain.member.vo.MemberId
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -21,7 +22,7 @@ import java.util.Base64
 @Service
 class ApiKeyService(
     private val apiKeyRepository: ApiKeyRepository,
-    private val apiKeyAuditLogRepository: ApiKeyAuditLogRepository,
+    private val apiKeyAuditRecorder: ApiKeyAuditRecorder,
 ) : ApiKeyCommandFacade,
     ApiKeyQueryFacade,
     CreateApiKeyUseCase,
@@ -57,29 +58,29 @@ class ApiKeyService(
                 expiresAt = command.expiresAt,
             )
         val saved = apiKeyRepository.save(apiKey)
-        apiKeyAuditLogRepository.record("CREATE", saved.id, saved.prefix, null, "SUCCESS")
+        apiKeyAuditRecorder.record("CREATE", saved.entityId, saved.prefix, null, "SUCCESS")
 
         return CreateApiKeyUseCase.Response(
-            id = saved.id,
+            id = saved.entityId.value,
             name = saved.name,
             prefix = saved.prefix,
             scopes = saved.scopes,
             status = saved.status,
             expiresAt = saved.expiresAt,
             lastUsedAt = saved.lastUsedAt,
-            createdAt = saved.createdAt,
+            createdAt = requireNotNull(saved.createdAt) { "Saved ApiKey createdAt must not be null" },
             secretKey = secretKey,
         )
     }
 
     @Transactional
     override fun execute(command: RevokeApiKeyUseCase.Command) {
-        val apiKey = apiKeyRepository.findById(command.apiKeyId) ?: return
+        val apiKey = apiKeyRepository.findById(ApiKeyId(command.apiKeyId)) ?: return
         if (apiKey.ownerMemberId != MemberId.from(command.ownerMemberId)) return
 
         apiKey.revoke()
         apiKeyRepository.save(apiKey)
-        apiKeyAuditLogRepository.record("REVOKE", apiKey.id, apiKey.prefix, null, "SUCCESS")
+        apiKeyAuditRecorder.record("REVOKE", apiKey.entityId, apiKey.prefix, null, "SUCCESS")
     }
 
     @Transactional(readOnly = true)
@@ -88,14 +89,14 @@ class ApiKeyService(
         val summaries =
             apiKeyRepository.findByOwnerMemberId(ownerMemberId).map {
                 ListApiKeysUseCase.ApiKeySummary(
-                    id = it.id,
+                    id = it.entityId.value,
                     name = it.name,
                     prefix = it.prefix,
                     scopes = it.scopes,
                     status = it.status,
                     expiresAt = it.expiresAt,
                     lastUsedAt = it.lastUsedAt,
-                    createdAt = it.createdAt,
+                    createdAt = requireNotNull(it.createdAt) { "ApiKey createdAt must not be null" },
                 )
             }
         return ListApiKeysUseCase.Response(summaries)
@@ -105,13 +106,13 @@ class ApiKeyService(
     override fun execute(query: AuthenticateApiKeyUseCase.Query): AuthenticateApiKeyUseCase.Response? {
         val apiKey = apiKeyRepository.findByKeyHash(sha256(query.secretKey))
         if (apiKey == null || !apiKey.active) {
-            apiKeyAuditLogRepository.record("AUTHENTICATE", apiKey?.id, apiKey?.prefix, query.path, "FAILURE")
+            apiKeyAuditRecorder.record("AUTHENTICATE", apiKey?.entityId, apiKey?.prefix, query.path, "FAILURE")
             return null
         }
 
         apiKey.recordUsedAt(LocalDateTime.now())
         apiKeyRepository.save(apiKey)
-        apiKeyAuditLogRepository.record("AUTHENTICATE", apiKey.id, apiKey.prefix, query.path, "SUCCESS")
+        apiKeyAuditRecorder.record("AUTHENTICATE", apiKey.entityId, apiKey.prefix, query.path, "SUCCESS")
 
         return AuthenticateApiKeyUseCase.Response(
             ownerMemberId = apiKey.ownerMemberId.toString(),

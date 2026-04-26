@@ -2,12 +2,13 @@ package cloud.luigi99.blog.auth.credentials.domain.model
 
 import cloud.luigi99.blog.auth.credentials.domain.enums.ApiKeyScope
 import cloud.luigi99.blog.auth.credentials.domain.enums.ApiKeyStatus
+import cloud.luigi99.blog.auth.credentials.domain.vo.ApiKeyId
+import cloud.luigi99.blog.common.domain.AggregateRoot
 import cloud.luigi99.blog.member.domain.member.vo.MemberId
 import java.time.LocalDateTime
-import java.util.UUID
 
 class ApiKey private constructor(
-    val id: UUID,
+    override val entityId: ApiKeyId,
     val ownerMemberId: MemberId,
     val name: String,
     val prefix: String,
@@ -16,9 +17,9 @@ class ApiKey private constructor(
     var status: ApiKeyStatus,
     val expiresAt: LocalDateTime?,
     var lastUsedAt: LocalDateTime?,
-    val createdAt: LocalDateTime,
-    var updatedAt: LocalDateTime,
-) {
+    override var createdAt: LocalDateTime?,
+    override var updatedAt: LocalDateTime?,
+) : AggregateRoot<ApiKeyId>() {
     val active: Boolean
         get() = status == ApiKeyStatus.ACTIVE && !isExpired()
 
@@ -45,7 +46,7 @@ class ApiKey private constructor(
             now: LocalDateTime = LocalDateTime.now(),
         ): ApiKey =
             ApiKey(
-                id = UUID.randomUUID(),
+                entityId = ApiKeyId.generate(),
                 ownerMemberId = ownerMemberId,
                 name = name,
                 prefix = prefix,
@@ -59,7 +60,7 @@ class ApiKey private constructor(
             )
 
         fun restore(
-            id: UUID,
+            entityId: ApiKeyId,
             ownerMemberId: MemberId,
             name: String,
             prefix: String,
@@ -72,7 +73,7 @@ class ApiKey private constructor(
             updatedAt: LocalDateTime,
         ): ApiKey =
             ApiKey(
-                id = id,
+                entityId = entityId,
                 ownerMemberId = ownerMemberId,
                 name = name,
                 prefix = prefix,

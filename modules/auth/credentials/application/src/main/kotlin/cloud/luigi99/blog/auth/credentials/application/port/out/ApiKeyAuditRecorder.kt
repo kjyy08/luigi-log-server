@@ -1,12 +1,12 @@
 package cloud.luigi99.blog.auth.credentials.application.port.out
 
+import cloud.luigi99.blog.auth.credentials.domain.vo.ApiKeyId
 import java.time.LocalDateTime
-import java.util.UUID
 
-interface ApiKeyAuditLogRepository {
+interface ApiKeyAuditRecorder {
     fun record(
         action: String,
-        apiKeyId: UUID?,
+        apiKeyId: ApiKeyId?,
         prefix: String?,
         path: String?,
         result: String,

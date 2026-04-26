@@ -2,17 +2,17 @@ package cloud.luigi99.blog.auth.credentials.adapter.out.persistence.jpa.apikey
 
 import cloud.luigi99.blog.auth.credentials.application.port.out.ApiKeyRepository
 import cloud.luigi99.blog.auth.credentials.domain.model.ApiKey
+import cloud.luigi99.blog.auth.credentials.domain.vo.ApiKeyId
 import cloud.luigi99.blog.member.domain.member.vo.MemberId
 import org.springframework.stereotype.Repository
-import java.util.UUID
 
 @Repository
 class ApiKeyRepositoryAdapter(private val jpaRepository: ApiKeyJpaRepository) : ApiKeyRepository {
     override fun save(apiKey: ApiKey): ApiKey = ApiKeyMapper.toDomain(jpaRepository.save(ApiKeyMapper.toEntity(apiKey)))
 
-    override fun findById(apiKeyId: UUID): ApiKey? =
+    override fun findById(apiKeyId: ApiKeyId): ApiKey? =
         jpaRepository
-            .findById(apiKeyId)
+            .findById(apiKeyId.value)
             .map(ApiKeyMapper::toDomain)
             .orElse(null)
 
