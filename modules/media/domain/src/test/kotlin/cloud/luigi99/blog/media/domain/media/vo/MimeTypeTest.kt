@@ -1,9 +1,10 @@
 package cloud.luigi99.blog.media.domain.media.vo
 
+import cloud.luigi99.blog.common.exception.ErrorCode
+import cloud.luigi99.blog.media.domain.media.exception.InvalidFileTypeException
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.string.shouldContain
 
 /**
  * MimeType Value Object 테스트
@@ -31,10 +32,10 @@ class MimeTypeTest :
                 When("$type 형식으로 객체 생성을 시도하면") {
                     Then("지원하지 않는 미디어 타입 오류가 발생한다") {
                         val exception =
-                            shouldThrow<IllegalArgumentException> {
+                            shouldThrow<InvalidFileTypeException> {
                                 MimeType(type)
                             }
-                        exception.message shouldContain "Unsupported MIME type"
+                        exception.errorCode shouldBe ErrorCode.INVALID_FILE_TYPE
                     }
                 }
             }

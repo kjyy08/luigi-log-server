@@ -1,6 +1,7 @@
 package cloud.luigi99.blog.media.domain.media.vo
 
 import cloud.luigi99.blog.common.domain.ValueObject
+import cloud.luigi99.blog.media.domain.media.exception.InvalidFileTypeException
 
 /**
  * MIME 타입 Value Object
@@ -9,8 +10,8 @@ import cloud.luigi99.blog.common.domain.ValueObject
 @JvmInline
 value class MimeType(val value: String) : ValueObject {
     init {
-        require(value in ALLOWED_TYPES) {
-            "Unsupported MIME type: $value. Allowed types: ${ALLOWED_TYPES.joinToString()}"
+        if (value !in ALLOWED_TYPES) {
+            throw InvalidFileTypeException()
         }
     }
 
