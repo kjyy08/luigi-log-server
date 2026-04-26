@@ -96,12 +96,11 @@ class UploadFileServiceTest :
                 )
 
             When("파일을 업로드하려고 하면") {
-                Then("IllegalArgumentException이 발생한다") {
-                    val exception =
-                        shouldThrow<IllegalArgumentException> {
-                            service.execute(command)
-                        }
-                    exception.message shouldContain "Unsupported MIME type"
+                Then("지원하지 않는 파일 형식 예외가 발생하고 Storage는 호출되지 않는다") {
+                    shouldThrow<InvalidFileTypeException> {
+                        service.execute(command)
+                    }
+                    verify(exactly = 0) { storagePort.upload(any(), any(), any()) }
                 }
             }
         }
