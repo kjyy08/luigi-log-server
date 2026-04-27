@@ -86,6 +86,7 @@ interface PostRepository : Repository<Post, PostId> {
         status: PostStatus?,
         type: ContentType?,
         q: String?,
+        tag: String?,
         limit: Int,
         cursor: PostCursor?,
     ): PostListResult

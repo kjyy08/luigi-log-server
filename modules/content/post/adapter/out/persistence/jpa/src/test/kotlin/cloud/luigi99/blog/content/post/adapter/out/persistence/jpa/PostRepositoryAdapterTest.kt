@@ -221,17 +221,19 @@ class PostRepositoryAdapterTest :
                         status = null,
                         type = null,
                         q = null,
+                        tag = null,
                         cursorCreatedAt = null,
                         cursorPostId = null,
                         statusFilterEnabled = false,
                         typeFilterEnabled = false,
                         qFilterEnabled = false,
+                        tagFilterEnabled = false,
                         cursorFilterEnabled = false,
                         limit = 7,
                     )
                 } returns emptyList()
 
-                val result = adapter.search(null, null, null, 6, null)
+                val result = adapter.search(null, null, null, null, 6, null)
 
                 Then("nullable 파라미터 IS NULL 조건 대신 명시적 필터 플래그를 비활성화한다") {
                     result.posts shouldBe emptyList()
@@ -241,11 +243,13 @@ class PostRepositoryAdapterTest :
                             status = null,
                             type = null,
                             q = null,
+                            tag = null,
                             cursorCreatedAt = null,
                             cursorPostId = null,
                             statusFilterEnabled = false,
                             typeFilterEnabled = false,
                             qFilterEnabled = false,
+                            tagFilterEnabled = false,
                             cursorFilterEnabled = false,
                             limit = 7,
                         )
@@ -259,17 +263,19 @@ class PostRepositoryAdapterTest :
                         status = PostStatus.PUBLISHED.name,
                         type = null,
                         q = null,
+                        tag = null,
                         cursorCreatedAt = null,
                         cursorPostId = null,
                         statusFilterEnabled = true,
                         typeFilterEnabled = false,
                         qFilterEnabled = false,
+                        tagFilterEnabled = false,
                         cursorFilterEnabled = false,
                         limit = 2,
                     )
                 } returns emptyList()
 
-                adapter.search(PostStatus.PUBLISHED, null, null, 1, null)
+                adapter.search(PostStatus.PUBLISHED, null, null, null, 1, null)
 
                 Then("상태 필터만 활성화하고 나머지 nullable 필터는 비활성화한다") {
                     verify(exactly = 1) {
@@ -277,11 +283,53 @@ class PostRepositoryAdapterTest :
                             status = PostStatus.PUBLISHED.name,
                             type = null,
                             q = null,
+                            tag = null,
                             cursorCreatedAt = null,
                             cursorPostId = null,
                             statusFilterEnabled = true,
                             typeFilterEnabled = false,
                             qFilterEnabled = false,
+                            tagFilterEnabled = false,
+                            cursorFilterEnabled = false,
+                            limit = 2,
+                        )
+                    }
+                }
+            }
+
+            When("태그 필터가 있으면") {
+                every {
+                    jpaRepository.search(
+                        status = null,
+                        type = null,
+                        q = null,
+                        tag = "Kotlin",
+                        cursorCreatedAt = null,
+                        cursorPostId = null,
+                        statusFilterEnabled = false,
+                        typeFilterEnabled = false,
+                        qFilterEnabled = false,
+                        tagFilterEnabled = true,
+                        cursorFilterEnabled = false,
+                        limit = 2,
+                    )
+                } returns emptyList()
+
+                adapter.search(null, null, null, " Kotlin ", 1, null)
+
+                Then("태그 필터를 trim한 exact match 조건으로 활성화한다") {
+                    verify(exactly = 1) {
+                        jpaRepository.search(
+                            status = null,
+                            type = null,
+                            q = null,
+                            tag = "Kotlin",
+                            cursorCreatedAt = null,
+                            cursorPostId = null,
+                            statusFilterEnabled = false,
+                            typeFilterEnabled = false,
+                            qFilterEnabled = false,
+                            tagFilterEnabled = true,
                             cursorFilterEnabled = false,
                             limit = 2,
                         )
