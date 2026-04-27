@@ -1,3 +1,10 @@
+# [1.9.0](https://github.com/kjyy08/luigi-log-server/compare/v1.8.1...v1.9.0) (2026-04-27)
+
+
+### Features
+
+* **posts:** 태그 정확 필터 추가 ([#87](https://github.com/kjyy08/luigi-log-server/issues/87)) ([4ba5d79](https://github.com/kjyy08/luigi-log-server/commit/4ba5d798e47efc416cf582dd931b9da02d0f333d))
+
 ## [1.8.1](https://github.com/kjyy08/luigi-log-server/compare/v1.8.0...v1.8.1) (2026-04-26)
 
 
