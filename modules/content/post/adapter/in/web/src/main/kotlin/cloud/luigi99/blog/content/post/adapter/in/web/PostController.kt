@@ -227,7 +227,15 @@ class PostController(private val postQueryFacade: PostQueryFacade, private val p
     ): ResponseEntity<CommonResponse<PostListResponse>> {
         log.info { "Listing posts with filters - status: $status, type: $type, tag: $tag" }
 
-        val query = GetPostsUseCase.Query(status = status, type = type, q = q, tag = tag, limit = limit, cursor = cursor)
+        val query =
+            GetPostsUseCase.Query(
+                status = status,
+                type = type,
+                q = q,
+                tag = tag,
+                limit = limit,
+                cursor = cursor,
+            )
         val response = postQueryFacade.getPosts().execute(query)
 
         val summaries =
