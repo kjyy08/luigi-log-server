@@ -130,20 +130,24 @@ class PostRepositoryAdapter(
         status: PostStatus?,
         type: ContentType?,
         q: String?,
+        tag: String?,
         limit: Int,
         cursor: PostRepository.PostCursor?,
     ): PostRepository.PostListResult {
         val trimmedQuery = q?.trim()?.takeIf { it.isNotEmpty() }
+        val trimmedTag = tag?.trim()?.takeIf { it.isNotEmpty() }
         val rows =
             jpaRepository.search(
                 status = status?.name,
                 type = type?.name,
                 q = trimmedQuery,
+                tag = trimmedTag,
                 cursorCreatedAt = cursor?.createdAt,
                 cursorPostId = cursor?.postId?.value,
                 statusFilterEnabled = status != null,
                 typeFilterEnabled = type != null,
                 qFilterEnabled = trimmedQuery != null,
+                tagFilterEnabled = trimmedTag != null,
                 cursorFilterEnabled = cursor != null,
                 limit = limit + 1,
             )

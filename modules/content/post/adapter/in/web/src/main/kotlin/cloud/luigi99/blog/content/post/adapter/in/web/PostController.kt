@@ -221,12 +221,13 @@ class PostController(private val postQueryFacade: PostQueryFacade, private val p
         @RequestParam(required = false) status: String?,
         @RequestParam(required = false) type: String?,
         @RequestParam(required = false) q: String?,
+        @RequestParam(required = false) tag: String?,
         @RequestParam(required = false) limit: Int?,
         @RequestParam(required = false) cursor: String?,
     ): ResponseEntity<CommonResponse<PostListResponse>> {
-        log.info { "Listing posts with filters - status: $status, type: $type" }
+        log.info { "Listing posts with filters - status: $status, type: $type, tag: $tag" }
 
-        val query = GetPostsUseCase.Query(status = status, type = type, q = q, limit = limit, cursor = cursor)
+        val query = GetPostsUseCase.Query(status = status, type = type, q = q, tag = tag, limit = limit, cursor = cursor)
         val response = postQueryFacade.getPosts().execute(query)
 
         val summaries =

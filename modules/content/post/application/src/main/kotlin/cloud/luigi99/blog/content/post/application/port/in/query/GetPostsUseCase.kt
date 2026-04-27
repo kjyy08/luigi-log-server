@@ -21,11 +21,13 @@ interface GetPostsUseCase {
      *
      * @property status 상태 필터 (null이면 전체)
      * @property type 컨텐츠 타입 필터 (null이면 전체)
+     * @property tag 태그 exact match 필터 (null이면 전체)
      */
     data class Query(
         val status: String? = null,
         val type: String? = null,
         val q: String? = null,
+        val tag: String? = null,
         val limit: Int? = null,
         val cursor: String? = null,
     )

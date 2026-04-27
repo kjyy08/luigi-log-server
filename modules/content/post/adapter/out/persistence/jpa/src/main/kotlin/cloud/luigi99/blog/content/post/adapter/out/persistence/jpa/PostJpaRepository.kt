@@ -93,6 +93,11 @@ interface PostJpaRepository : JpaRepository<PostJpaEntity, UUID> {
                 WHERE pt.post_id = p.id
                   AND lower(pt.tag_name) LIKE lower(concat('%', CAST(:q AS varchar), '%'))
             ))
+          AND (:tagFilterEnabled = false OR EXISTS (
+                SELECT 1 FROM post_tag pt
+                WHERE pt.post_id = p.id
+                  AND pt.tag_name = CAST(:tag AS varchar)
+            ))
           AND (
             :cursorFilterEnabled = false
             OR p.created_at < :cursorCreatedAt
@@ -107,11 +112,13 @@ interface PostJpaRepository : JpaRepository<PostJpaEntity, UUID> {
         @Param("status") status: String?,
         @Param("type") type: String?,
         @Param("q") q: String?,
+        @Param("tag") tag: String?,
         @Param("cursorCreatedAt") cursorCreatedAt: LocalDateTime?,
         @Param("cursorPostId") cursorPostId: UUID?,
         @Param("statusFilterEnabled") statusFilterEnabled: Boolean,
         @Param("typeFilterEnabled") typeFilterEnabled: Boolean,
         @Param("qFilterEnabled") qFilterEnabled: Boolean,
+        @Param("tagFilterEnabled") tagFilterEnabled: Boolean,
         @Param("cursorFilterEnabled") cursorFilterEnabled: Boolean,
         @Param("limit") limit: Int,
     ): List<PostJpaEntity>

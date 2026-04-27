@@ -19,6 +19,7 @@ import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
+import io.mockk.verify
 
 /**
  * GetPostsService 테스트
@@ -58,7 +59,7 @@ class GetPostsServiceTest :
                     )
 
                 every { postRepository.findAll() } returns posts
-                every { postRepository.search(null, null, null, 20, null) } returns
+                every { postRepository.search(null, null, null, null, 20, null) } returns
                     PostRepository.PostListResult(posts, false)
                 every { postRepository.countCommentsByPostIds(any()) } returns emptyMap()
                 every { memberClient.getAuthors(any()) } returns emptyMap()
@@ -98,7 +99,7 @@ class GetPostsServiceTest :
                     )
 
                 every { postRepository.findAllByStatus(PostStatus.PUBLISHED) } returns publishedPosts
-                every { postRepository.search(PostStatus.PUBLISHED, null, null, 20, null) } returns
+                every { postRepository.search(PostStatus.PUBLISHED, null, null, null, 20, null) } returns
                     PostRepository.PostListResult(publishedPosts, false)
                 every { postRepository.countCommentsByPostIds(any()) } returns emptyMap()
                 every { memberClient.getAuthors(any()) } returns emptyMap()
@@ -131,7 +132,7 @@ class GetPostsServiceTest :
                     )
 
                 every { postRepository.findAllByContentType(ContentType.PORTFOLIO) } returns portfolioPosts
-                every { postRepository.search(null, ContentType.PORTFOLIO, null, 20, null) } returns
+                every { postRepository.search(null, ContentType.PORTFOLIO, null, null, 20, null) } returns
                     PostRepository.PostListResult(portfolioPosts, false)
                 every { postRepository.countCommentsByPostIds(any()) } returns emptyMap()
                 every { memberClient.getAuthors(any()) } returns emptyMap()
@@ -140,6 +141,29 @@ class GetPostsServiceTest :
 
                 Then("PORTFOLIO 글만 반환된다") {
                     response.posts.size shouldBe 1
+                }
+            }
+        }
+        Given("태그 exact match 필터로 글 목록을 조회할 때") {
+            val postRepository = mockk<PostRepository>()
+            val memberClient = mockk<MemberClient>()
+            val service = GetPostsService(postRepository, memberClient)
+
+            When("q와 tag가 함께 있으면") {
+                val query = GetPostsUseCase.Query(q = "kotlin", tag = "Spring Boot")
+
+                every { postRepository.search(null, null, "kotlin", "Spring Boot", 20, null) } returns
+                    PostRepository.PostListResult(emptyList(), false)
+                every { postRepository.countCommentsByPostIds(any()) } returns emptyMap()
+                every { memberClient.getAuthors(any()) } returns emptyMap()
+
+                val response = service.execute(query)
+
+                Then("q와 tag를 모두 repository 검색 조건으로 전달한다") {
+                    response.posts shouldBe emptyList()
+                    verify(exactly = 1) {
+                        postRepository.search(null, null, "kotlin", "Spring Boot", 20, null)
+                    }
                 }
             }
         }

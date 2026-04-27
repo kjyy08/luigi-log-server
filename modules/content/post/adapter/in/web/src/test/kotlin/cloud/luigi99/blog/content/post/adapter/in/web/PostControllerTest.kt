@@ -8,6 +8,7 @@ import cloud.luigi99.blog.content.post.application.port.`in`.command.PostCommand
 import cloud.luigi99.blog.content.post.application.port.`in`.command.UpdatePostUseCase
 import cloud.luigi99.blog.content.post.application.port.`in`.query.GetPostByIdUseCase
 import cloud.luigi99.blog.content.post.application.port.`in`.query.GetPostBySlugUseCase
+import cloud.luigi99.blog.content.post.application.port.`in`.query.GetPostsUseCase
 import cloud.luigi99.blog.content.post.application.port.`in`.query.PostQueryFacade
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
@@ -17,6 +18,7 @@ import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.verify
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.AccessDeniedException
@@ -431,6 +433,43 @@ class PostControllerTest :
                     response.body
                         ?.data
                         ?.title shouldBe "테스트 글"
+                }
+            }
+        }
+
+        Given("글 목록을 태그로 조회할 때") {
+            val getPostsUseCase = mockk<GetPostsUseCase>()
+            every { postQueryFacade.getPosts() } returns getPostsUseCase
+
+            When("q와 tag query parameter가 함께 전달되면") {
+                every { getPostsUseCase.execute(any()) } returns
+                    GetPostsUseCase.Response(
+                        posts = emptyList(),
+                        pageInfo = GetPostsUseCase.PageInfo(limit = 20, hasNext = false, nextCursor = null),
+                    )
+
+                val response =
+                    controller.getPosts(
+                        status = "PUBLISHED",
+                        type = "BLOG",
+                        q = "kotlin",
+                        tag = "Spring Boot",
+                        limit = null,
+                        cursor = null,
+                    )
+
+                Then("tag를 q와 별도 필터로 UseCase에 전달해야 한다") {
+                    response.statusCode shouldBe HttpStatus.OK
+                    verify(exactly = 1) {
+                        getPostsUseCase.execute(
+                            match {
+                                it.status == "PUBLISHED" &&
+                                    it.type == "BLOG" &&
+                                    it.q == "kotlin" &&
+                                    it.tag == "Spring Boot"
+                            },
+                        )
+                    }
                 }
             }
         }

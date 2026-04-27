@@ -409,7 +409,7 @@ interface PostApi {
 
     @Operation(
         summary = "블로그 글 목록 조회",
-        description = "블로그 글 목록을 조회합니다. 상태 및 타입 필터링이 가능합니다.",
+        description = "블로그 글 목록을 조회합니다. 상태, 타입, 검색어, exact 태그 필터링이 가능합니다.",
     )
     @ApiResponses(
         value = [
@@ -460,6 +460,9 @@ interface PostApi {
         @Parameter(description = "상태 필터 (DRAFT, PUBLISHED, ARCHIVED)") @RequestParam(required = false) status: String?,
         @Parameter(description = "타입 필터 (BLOG, PORTFOLIO)") @RequestParam(required = false) type: String?,
         @Parameter(description = "검색어 (title/body/tags)") @RequestParam(required = false) q: String?,
+        @Parameter(description = "태그 exact match 필터 (q의 LIKE 검색과 별도, 함께 지정하면 AND 적용)")
+        @RequestParam(required = false)
+        tag: String?,
         @Parameter(description = "페이지 크기 (기본 20, 최대 50)") @RequestParam(required = false) limit: Int?,
         @Parameter(description = "커서") @RequestParam(required = false) cursor: String?,
     ): ResponseEntity<CommonResponse<PostListResponse>>

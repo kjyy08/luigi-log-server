@@ -29,10 +29,11 @@ class GetPostsService(private val postRepository: PostRepository, private val me
         val cursor = query.cursor?.let { decodeCursor(it) }
 
         log.info {
-            "Listing posts with filters - status: ${query.status}, type: ${query.type}, q: ${query.q}, limit: $limit"
+            "Listing posts with filters - status: ${query.status}, type: ${query.type}, " +
+                "q: ${query.q}, tag: ${query.tag}, limit: $limit"
         }
 
-        val result = postRepository.search(status, type, query.q, limit, cursor)
+        val result = postRepository.search(status, type, query.q, query.tag, limit, cursor)
         val posts = result.posts
         val commentCounts = postRepository.countCommentsByPostIds(posts.map { it.entityId })
         val memberIds =
