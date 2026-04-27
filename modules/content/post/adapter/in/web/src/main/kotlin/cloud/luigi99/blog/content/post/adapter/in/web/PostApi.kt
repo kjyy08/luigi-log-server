@@ -159,8 +159,9 @@ interface PostApi {
 
     @Operation(
         summary = "블로그 글 수정",
-        description = "기존 블로그 글의 제목, 본문, 태그, 상태를 선택적으로 수정합니다. " +
-            "null인 필드는 변경되지 않습니다. tags는 null이면 변경하지 않고, []이면 전체 제거하며, 값이 있으면 요청 태그로 교체합니다.",
+        description =
+            "기존 블로그 글의 제목, 본문, 태그, 상태를 선택적으로 수정합니다. " +
+                "null인 필드는 변경되지 않습니다. tags는 null이면 변경하지 않고, []이면 전체 제거하며, 값이 있으면 요청 태그로 교체합니다.",
         security = [SecurityRequirement(name = "Bearer Authentication")],
     )
     @ApiResponses(
