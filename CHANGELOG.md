@@ -1,3 +1,10 @@
+## [1.9.1](https://github.com/kjyy08/luigi-log-server/compare/v1.9.0...v1.9.1) (2026-04-27)
+
+
+### Bug Fixes
+
+* **posts:** 수정 API에서 태그 교체 지원 ([804c632](https://github.com/kjyy08/luigi-log-server/commit/804c632ed973d18e9924ad45daddba07251ad030))
+
 # [1.9.0](https://github.com/kjyy08/luigi-log-server/compare/v1.8.1...v1.9.0) (2026-04-27)
 
 
