@@ -295,6 +295,39 @@ class PostTest :
             }
         }
 
+        Given("태그를 교체할 때") {
+            val post =
+                Post
+                    .create(
+                        MemberId.generate(),
+                        Title("태그 교체 테스트"),
+                        Slug("replace-tags-test"),
+                        Body("내용"),
+                        ContentType.BLOG,
+                    ).addTag("kotlin")
+                    .addTag("spring")
+
+            When("새 태그 목록으로 교체하면") {
+                val replaced = post.replaceTags(listOf("java", "spring-boot"))
+
+                Then("기존 태그가 요청 태그로 교체된다") {
+                    replaced.tags shouldBe setOf("java", "spring-boot")
+                }
+
+                Then("현재 인스턴스가 변경되어 반환된다") {
+                    replaced shouldBeSameInstanceAs post
+                }
+            }
+
+            When("빈 목록으로 교체하면") {
+                val cleared = post.replaceTags(emptyList())
+
+                Then("모든 태그가 제거된다") {
+                    cleared.tags.shouldBeEmpty()
+                }
+            }
+        }
+
         Given("영속성에서 로드된 데이터가 주어졌을 때") {
             val entityId = PostId.generate()
             val memberId = MemberId.generate()

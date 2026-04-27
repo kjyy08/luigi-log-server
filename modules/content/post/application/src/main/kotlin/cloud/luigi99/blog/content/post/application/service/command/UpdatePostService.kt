@@ -19,7 +19,7 @@ private val log = KotlinLogging.logger {}
 /**
  * Post 수정 유스케이스 구현체
  *
- * Post의 제목, 본문, 상태를 선택적으로 수정합니다.
+ * Post의 제목, 본문, 태그, 상태를 선택적으로 수정합니다.
  */
 @Service
 class UpdatePostService(private val postRepository: PostRepository, private val memberClient: MemberClient) :
@@ -27,7 +27,9 @@ class UpdatePostService(private val postRepository: PostRepository, private val 
     @Transactional
     override fun execute(command: UpdatePostUseCase.Command): UpdatePostUseCase.Response {
         log.info {
-            "Updating post: ${command.postId} by member: ${command.memberId} (title=${command.title != null}, body=${command.body != null}, status=${command.status})"
+            "Updating post: ${command.postId} by member: ${command.memberId} " +
+                "(title=${command.title != null}, body=${command.body != null}, " +
+                "tags=${command.tags != null}, status=${command.status})"
         }
 
         val memberId = MemberId.from(command.memberId)
@@ -48,7 +50,12 @@ class UpdatePostService(private val postRepository: PostRepository, private val 
             post = post.update(newTitle, newBody)
         }
 
-        // 2. 상태 변경 (status가 있으면)
+        // 2. 태그 교체 (tags가 null이 아니면)
+        if (command.tags != null) {
+            post = post.replaceTags(command.tags)
+        }
+
+        // 3. 상태 변경 (status가 있으면)
         if (command.status != null) {
             post =
                 when (command.status.uppercase()) {
