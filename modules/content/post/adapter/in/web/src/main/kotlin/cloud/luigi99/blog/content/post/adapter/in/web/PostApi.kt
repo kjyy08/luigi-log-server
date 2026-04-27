@@ -159,7 +159,8 @@ interface PostApi {
 
     @Operation(
         summary = "블로그 글 수정",
-        description = "기존 블로그 글의 제목, 본문, 상태를 선택적으로 수정합니다. null인 필드는 변경되지 않습니다.",
+        description = "기존 블로그 글의 제목, 본문, 태그, 상태를 선택적으로 수정합니다. " +
+            "null인 필드는 변경되지 않습니다. tags는 null이면 변경하지 않고, []이면 전체 제거하며, 값이 있으면 요청 태그로 교체합니다.",
         security = [SecurityRequirement(name = "Bearer Authentication")],
     )
     @ApiResponses(
@@ -167,7 +168,40 @@ interface PostApi {
             ApiResponse(
                 responseCode = "200",
                 description = "글 수정 성공",
-                content = [Content(schema = Schema(implementation = CommonResponse::class))],
+                content = [
+                    Content(
+                        schema = Schema(implementation = CommonResponse::class),
+                        examples = [
+                            ExampleObject(
+                                name = "UpdatePostTagsSuccess",
+                                value = """
+                                {
+                                  "success": true,
+                                  "data": {
+                                    "postId": "550e8400-e29b-41d4-a716-446655440000",
+                                    "author": {
+                                      "memberId": "987e6543-e21b-98d7-a654-426614174111",
+                                      "nickname": "Luigi99",
+                                      "profileImageUrl": null,
+                                      "username": "luigi99"
+                                    },
+                                    "title": "Kotlin으로 DDD 구현하기",
+                                    "slug": "kotlin-ddd-implementation",
+                                    "body": "# 시작하기\n\nKotlin과 DDD를 결합하면...",
+                                    "type": "BLOG",
+                                    "status": "DRAFT",
+                                    "tags": ["Kotlin", "Spring"],
+                                    "createdAt": "2025-12-31T12:00:00",
+                                    "updatedAt": "2025-12-31T12:30:00"
+                                  },
+                                  "error": null,
+                                  "timestamp": "2025-12-31T12:30:00"
+                                }
+                                """,
+                            ),
+                        ],
+                    ),
+                ],
             ),
             ApiResponse(
                 responseCode = "401",

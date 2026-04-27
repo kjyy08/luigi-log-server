@@ -225,4 +225,22 @@ class Post private constructor(
         this.tags = tags - tagName
         return this
     }
+
+    /**
+     * 태그를 요청 태그 목록으로 교체합니다.
+     *
+     * 빈 목록이면 모든 태그가 제거됩니다.
+     *
+     * @param tagNames 교체할 태그 이름 목록
+     * @return 태그가 교체된 Post
+     */
+    fun replaceTags(tagNames: Iterable<String>): Post {
+        tagNames.forEach { tagName ->
+            require(tagName.isNotBlank()) { "Tag name cannot be blank" }
+            require(tagName.length <= 50) { "Tag name must not exceed 50 characters" }
+        }
+
+        this.tags = tagNames.toSet()
+        return this
+    }
 }

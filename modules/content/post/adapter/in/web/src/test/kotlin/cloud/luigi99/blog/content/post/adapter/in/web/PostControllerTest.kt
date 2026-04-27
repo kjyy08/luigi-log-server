@@ -18,6 +18,7 @@ import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.slot
 import io.mockk.verify
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpStatus
@@ -254,6 +255,49 @@ class PostControllerTest :
         Given("API key 권한으로 글을 수정할 때") {
             val updatePostUseCase = mockk<UpdatePostUseCase>()
             every { postCommandFacade.updatePost() } returns updatePostUseCase
+
+            When("post:update scope만 가진 API key가 tags를 변경하면") {
+                val postId = UUID.randomUUID().toString()
+                val request = UpdatePostRequest(tags = listOf("Kotlin", "Spring"))
+                val commandSlot = slot<UpdatePostUseCase.Command>()
+                val expectedResponse =
+                    UpdatePostUseCase.Response(
+                        postId = postId,
+                        author = UpdatePostUseCase.AuthorInfo("member-id", "Luigi", null, "test-user"),
+                        title = "원본 제목",
+                        slug = "original-slug",
+                        body = "원본 본문",
+                        type = "BLOG",
+                        status = "DRAFT",
+                        tags = setOf("Kotlin", "Spring"),
+                        createdAt = LocalDateTime.now(),
+                        updatedAt = LocalDateTime.now(),
+                    )
+                every { updatePostUseCase.execute(capture(commandSlot)) } returns expectedResponse
+
+                Then("수정 요청이 허용되고 tags가 Command로 전달되어야 한다") {
+                    setAuthentication(authorities = listOf("SCOPE_post:update"))
+                    val response = controller.updatePost("member-id", postId, request)
+
+                    response.statusCode shouldBe HttpStatus.OK
+                    commandSlot.captured.tags shouldBe listOf("Kotlin", "Spring")
+                    response.body
+                        ?.data
+                        ?.tags shouldBe setOf("Kotlin", "Spring")
+                }
+            }
+
+            When("post:publish scope만 가진 API key가 tags를 변경하면") {
+                val postId = UUID.randomUUID().toString()
+                val request = UpdatePostRequest(tags = emptyList())
+                Then("접근이 거부되고 수정 UseCase는 실행되지 않아야 한다") {
+                    setAuthentication(authorities = listOf("SCOPE_post:publish"))
+
+                    shouldThrow<AccessDeniedException> {
+                        controller.updatePost("member-id", postId, request)
+                    }
+                }
+            }
 
             When("post:update scope만 가진 API key가 status를 PUBLISHED로 변경하면") {
                 val postId = UUID.randomUUID().toString()

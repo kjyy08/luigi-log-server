@@ -5,7 +5,7 @@ import java.time.LocalDateTime
 /**
  * Post 수정 UseCase
  *
- * Post의 제목, 본문, 상태를 수정합니다.
+ * Post의 제목, 본문, 태그, 상태를 수정합니다.
  */
 interface UpdatePostUseCase {
     /**
@@ -24,6 +24,7 @@ interface UpdatePostUseCase {
      * @property title 새로운 제목 (null이면 변경하지 않음)
      * @property body 새로운 본문 (null이면 변경하지 않음)
      * @property status 새로운 상태 (null이면 변경하지 않음, "PUBLISHED", "ARCHIVED", "DRAFT")
+     * @property tags 새로운 태그 목록 (null이면 변경하지 않음, 빈 목록이면 전체 제거)
      */
     data class Command(
         val memberId: String,
@@ -31,6 +32,7 @@ interface UpdatePostUseCase {
         val title: String?,
         val body: String?,
         val status: String? = null,
+        val tags: List<String>? = null,
     )
 
     /**

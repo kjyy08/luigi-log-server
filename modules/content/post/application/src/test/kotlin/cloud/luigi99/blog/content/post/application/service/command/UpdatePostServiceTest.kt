@@ -249,6 +249,132 @@ class UpdatePostServiceTest :
             }
         }
 
+        Given("글의 태그를 수정할 때") {
+            val postRepository = mockk<PostRepository>()
+            val memberClient = mockk<MemberClient>()
+            val service = UpdatePostService(postRepository, memberClient)
+            val memberId = MemberId.generate()
+
+            When("작성자가 tags를 새 목록으로 보내면") {
+                val postId = PostId.generate()
+                val command =
+                    UpdatePostUseCase.Command(
+                        memberId = memberId.value.toString(),
+                        postId = postId.value.toString(),
+                        title = null,
+                        body = null,
+                        tags = listOf("Kotlin", "Spring"),
+                    )
+
+                val originalPost =
+                    Post
+                        .create(
+                            memberId = memberId,
+                            title = Title("원본 제목"),
+                            slug = Slug("original-post"),
+                            body = Body("원본 본문"),
+                            type = ContentType.BLOG,
+                        ).addTag("Old")
+
+                every { postRepository.findById(postId) } returns originalPost
+                every { postRepository.save(any()) } answers { firstArg() }
+                every { memberClient.getAuthor(memberId.value.toString()) } returns
+                    MemberClient.Author(
+                        memberId = memberId.value.toString(),
+                        nickname = "TestUser",
+                        profileImageUrl = null,
+                        username = "test_user",
+                    )
+
+                val response = service.execute(command)
+
+                Then("태그가 요청 태그로 교체된다") {
+                    response.tags shouldBe setOf("Kotlin", "Spring")
+                }
+
+                Then("제목과 본문은 유지된다") {
+                    response.title shouldBe "원본 제목"
+                    response.body shouldBe "원본 본문"
+                }
+            }
+
+            When("작성자가 tags를 null로 보내면") {
+                val postId = PostId.generate()
+                val command =
+                    UpdatePostUseCase.Command(
+                        memberId = memberId.value.toString(),
+                        postId = postId.value.toString(),
+                        title = null,
+                        body = null,
+                        tags = null,
+                    )
+
+                val originalPost =
+                    Post
+                        .create(
+                            memberId = memberId,
+                            title = Title("원본 제목"),
+                            slug = Slug("original-post"),
+                            body = Body("원본 본문"),
+                            type = ContentType.BLOG,
+                        ).addTag("Kotlin")
+
+                every { postRepository.findById(postId) } returns originalPost
+                every { postRepository.save(any()) } answers { firstArg() }
+                every { memberClient.getAuthor(memberId.value.toString()) } returns
+                    MemberClient.Author(
+                        memberId = memberId.value.toString(),
+                        nickname = "TestUser",
+                        profileImageUrl = null,
+                        username = "test_user",
+                    )
+
+                val response = service.execute(command)
+
+                Then("기존 태그가 유지된다") {
+                    response.tags shouldBe setOf("Kotlin")
+                }
+            }
+
+            When("작성자가 tags를 빈 목록으로 보내면") {
+                val postId = PostId.generate()
+                val command =
+                    UpdatePostUseCase.Command(
+                        memberId = memberId.value.toString(),
+                        postId = postId.value.toString(),
+                        title = null,
+                        body = null,
+                        tags = emptyList(),
+                    )
+
+                val originalPost =
+                    Post
+                        .create(
+                            memberId = memberId,
+                            title = Title("원본 제목"),
+                            slug = Slug("original-post"),
+                            body = Body("원본 본문"),
+                            type = ContentType.BLOG,
+                        ).addTag("Kotlin")
+
+                every { postRepository.findById(postId) } returns originalPost
+                every { postRepository.save(any()) } answers { firstArg() }
+                every { memberClient.getAuthor(memberId.value.toString()) } returns
+                    MemberClient.Author(
+                        memberId = memberId.value.toString(),
+                        nickname = "TestUser",
+                        profileImageUrl = null,
+                        username = "test_user",
+                    )
+
+                val response = service.execute(command)
+
+                Then("태그가 모두 제거된다") {
+                    response.tags shouldBe emptySet()
+                }
+            }
+        }
+
         Given("존재하지 않는 글을 수정하려고 할 때") {
             val postRepository = mockk<PostRepository>()
             val memberClient = mockk<MemberClient>()

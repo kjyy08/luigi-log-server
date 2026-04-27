@@ -103,7 +103,8 @@ class PostController(private val postQueryFacade: PostQueryFacade, private val p
     ): ResponseEntity<CommonResponse<PostResponse>> {
         log.info {
             "Updating post: $postId " +
-                "(title=${request.title != null}, body=${request.body != null}, status=${request.status})"
+                "(title=${request.title != null}, body=${request.body != null}, " +
+                "tags=${request.tags != null}, status=${request.status})"
         }
 
         requireUpdateScopes(request)
@@ -115,6 +116,7 @@ class PostController(private val postQueryFacade: PostQueryFacade, private val p
                 title = request.title,
                 body = request.body,
                 status = request.status,
+                tags = request.tags,
             )
 
         val response = postCommandFacade.updatePost().execute(command)
@@ -327,7 +329,7 @@ class PostController(private val postQueryFacade: PostQueryFacade, private val p
         }
 
         val missingScopes = mutableListOf<String>()
-        val changesContent = request.title != null || request.body != null
+        val changesContent = request.title != null || request.body != null || request.tags != null
         val changesStatus = request.status != null
 
         if (changesContent && "SCOPE_post:update" !in authorities) {
