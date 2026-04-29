@@ -171,11 +171,15 @@ class GetPostBySlugServiceTest :
                 val response = service.execute(query)
 
                 Then("previousPost와 nextPost를 모두 매핑한다") {
-                    response.previousPost?.postId shouldBe previous.entityId.value.toString()
+                    response.previousPost?.postId shouldBe
+                        previous.entityId.value
+                            .toString()
                     response.previousPost?.title shouldBe "이전 글"
                     response.previousPost?.slug shouldBe "older-post"
                     response.previousPost?.createdAt shouldBe previous.createdAt
-                    response.nextPost?.postId shouldBe next.entityId.value.toString()
+                    response.nextPost?.postId shouldBe
+                        next.entityId.value
+                            .toString()
                     response.nextPost?.title shouldBe "다음 글"
                     response.nextPost?.slug shouldBe "newer-post"
                     response.nextPost?.createdAt shouldBe next.createdAt
@@ -216,7 +220,9 @@ class GetPostBySlugServiceTest :
 
                 Then("previousPost는 null이고 nextPost만 매핑한다") {
                     response.previousPost shouldBe null
-                    response.nextPost?.postId shouldBe next.entityId.value.toString()
+                    response.nextPost?.postId shouldBe
+                        next.entityId.value
+                            .toString()
                     response.nextPost?.title shouldBe "최신 글"
                     response.nextPost?.slug shouldBe "newest-post"
                     response.nextPost?.createdAt shouldBe next.createdAt
@@ -304,13 +310,15 @@ class GetPostBySlugServiceTest :
     })
 
 private fun publishedSlugPost(memberId: MemberId): Post =
-    Post.create(
-        memberId = memberId,
-        title = Title("테스트 글"),
-        slug = Slug("test-post"),
-        body = Body("테스트 내용"),
-        type = ContentType.BLOG,
-    ).publish()
+    Post
+        .create(
+            memberId = memberId,
+            title = Title("테스트 글"),
+            slug = Slug("test-post"),
+            body = Body("테스트 내용"),
+            type = ContentType.BLOG,
+        )
+        .publish()
 
 private fun draftSlugPost(memberId: MemberId): Post =
     Post.create(
