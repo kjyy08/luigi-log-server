@@ -5,6 +5,7 @@ import cloud.luigi99.blog.content.post.application.port.out.MemberClient
 import cloud.luigi99.blog.content.post.application.port.out.PostRepository
 import cloud.luigi99.blog.content.post.application.port.out.PostViewCountDeduplicationPort
 import cloud.luigi99.blog.content.post.domain.exception.PostNotFoundException
+import cloud.luigi99.blog.content.post.domain.model.Post
 import cloud.luigi99.blog.content.post.domain.vo.PostId
 import cloud.luigi99.blog.content.post.domain.vo.PostStatus
 import cloud.luigi99.blog.content.post.domain.vo.Slug
@@ -42,6 +43,18 @@ class GetPostBySlugService(
             }
         }
         val commentCount = postRepository.countCommentsByPostIds(listOf(post.entityId))[post.entityId] ?: 0
+        val previousPost =
+            if (post.status == PostStatus.PUBLISHED) {
+                postRepository.findPreviousPublishedPost(post)?.toAdjacentPostInfo()
+            } else {
+                null
+            }
+        val nextPost =
+            if (post.status == PostStatus.PUBLISHED) {
+                postRepository.findNextPublishedPost(post)?.toAdjacentPostInfo()
+            } else {
+                null
+            }
 
         val author =
             memberClient.getAuthor(
@@ -70,8 +83,20 @@ class GetPostBySlugService(
             commentCount = commentCount,
             createdAt = post.createdAt,
             updatedAt = post.updatedAt,
+            previousPost = previousPost,
+            nextPost = nextPost,
         )
     }
+
+    private fun Post.toAdjacentPostInfo(): GetPostBySlugUseCase.AdjacentPostInfo =
+        GetPostBySlugUseCase.AdjacentPostInfo(
+            postId =
+                entityId.value
+                    .toString(),
+            title = title.value,
+            slug = slug.value,
+            createdAt = createdAt,
+        )
 
     private fun isUniqueView(postId: PostId, visitorKey: String): Boolean =
         runCatching { postViewCountDeduplicationPort.isUniqueView(postId, visitorKey) }

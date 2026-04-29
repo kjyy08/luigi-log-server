@@ -37,6 +37,8 @@ interface GetPostBySlugUseCase {
      * @property tags 태그 목록
      * @property createdAt 생성 시간
      * @property updatedAt 수정 시간
+     * @property previousPost 현재 글보다 더 오래된 인접 글
+     * @property nextPost 현재 글보다 더 최신인 인접 글
      */
     data class Response(
         val postId: String,
@@ -51,6 +53,15 @@ interface GetPostBySlugUseCase {
         val commentCount: Long,
         val createdAt: LocalDateTime?,
         val updatedAt: LocalDateTime?,
+        val previousPost: AdjacentPostInfo? = null,
+        val nextPost: AdjacentPostInfo? = null,
+    )
+
+    data class AdjacentPostInfo(
+        val postId: String,
+        val title: String,
+        val slug: String,
+        val createdAt: LocalDateTime?,
     )
 
     data class AuthorInfo(

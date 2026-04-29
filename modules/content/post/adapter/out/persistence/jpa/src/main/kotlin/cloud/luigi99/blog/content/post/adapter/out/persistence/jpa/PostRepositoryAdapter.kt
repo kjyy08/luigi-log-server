@@ -94,6 +94,30 @@ class PostRepositoryAdapter(
             ?.let { PostMapper.toDomain(it) }
     }
 
+    override fun findPreviousPublishedPost(currentPost: Post): Post? {
+        val currentCreatedAt = currentPost.createdAt ?: return null
+        log.debug { "Finding previous published post for post: ${currentPost.entityId}" }
+        return jpaRepository
+            .findPreviousPublishedPost(
+                memberId = currentPost.memberId.value,
+                type = currentPost.type.name,
+                currentCreatedAt = currentCreatedAt,
+                currentPostId = currentPost.entityId.value,
+            )?.let { PostMapper.toDomain(it) }
+    }
+
+    override fun findNextPublishedPost(currentPost: Post): Post? {
+        val currentCreatedAt = currentPost.createdAt ?: return null
+        log.debug { "Finding next published post for post: ${currentPost.entityId}" }
+        return jpaRepository
+            .findNextPublishedPost(
+                memberId = currentPost.memberId.value,
+                type = currentPost.type.name,
+                currentCreatedAt = currentCreatedAt,
+                currentPostId = currentPost.entityId.value,
+            )?.let { PostMapper.toDomain(it) }
+    }
+
     /**
      * 특정 사용자가 해당 Slug를 사용 중인지 확인합니다.
      */

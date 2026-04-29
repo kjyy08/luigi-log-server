@@ -443,6 +443,8 @@ class PostControllerTest :
                 val username = "testuser"
                 val slug = "test-post"
 
+                val previousCreatedAt = LocalDateTime.now().minusDays(1)
+                val nextCreatedAt = LocalDateTime.now().plusDays(1)
                 val expectedResponse =
                     GetPostBySlugUseCase.Response(
                         postId = UUID.randomUUID().toString(),
@@ -457,6 +459,20 @@ class PostControllerTest :
                         commentCount = 0,
                         createdAt = LocalDateTime.now(),
                         updatedAt = LocalDateTime.now(),
+                        previousPost =
+                            GetPostBySlugUseCase.AdjacentPostInfo(
+                                postId = UUID.randomUUID().toString(),
+                                title = "이전 글",
+                                slug = "previous-post",
+                                createdAt = previousCreatedAt,
+                            ),
+                        nextPost =
+                            GetPostBySlugUseCase.AdjacentPostInfo(
+                                postId = UUID.randomUUID().toString(),
+                                title = "다음 글",
+                                slug = "next-post",
+                                createdAt = nextCreatedAt,
+                            ),
                     )
 
                 every { getPostBySlugUseCase.execute(any()) } returns expectedResponse
@@ -477,6 +493,22 @@ class PostControllerTest :
                     response.body
                         ?.data
                         ?.title shouldBe "테스트 글"
+                    response.body
+                        ?.data
+                        ?.previousPost
+                        ?.slug shouldBe "previous-post"
+                    response.body
+                        ?.data
+                        ?.previousPost
+                        ?.createdAt shouldBe previousCreatedAt
+                    response.body
+                        ?.data
+                        ?.nextPost
+                        ?.slug shouldBe "next-post"
+                    response.body
+                        ?.data
+                        ?.nextPost
+                        ?.createdAt shouldBe nextCreatedAt
                 }
             }
         }

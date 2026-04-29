@@ -51,6 +51,28 @@ interface PostRepository : Repository<Post, PostId> {
     fun findByUsernameAndSlug(username: String, slug: Slug): Post?
 
     /**
+     * 현재 글보다 더 오래된 같은 작성자/타입의 발행된 인접 Post를 조회합니다.
+     *
+     * canonical ordering: createdAt DESC, id DESC
+     * previous condition: createdAt < current.createdAt OR same createdAt and id < current.id
+     *
+     * @param currentPost 기준이 되는 현재 Post
+     * @return 이전 Post 또는 null (존재하지 않을 경우)
+     */
+    fun findPreviousPublishedPost(currentPost: Post): Post?
+
+    /**
+     * 현재 글보다 더 최신인 같은 작성자/타입의 발행된 인접 Post를 조회합니다.
+     *
+     * canonical ordering: createdAt DESC, id DESC
+     * next condition: createdAt > current.createdAt OR same createdAt and id > current.id
+     *
+     * @param currentPost 기준이 되는 현재 Post
+     * @return 다음 Post 또는 null (존재하지 않을 경우)
+     */
+    fun findNextPublishedPost(currentPost: Post): Post?
+
+    /**
      * 특정 사용자가 해당 slug를 이미 사용 중인지 확인합니다.
      *
      * @param memberId 회원 ID

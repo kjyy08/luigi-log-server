@@ -366,7 +366,10 @@ interface PostApi {
 
     @Operation(
         summary = "사용자의 특정 Slug 블로그 글 조회",
-        description = "사용자 이름과 URL Slug로 단일 블로그 글을 조회합니다.",
+        description =
+            "사용자 이름과 URL Slug로 단일 블로그 글을 조회합니다. " +
+                "응답의 previousPost는 현재 글보다 더 오래된 인접 글, " +
+                "nextPost는 현재 글보다 더 최신인 인접 글입니다.",
     )
     @ApiResponses(
         value = [
@@ -396,6 +399,18 @@ interface PostApi {
                                     "type": "BLOG",
                                     "status": "PUBLISHED",
                                     "tags": ["Kotlin", "DDD"],
+                                    "previousPost": {
+                                      "postId": "660e8400-e29b-41d4-a716-446655440000",
+                                      "title": "이전 블로그 글",
+                                      "slug": "previous-blog-post",
+                                      "createdAt": "2025-12-30T12:00:00"
+                                    },
+                                    "nextPost": {
+                                      "postId": "770e8400-e29b-41d4-a716-446655440000",
+                                      "title": "다음 블로그 글",
+                                      "slug": "next-blog-post",
+                                      "createdAt": "2026-01-01T12:00:00"
+                                    },
                                     "createdAt": "2025-12-31T12:00:00",
                                     "updatedAt": "2025-12-31T12:00:00"
                                   },

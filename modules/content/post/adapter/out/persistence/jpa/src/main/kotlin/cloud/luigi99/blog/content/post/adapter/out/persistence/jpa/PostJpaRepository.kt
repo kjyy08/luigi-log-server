@@ -83,6 +83,50 @@ interface PostJpaRepository : JpaRepository<PostJpaEntity, UUID> {
 
     @Query(
         """
+        SELECT p.* FROM post p
+        WHERE p.member_id = :memberId
+          AND p.type = CAST(:type AS varchar)
+          AND p.status = 'PUBLISHED'
+          AND (
+            p.created_at < :currentCreatedAt
+            OR (p.created_at = :currentCreatedAt AND p.id < :currentPostId)
+          )
+        ORDER BY p.created_at DESC, p.id DESC
+        LIMIT 1
+        """,
+        nativeQuery = true,
+    )
+    fun findPreviousPublishedPost(
+        @Param("memberId") memberId: UUID,
+        @Param("type") type: String,
+        @Param("currentCreatedAt") currentCreatedAt: LocalDateTime,
+        @Param("currentPostId") currentPostId: UUID,
+    ): PostJpaEntity?
+
+    @Query(
+        """
+        SELECT p.* FROM post p
+        WHERE p.member_id = :memberId
+          AND p.type = CAST(:type AS varchar)
+          AND p.status = 'PUBLISHED'
+          AND (
+            p.created_at > :currentCreatedAt
+            OR (p.created_at = :currentCreatedAt AND p.id > :currentPostId)
+          )
+        ORDER BY p.created_at ASC, p.id ASC
+        LIMIT 1
+        """,
+        nativeQuery = true,
+    )
+    fun findNextPublishedPost(
+        @Param("memberId") memberId: UUID,
+        @Param("type") type: String,
+        @Param("currentCreatedAt") currentCreatedAt: LocalDateTime,
+        @Param("currentPostId") currentPostId: UUID,
+    ): PostJpaEntity?
+
+    @Query(
+        """
         SELECT DISTINCT p.* FROM post p
         WHERE (:statusFilterEnabled = false OR p.status = CAST(:status AS varchar))
           AND (:typeFilterEnabled = false OR p.type = CAST(:type AS varchar))
