@@ -21,6 +21,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.verify
+import java.time.LocalDateTime
 import java.util.Optional
 import java.util.UUID
 
@@ -473,6 +474,122 @@ class PostRepositoryAdapterTest :
                 Then("해당 게시글이 반환된다") {
                     found shouldNotBe null
                     found?.slug shouldBe slug
+                }
+            }
+        }
+
+        Given("현재 글의 이전 발행 글을 조회할 때") {
+            val jpaRepository = mockk<PostJpaRepository>()
+            val eventContextManager = mockk<EventContextManager>()
+            val domainEventPublisher = mockk<DomainEventPublisher>()
+            val adapter = PostRepositoryAdapter(jpaRepository, eventContextManager, domainEventPublisher)
+            val memberId = MemberId.generate()
+            val currentCreatedAt = LocalDateTime.of(2025, 1, 2, 12, 0)
+            val currentPost =
+                Post.from(
+                    entityId = PostId.generate(),
+                    memberId = memberId,
+                    title = Title("현재 글"),
+                    slug = Slug("current-post"),
+                    body = Body("본문"),
+                    type = ContentType.BLOG,
+                    status = PostStatus.PUBLISHED,
+                    tags = emptySet(),
+                    createdAt = currentCreatedAt,
+                    updatedAt = currentCreatedAt,
+                )
+            val previousEntity =
+                PostJpaEntity
+                    .from(
+                        entityId = UUID.randomUUID(),
+                        memberId = memberId.value,
+                        title = "이전 글",
+                        slug = "previous-post",
+                        body = "본문",
+                        type = ContentType.BLOG,
+                        status = PostStatus.PUBLISHED,
+                    ).apply { createdAt = currentCreatedAt.minusDays(1) }
+
+            When("createdAt DESC, id DESC 기준으로 더 오래된 글이 존재하면") {
+                every {
+                    jpaRepository.findPreviousPublishedPost(
+                        memberId = memberId.value,
+                        type = ContentType.BLOG.name,
+                        currentCreatedAt = currentCreatedAt,
+                        currentPostId = currentPost.entityId.value,
+                    )
+                } returns previousEntity
+
+                val found = adapter.findPreviousPublishedPost(currentPost)
+
+                Then("same author/type PUBLISHED 조건의 이전 글이 반환된다") {
+                    found?.slug shouldBe Slug("previous-post")
+                    verify(exactly = 1) {
+                        jpaRepository.findPreviousPublishedPost(
+                            memberId = memberId.value,
+                            type = ContentType.BLOG.name,
+                            currentCreatedAt = currentCreatedAt,
+                            currentPostId = currentPost.entityId.value,
+                        )
+                    }
+                }
+            }
+        }
+
+        Given("현재 글의 다음 발행 글을 조회할 때") {
+            val jpaRepository = mockk<PostJpaRepository>()
+            val eventContextManager = mockk<EventContextManager>()
+            val domainEventPublisher = mockk<DomainEventPublisher>()
+            val adapter = PostRepositoryAdapter(jpaRepository, eventContextManager, domainEventPublisher)
+            val memberId = MemberId.generate()
+            val currentCreatedAt = LocalDateTime.of(2025, 1, 2, 12, 0)
+            val currentPost =
+                Post.from(
+                    entityId = PostId.generate(),
+                    memberId = memberId,
+                    title = Title("현재 글"),
+                    slug = Slug("current-post"),
+                    body = Body("본문"),
+                    type = ContentType.BLOG,
+                    status = PostStatus.PUBLISHED,
+                    tags = emptySet(),
+                    createdAt = currentCreatedAt,
+                    updatedAt = currentCreatedAt,
+                )
+            val nextEntity =
+                PostJpaEntity
+                    .from(
+                        entityId = UUID.randomUUID(),
+                        memberId = memberId.value,
+                        title = "다음 글",
+                        slug = "next-post",
+                        body = "본문",
+                        type = ContentType.BLOG,
+                        status = PostStatus.PUBLISHED,
+                    ).apply { createdAt = currentCreatedAt.plusDays(1) }
+
+            When("createdAt DESC, id DESC 기준으로 더 최신인 글이 존재하면") {
+                every {
+                    jpaRepository.findNextPublishedPost(
+                        memberId = memberId.value,
+                        type = ContentType.BLOG.name,
+                        currentCreatedAt = currentCreatedAt,
+                        currentPostId = currentPost.entityId.value,
+                    )
+                } returns nextEntity
+
+                val found = adapter.findNextPublishedPost(currentPost)
+
+                Then("same author/type PUBLISHED 조건의 다음 글이 반환된다") {
+                    found?.slug shouldBe Slug("next-post")
+                    verify(exactly = 1) {
+                        jpaRepository.findNextPublishedPost(
+                            memberId = memberId.value,
+                            type = ContentType.BLOG.name,
+                            currentCreatedAt = currentCreatedAt,
+                            currentPostId = currentPost.entityId.value,
+                        )
+                    }
                 }
             }
         }

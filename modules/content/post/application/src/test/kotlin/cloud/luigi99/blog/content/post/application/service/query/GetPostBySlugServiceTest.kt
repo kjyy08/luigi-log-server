@@ -9,6 +9,8 @@ import cloud.luigi99.blog.content.post.domain.exception.PostNotFoundException
 import cloud.luigi99.blog.content.post.domain.model.Post
 import cloud.luigi99.blog.content.post.domain.vo.Body
 import cloud.luigi99.blog.content.post.domain.vo.ContentType
+import cloud.luigi99.blog.content.post.domain.vo.PostId
+import cloud.luigi99.blog.content.post.domain.vo.PostStatus
 import cloud.luigi99.blog.content.post.domain.vo.Slug
 import cloud.luigi99.blog.content.post.domain.vo.Title
 import cloud.luigi99.blog.member.domain.member.vo.MemberId
@@ -19,6 +21,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.verify
+import java.time.LocalDateTime
 
 /**
  * GetPostBySlugService 테스트
@@ -46,6 +49,8 @@ class GetPostBySlugServiceTest :
 
             every { postRepository.findByUsernameAndSlug("testuser", Slug("test-post")) } returns post
             every { postRepository.countCommentsByPostIds(any()) } returns emptyMap()
+            every { postRepository.findPreviousPublishedPost(post) } returns null
+            every { postRepository.findNextPublishedPost(post) } returns null
             every { memberClient.getAuthor(any()) } returns authorOfSlugPost(post)
 
             When("Redis dedupe가 최초 조회로 판단하면") {
@@ -80,6 +85,8 @@ class GetPostBySlugServiceTest :
             every { postRepository.findByUsernameAndSlug("testuser", Slug("test-post")) } returns post
             every { deduplicationPort.isUniqueView(post.entityId, "visitor-key") } returns false
             every { postRepository.countCommentsByPostIds(any()) } returns emptyMap()
+            every { postRepository.findPreviousPublishedPost(post) } returns null
+            every { postRepository.findNextPublishedPost(post) } returns null
             every { memberClient.getAuthor(any()) } returns authorOfSlugPost(post)
 
             When("Redis dedupe가 중복 조회로 판단하면") {
@@ -110,6 +117,8 @@ class GetPostBySlugServiceTest :
                 deduplicationPort.isUniqueView(post.entityId, "visitor-key")
             } throws IllegalStateException("redis down")
             every { postRepository.countCommentsByPostIds(any()) } returns emptyMap()
+            every { postRepository.findPreviousPublishedPost(post) } returns null
+            every { postRepository.findNextPublishedPost(post) } returns null
             every { memberClient.getAuthor(any()) } returns authorOfSlugPost(post)
 
             When("상세 글을 조회하면") {
@@ -119,6 +128,128 @@ class GetPostBySlugServiceTest :
                     response.body shouldBe "테스트 내용"
                     response.viewCount shouldBe 0
                     verify(exactly = 0) { postRepository.incrementViewCount(any()) }
+                }
+            }
+        }
+
+        Given("Username과 Slug로 발행 글의 인접 글을 조회할 때") {
+            val postRepository = mockk<PostRepository>()
+            val memberClient = mockk<MemberClient>()
+            val deduplicationPort = mockk<PostViewCountDeduplicationPort>()
+            val service = GetPostBySlugService(postRepository, memberClient, deduplicationPort)
+            val memberId = MemberId.generate()
+            val post = publishedSlugPost(memberId)
+            val previous =
+                postFromPersistence(
+                    memberId = memberId,
+                    title = "이전 글",
+                    slug = "older-post",
+                    createdAt = LocalDateTime.of(2026, 4, 27, 12, 0),
+                )
+            val next =
+                postFromPersistence(
+                    memberId = memberId,
+                    title = "다음 글",
+                    slug = "newer-post",
+                    createdAt = LocalDateTime.of(2026, 4, 29, 12, 0),
+                )
+            val query =
+                GetPostBySlugUseCase.Query(
+                    username = "testuser",
+                    slug = "test-post",
+                    visitorKey = "visitor-key",
+                )
+
+            every { postRepository.findByUsernameAndSlug("testuser", Slug("test-post")) } returns post
+            every { deduplicationPort.isUniqueView(post.entityId, "visitor-key") } returns false
+            every { postRepository.countCommentsByPostIds(any()) } returns emptyMap()
+            every { postRepository.findPreviousPublishedPost(post) } returns previous
+            every { postRepository.findNextPublishedPost(post) } returns next
+            every { memberClient.getAuthor(any()) } returns authorOfSlugPost(post)
+
+            When("현재 글이 목록 중간에 있으면") {
+                val response = service.execute(query)
+
+                Then("previousPost와 nextPost를 모두 매핑한다") {
+                    response.previousPost?.postId shouldBe previous.entityId.value.toString()
+                    response.previousPost?.title shouldBe "이전 글"
+                    response.previousPost?.slug shouldBe "older-post"
+                    response.previousPost?.createdAt shouldBe previous.createdAt
+                    response.nextPost?.postId shouldBe next.entityId.value.toString()
+                    response.nextPost?.title shouldBe "다음 글"
+                    response.nextPost?.slug shouldBe "newer-post"
+                    response.nextPost?.createdAt shouldBe next.createdAt
+                }
+            }
+        }
+
+        Given("Username과 Slug로 발행 글의 가장자리 인접 글을 조회할 때") {
+            val postRepository = mockk<PostRepository>()
+            val memberClient = mockk<MemberClient>()
+            val deduplicationPort = mockk<PostViewCountDeduplicationPort>()
+            val service = GetPostBySlugService(postRepository, memberClient, deduplicationPort)
+            val memberId = MemberId.generate()
+            val post = publishedSlugPost(memberId)
+            val next =
+                postFromPersistence(
+                    memberId = memberId,
+                    title = "최신 글",
+                    slug = "newest-post",
+                    createdAt = LocalDateTime.of(2026, 4, 30, 12, 0),
+                )
+            val query =
+                GetPostBySlugUseCase.Query(
+                    username = "testuser",
+                    slug = "test-post",
+                    visitorKey = "visitor-key",
+                )
+
+            every { postRepository.findByUsernameAndSlug("testuser", Slug("test-post")) } returns post
+            every { deduplicationPort.isUniqueView(post.entityId, "visitor-key") } returns false
+            every { postRepository.countCommentsByPostIds(any()) } returns emptyMap()
+            every { postRepository.findPreviousPublishedPost(post) } returns null
+            every { postRepository.findNextPublishedPost(post) } returns next
+            every { memberClient.getAuthor(any()) } returns authorOfSlugPost(post)
+
+            When("더 오래된 글이 없으면") {
+                val response = service.execute(query)
+
+                Then("previousPost는 null이고 nextPost만 매핑한다") {
+                    response.previousPost shouldBe null
+                    response.nextPost?.postId shouldBe next.entityId.value.toString()
+                    response.nextPost?.title shouldBe "최신 글"
+                    response.nextPost?.slug shouldBe "newest-post"
+                    response.nextPost?.createdAt shouldBe next.createdAt
+                }
+            }
+        }
+
+        Given("Username과 Slug로 미발행 글을 조회할 때") {
+            val postRepository = mockk<PostRepository>()
+            val memberClient = mockk<MemberClient>()
+            val deduplicationPort = mockk<PostViewCountDeduplicationPort>()
+            val service = GetPostBySlugService(postRepository, memberClient, deduplicationPort)
+            val post = draftSlugPost(MemberId.generate())
+            val query =
+                GetPostBySlugUseCase.Query(
+                    username = "testuser",
+                    slug = "test-post",
+                    visitorKey = "visitor-key",
+                )
+
+            every { postRepository.findByUsernameAndSlug("testuser", Slug("test-post")) } returns post
+            every { postRepository.countCommentsByPostIds(any()) } returns emptyMap()
+            every { memberClient.getAuthor(any()) } returns authorOfSlugPost(post)
+
+            When("현재 글이 DRAFT이면") {
+                val response = service.execute(query)
+
+                Then("인접 글을 조회하지 않고 null로 응답한다") {
+                    response.previousPost shouldBe null
+                    response.nextPost shouldBe null
+                    verify(exactly = 0) { postRepository.findPreviousPublishedPost(any()) }
+                    verify(exactly = 0) { postRepository.findNextPublishedPost(any()) }
+                    verify(exactly = 0) { deduplicationPort.isUniqueView(any(), any()) }
                 }
             }
         }
@@ -181,6 +312,34 @@ private fun publishedSlugPost(memberId: MemberId): Post =
             body = Body("테스트 내용"),
             type = ContentType.BLOG,
         ).publish()
+
+private fun draftSlugPost(memberId: MemberId): Post =
+    Post.create(
+        memberId = memberId,
+        title = Title("테스트 글"),
+        slug = Slug("test-post"),
+        body = Body("테스트 내용"),
+        type = ContentType.BLOG,
+    )
+
+private fun postFromPersistence(
+    memberId: MemberId,
+    title: String,
+    slug: String,
+    createdAt: LocalDateTime,
+): Post =
+    Post.from(
+        entityId = PostId.generate(),
+        memberId = memberId,
+        title = Title(title),
+        slug = Slug(slug),
+        body = Body("인접 글 내용"),
+        type = ContentType.BLOG,
+        status = PostStatus.PUBLISHED,
+        tags = emptySet(),
+        createdAt = createdAt,
+        updatedAt = createdAt,
+    )
 
 private fun authorOfSlugPost(post: Post): MemberClient.Author =
     MemberClient.Author(
