@@ -1,6 +1,7 @@
 ﻿package cloud.luigi99.blog.content.post.adapter.`in`.web
 
 import cloud.luigi99.blog.adapter.web.dto.CommonResponse
+import cloud.luigi99.blog.content.post.adapter.`in`.web.dto.AdjacentPostResponse
 import cloud.luigi99.blog.content.post.adapter.`in`.web.dto.AuthorResponse
 import cloud.luigi99.blog.content.post.adapter.`in`.web.dto.CreatePostRequest
 import cloud.luigi99.blog.content.post.adapter.`in`.web.dto.PageInfoResponse
@@ -211,6 +212,8 @@ class PostController(private val postQueryFacade: PostQueryFacade, private val p
                     tags = response.tags,
                     viewCount = response.viewCount,
                     commentCount = response.commentCount,
+                    previousPost = response.previousPost?.toAdjacentPostResponse(),
+                    nextPost = response.nextPost?.toAdjacentPostResponse(),
                     createdAt = response.createdAt,
                     updatedAt = response.updatedAt,
                 ),
@@ -314,6 +317,14 @@ class PostController(private val postQueryFacade: PostQueryFacade, private val p
 
         return ResponseEntity.noContent().build()
     }
+
+    private fun GetPostBySlugUseCase.AdjacentPostInfo.toAdjacentPostResponse(): AdjacentPostResponse =
+        AdjacentPostResponse(
+            postId = postId,
+            title = title,
+            slug = slug,
+            createdAt = createdAt,
+        )
 
     private fun requireUpdateScopes(request: UpdatePostRequest) {
         val authentication = SecurityContextHolder.getContext().authentication

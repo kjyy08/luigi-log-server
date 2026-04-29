@@ -27,8 +27,26 @@ data class PostResponse(
     val viewCount: Long = 0,
     @field:Schema(description = "댓글 수", example = "3")
     val commentCount: Long = 0,
+    @field:Schema(description = "이전 글 정보 (현재 글보다 더 오래된 인접 글, 없으면 null)")
+    val previousPost: AdjacentPostResponse? = null,
+    @field:Schema(description = "다음 글 정보 (현재 글보다 더 최신인 인접 글, 없으면 null)")
+    val nextPost: AdjacentPostResponse? = null,
     @field:Schema(description = "생성 시간", example = "2025-01-01T12:00:00")
     val createdAt: LocalDateTime?,
     @field:Schema(description = "수정 시간", example = "2025-01-01T13:00:00")
     val updatedAt: LocalDateTime?,
+)
+
+/**
+ * 상세 글의 인접 글 응답 DTO
+ */
+data class AdjacentPostResponse(
+    @field:Schema(description = "Post ID", example = "123e4567-e89b-12d3-a456-426614174000")
+    val postId: String,
+    @field:Schema(description = "제목", example = "이전 블로그 글")
+    val title: String,
+    @field:Schema(description = "URL slug", example = "previous-blog-post")
+    val slug: String,
+    @field:Schema(description = "생성 시간", example = "2025-01-01T11:00:00")
+    val createdAt: LocalDateTime?,
 )
