@@ -1,3 +1,10 @@
+# [1.10.0](https://github.com/kjyy08/luigi-log-server/compare/v1.9.1...v1.10.0) (2026-04-29)
+
+
+### Features
+
+* **posts:** 상세 응답에 이전 다음 글을 추가 ([#90](https://github.com/kjyy08/luigi-log-server/issues/90)) ([f955195](https://github.com/kjyy08/luigi-log-server/commit/f955195a8bdad7cfb8b527527d0d1be53476fe5a))
+
 ## [1.9.1](https://github.com/kjyy08/luigi-log-server/compare/v1.9.0...v1.9.1) (2026-04-27)
 
 
